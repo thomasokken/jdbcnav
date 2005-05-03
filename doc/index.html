@@ -1,0 +1,119 @@
+<html>
+<head>
+    <title>JDBC Navigator, a free database browser and editor</title>
+    <meta name="description" content="JDBC Navigator, a free database browser and editor.">
+</head>
+<body>
+    <h3>JDBC Navigator</h3>
+    JDBC Navigator is a free database browser and editor. It lets you open JDBC
+    database connections, browse schemas and tables, find rows referencing a
+    row's primary key, find rows referenced by a row's foreign keys, and edit
+    table data (inserting new rows, and editing or deleting existing rows).
+    <br>
+    You can copy and paste rows between tables; when you perform the paste
+    operation, you can specify how to map the source table's columns to the
+    destination's. You can also save the contents of a table to a CSV file,
+    which you can import into Microsoft Excel or other spreadsheet programs,
+    and you can import CSV files into a table; when you perform the import, you
+    can specify how to map the file's columns to the table's.
+    <br>
+    You can create snapshots of tables or sets of tables, and you can save
+    those snapshots to disk. Snapshots act like read-only databases; you can
+    browse them just like a regular JDBC connection.
+    <br>
+    You can compare two databases, and generate SQL scripts that will transform
+    one database into the other (as long as they have identical table
+    structures), or generate scripts that will re-create a schema from scratch.
+    You can use these scripts as a platform-neutral way of copying tables from
+    one database to another, assuming that the target database has a facility
+    to run SQL scripts.
+    <br>
+    You can also open a SQL window where you can interactively type SQL
+    statements, rather like a terminal, except the window is also a text editor
+    so you can easily tweak your commands and rerun them, and save them to disk
+    so you can reuse them later.
+    <br>
+    There's also an embedded JavaScript interpreter, through which you can
+    access the contents of table editing windows.
+    <p>
+    Interested? Download <a href="jdbcnav.zip">jdbcnav.zip</a> (1241421 bytes;
+    MD5 checksum: 4183416af61f890832137e92c4b9c3eb), which contains JDBC
+    Navigator, <a href="http://www.mozilla.org/rhino/">Rhino</a> (a
+    free-as-in-speech JavaScript engine), and <a
+    href="http://xml.apache.org/xerces-j/">Xerces</a> (a free-as-in-speech XML
+    parser). JDBC Navigator needs Rhino and Xerces to be in the classpath.
+    <br>
+    In addition to this, you will need JDBC drivers for your databases. These
+    should be provided by your RDBMS vendor. For Oracle, the file to look for
+    is called <code>classes12.zip</code> or <code>classes12.jar</code>.
+    <br>
+    Did I mention JDBC Navigator is a Java application? You will need Java to
+    run this thing; <a href="http://java.sun.com/j2se/">Sun's JDK or JRE</a>,
+    version 1.2.2 or later, will do the job (1.4 or later recommended).
+    <p>
+    How to use: put the jar files from <code>jdbcnav.zip</code>, and the JDBC
+    driver(s), in one directory; cd to that directory and say
+    <p>
+    <code>&nbsp;&nbsp;&nbsp;&nbsp;java -classpath
+    jdbcnav.jar;js.jar;xerces.jar;classes12.jar
+    thomas.jdbcnavigator.JDBCNavigator</code>
+    <p>
+    If you are using Unix, replace the semicolons in the above command with
+    colons.
+    <br>
+    Note: the above example assumes you are using Oracle 9; if you are using a
+    different RDBMS, replace <code>classes12.jar</code> with the appropriate
+    JDBC driver.
+    <br>
+    Also note: if you want to access more than one database at the same time,
+    and if those databases require different JDBC drivers, just put all those
+    drivers in the classpath.
+    <br>
+    If you are accessing multiple databases, and some of those databases are
+    different versions of one vendor's product (e.g., you want to access an
+    Oracle 8 and an Oracle 9 database at the same time), you may experience
+    problems if you try to put each of the applicable versions of that vendor's
+    JDBC driver in the classpath at the same time. To avoid these problems,
+    always use the most recent version of that vendor's JDBC driver in such
+    cases. (Again assuming you want to access Oracle 8 and Oracle 9 databases
+    simultaneously, don't use the Oracle 8 and Oracle 9 drivers at the same
+    time; the Oracle 9 driver knows how to talk to Oracle 8 databases, so just
+    use that one, and don't put the Oracle 8 driver in the classpath.)
+    <p>
+    <b>This version of JDBC Navigator (build 790, dated 9/7/2002) is available
+    free-as-in-beer, but it is copyrighted</b>. I'm not publishing the
+    source code yet. I'm still debating whether or not to turn this into a
+    commercial product. Even if I decide to go the commercial route, I want to
+    support a free-as-in-speech version as well, but I still need to figure out
+    what kind of license I should use. Meanwhile, I hope you'll get some use
+    out of the tool even without the source.
+    <p>
+    Questions? Comments? Suggestions? Bug reports? Contact me, Thomas Okken, at
+    <img src="me.gif" width="153" height="10" align="baseline">.
+    <h3>Screen Shots</h3>
+    These screen shots were taken while running JDBC Navigator under Microsoft
+    Windows. If you run it under a different operating system, the look and
+    feel of the user interface will be different (but the functionality, and
+    the user interface layout, will not change).
+    <br>
+    JDBC Navigator uses the platform's native look and feel by default, but you
+    can override the default by adding <code>motif</code>, <code>metal</code>,
+    or <code>windows</code> at the end of the command line. Note: the Windows
+    look and feel only works under Windows.
+    <h4>Opening a connection, browsing tables, manipulating table data using
+    the embedded JavaScript interpreter</h4>
+    <img src="snapshot1.png" width="900" height="700">
+    <h4>Detailed information about table structure and primary and foreign
+    keys</h4>
+    <img src="snapshot2.png" width="900" height="700">
+    <h4>Generating SQL scripts to update or rebuild a set of tables</h4>
+    <img src="snapshot3.png" width="900" height="700">
+    <h4>Copying and pasting rows between tables, reshuffling columns as
+    desired</h4>
+    <img src="snapshot4.png" width="900" height="700">
+    <h4>Importing/exporting from/to CSV files</h4>
+    <img src="snapshot5.png" width="900" height="700">
+    <h4>Finding rows that reference, or are referenced by, another row</h4>
+    <img src="snapshot6.png" width="900" height="700">
+</body>
+</html>

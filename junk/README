@@ -1,0 +1,3 @@
+This directory contains stuff that is not part of the JDBC Navigator build
+proper, but that I don't want to throw out, because it just might be useful
+in the future.

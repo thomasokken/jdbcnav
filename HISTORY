@@ -1,0 +1,171 @@
+2 May 2005:
+1) Changed the REMARKS getting code so that it first tries REMARKS, then
+TABLE_REMARKS. Simply picking TABLE_REMARKS whenever we're talking to Oracle
+does not work any more; apparently, Oracle have fixed this JDBC incompatibility
+in 9.x.
+
+8 Sep 2004:
+1) Added showAbout() method to Main.AboutGlassPane. Showing the "about" box on
+setVisible(true) turned out not to be such a great idea, since some part of
+Swing (JDesktop, I suppose) shows the glass pane when you resize an internal
+frame (but not when you drag one -- go figure). So, I had to add a state
+variable to AboutGlassPane to decide whether to paint the "about" box or not;
+setVisible(true) does not set this flag, and showAbout() does.
+
+5 Sep 2004:
+1) Added classpath configuration area to preferences dialog. It only shows up
+if the jdbcnavboot.Boot class exists. In addition to directories and jar/zip
+files, you can use the word "CLASSPATH" in the dialog to indicate that the
+value of the CLASSPATH environment variable should be used at that point in the
+search order (but this only works with JDK 1.5 or later, since it needs
+System.getenv() to get that variable, and older JDKs don't actually implement
+that method).
+2) Changed JButton.requestFocus() call in MessageBox to requestFocusInWindow().
+This was necessary because the former caused the top-level window to be raised
+when running under Windows 98SE. In fact, the javadoc for requestFocus() warns
+about just such potentially undesired behavior.
+3) Removed hard-coded references to oracle.sql.BFILE class from MyTable (this
+had to do with the BfileRenderer). Using reflection now, so MyTable will load
+properly even if the Oracle driver is not in the classpath.
+4) Fixed handling of missing <classpath> element; this is detected in the
+Preferences() constructor now, after the call to read(), so that the fall-back
+version of the classpath gets set even if there is no .jdbcnavrc file at all.
+5) Changed the "system properties" area in PreferencesFrame from JTextArea to
+NonTabJTextArea so that tabbing behavior is a bit nicer (though you still need
+Ctrl-Tab to escape from the JTable).
+6) Fixed the classpath searching code in SneakyClassLoader, and fixed the URL
+generation so that valid URLs are generated when running under Windows. This
+turns out to be pretty simple: use File.getAbsolutePath() to get an absolute
+path; translate all file separators to slashes; if the path does not start with
+a slash, prepend one (this is needed for Windows paths that start with a drive
+letter); for directory URLs, prepend "file:"; for Jar URLs, prepend "jar:file:"
+and append "!". Finally, when generating the final URL, take the resource name
+and tack it onto what we just generated (note that resource names start with
+slashes and have their components separated by slashes;
+SneakyClassLoader.findResource() and findResources() enforce the former, and
+Class.getResourceAsStream() takes care of the latter).
+This works like a charm on both Windows 98SE and Linux. Of course, I do wonder
+if this works on MacOS, too...
+
+4 Sep 2004:
+1) I found a reasonably elegant way to create a runnable jar file after all
+(see yesterday's item 3). It uses a two-stage startup process, stage 1 being a
+new class named jdbcnavboot.Boot; this class creates a class loader that looks
+for classes and resources in two places: in the default class loader, with
+"/foo" prepended to the class or resource name, and in a list of jar files and
+directories, which can be configured using the method
+jdbcnavboot.Boot.addClassPathItem().
+The build process moves the entire jdbcnav package to a directory called "foo",
+which has the effect of throwing the default class loader off the scent; the
+class loader installed by jdbcnavboot.Boot looks for names starting with
+"jdbcnav", prepends "foo", and looks them up in the default class loader.
+Voila, all the application code is now loaded through my custom class loader,
+and I'm still only using one jar file. Hee hee hee. And of course when it comes
+to loading additional stuff, say, a JDBC driver, I can make my own custom class
+loader look wherever I want. Mission accomplished. (Except for the part of
+adding a classpath configuration panel to PreferencesFrame; that's next on the
+list. Meanwhile you can add stuff like
+
+    <classpath>
+      <item>/home/thomas/.jars/classes12.zip</item>
+      <item>/home/thomas/.jars/pgdev.305.jdbc3.jar</item>
+    </classpath>
+
+to the .jdbcnavrc file.)
+2) Some code changes to support builds both with and without the Boot class.
+Also added code to allow the use of $CLASSPATH by SneakyClassLoader if running
+under JDK 1.5 or later -- with this functionality, a user who already had his
+JDBC drivers listed on the CLASSPATH won't have to perform *any* configuration
+when using the stand-alone version.
+
+3 Sep 2004:
+1) Added a splash screen. This is also displayed when the "About JDBC
+Navigator" command is selected, unless the splash.gif image is missing, in
+which case the old plain message box is used.
+2) Cleaned up the build.xml file a little bit.
+3) A wasted afternoon: tried to add a custom class loader, so I could load JDBC
+drivers without them being in the classpath, so I would be able to wrap the
+application in a self-contained double-clickable jar file (the contortions
+would be needed because when you run a jar file with "java -jar", CLASSPATH is
+ignored). Alas, 'twas all in vain; java.sql.DriverManager refuses to use
+drivers that were loaded by a different class loader than the application
+itself. Loading the app itself through a custom class loader would require a
+two-stage startup process that can't be done with a single jar file. Ergo,
+double-clickable jar files can't use JDBC drivers, so JDBC Navigator can't be
+a double-clickable jar file. :-(
+
+2 Sep 2004:
+1) Added option to encrypt JDBC connection configuration settings when saving
+them to the .jdbcnavrc file. It is possible to run JDBC Navigator if you don't
+know the password for the encrypted .jdbcnavrc stuff; the non-encrypted parts
+of that file are processed normally, and the encrypted stuff is kept in memory
+in encrypted state, until such time as you enter the right password. It is
+allowed to enter a different password at that time; any new configs will be
+written to .jdbcnavrc encrypted with the new password, while the old stuff is
+written unchanged (that is, still encrypted with the old password). In this
+manner, it is possible to accumulate any number of encrypted chunks in
+.jdbcnavrc, all encrypted with different passwords. Nothing is lost; whenever
+you enter a password that matches one of the chunks, that chunk is decrypted;
+enter all the passwords one by one and everything is available once more.
+Neat, huh? :-)
+2) Added code to track a brief history of observed 'window drift' (that's when
+you call setLocation() on a JFrame, then show it, then call
+getLocationOnScreen(), and find that the location that's returned is not the
+location you just set). Race conditions involving the window manager make my
+drift detection approach a bit unreliable (no way to do it better without
+having access to X11 APIs, though), but the occasions where I get it wrong seem
+to be few and far between. So, I maintain a list of the 5 most recent drift
+values, and go with the majority. The downside is that you may get drift a few
+times when you switch window managers or reconfigure your window decorations;
+the upside is that you won't get drift on any other occasion.
+3) Clicking "connect" in the JDBC login dialog now automatically saves the
+connection configuration parameters; if the "name" field is blank, a name of
+the form "Unnamed #n" is automagically provided. Saving now always moves a
+config to the top of the list (even if you only do "save" without "connect").
+4) Strengthened config encryption: switched from using plain DESede (that is,
+DESede in the default mode, which is (gasp) ECB) to DESede/CBC; to make things
+even more cryptic, I start the encryption with 8 bytes of randomness. Of course
+the Achilles heel of JDBC Navigator's security is that I keep all kinds of
+stuff in plaintext in memory... Here's hoping that security-conscious admins
+manage to keep prying eyes away from /dev/mem and such, and that they and
+jdbcnav users know about the the perils of core files. It's hard to do a better
+job, although I *could* do it by using a third-party DES implementation (e.g. a
+Java port, in source form, of libdes) where I can ensure that keys are *never*
+stored in Strings, and that all byte or char arrays used to store keys are
+scrubbed after use, and (this is the really unpleasant part) by making the user
+re-enter the password whenever we need it, so we never have to keep it around.
+Yeah, I know, that doesn't appeal to me either.
+
+1 Sep 2004:
+1) In QueryResultFrame.nuke(), handle updatable query results specially: don't
+tell the user that "No" is a safe option, as it is for plain Tables, but warn
+them that "No" means their edits will be lost. (This is still not really
+satisfactory; updatable query results should be accessible from JavaScript,
+but since I don't feel like dealing with that can of worms right now, I just
+want to make sure that at least the user isn't lied to.)
+2) The configuration name combobox in JDBCDatabase now displays config names in
+the order they were read from the .jdbcnavrc file; when the user tries to open
+a connection, that config is moved to the front of the list. The .jdbcnavrc
+file no longer has a line with the most recently used config name at the
+beginning; it is no longer needed since the first config is guaranteed to be
+the most recently used one. (There is no need for special code to deal with old
+.jdbcnavrc files; the most-recently-selected line is just another line with no
+pipe character, and as such is silently ignored by the config reading code.)
+Cleaned up the config list code -- created a ConfigList class that encapsulates
+all the ugliness and which implements ComboBoxModel to keep things simple.
+3) Changed .jdbcnavrc to a new XML-based format; in addition to JDBC connection
+configurations, it is now also used to store the Swing Look-and-Feel name,
+the size and location of the top-level window, and an arbitrary set of system
+properties (name/value pairs that are fed to System.setProperty() on startup;
+I needed this so I could set swing.metalTheme=steel (in case I never get used
+to that new "Ocean" theme in Metal)).
+
+31 Aug 2004:
+1) CHANGELOG file created. What a concept, 3 1/2 years and at least 1790 builds
+after I started work on JDBC Navigator. :-)
+2) Fixed PartialTable so that reloading it (i.e., calling getData()) causes the
+query to be re-run. Also added a distinguishing " (query)" to the title of
+QueryResultFrame and TableDetailsFrame when they're displaying an updatable
+query result; rigged PartialTable.remarks so it returns the query that was
+used to create the instance; added code to TableDetailsFrame to display the
+Table.remarks property.

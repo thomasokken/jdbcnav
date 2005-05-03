@@ -1,0 +1,15 @@
+Maximized windows behaving badly? This may be specific to the Windows look and
+feel. Check, and investigate possibility of work-around.
+
+Change window placement code so that windows are always entirely on-screen. The
+current behavior is annoying when opening large tables, since such windows are
+typically the size of the entire screen, so you always have to move (or zoom)
+them before you can use them.
+
+Oracle INTERVAL type support
+
+Hourglass cursor for windows where long queries are in progress? Use
+hourglass+arrow or hourglass+I-beam cursors, like the ones Windows uses to
+indicate a slow operation is in progress AND the UI is still active.
+
+MySQL support
