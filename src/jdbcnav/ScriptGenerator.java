@@ -797,7 +797,7 @@ public class ScriptGenerator {
     private static ScriptGenerator genericInstance = new ScriptGenerator();
 
     public static String[] getNames() {
-	return new String[] { "Generic", "Oracle", "PostgreSQL" };
+	return new String[] { "Generic", "Oracle", "PostgreSQL", "SmallSQL" };
     }
 
     public static ScriptGenerator getInstance(String name) {

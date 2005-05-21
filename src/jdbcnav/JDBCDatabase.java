@@ -25,6 +25,7 @@ public class JDBCDatabase extends BasicDatabase {
     static {
 	classDriverMap.put("oracle.jdbc.driver.OracleDriver", "Oracle");
 	classDriverMap.put("org.postgresql.Driver", "PostgreSQL");
+        classDriverMap.put("smallsql.server.SSDriver", "SmallSQL");
     }
 
 

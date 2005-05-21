@@ -1,3 +1,6 @@
+21 May 2005:
+1) Added SmallSQL support (JDBCDatabase and ScriptGenerator subclasses).
+
 2 May 2005:
 1) Changed the REMARKS getting code so that it first tries REMARKS, then
 TABLE_REMARKS. Simply picking TABLE_REMARKS whenever we're talking to Oracle
