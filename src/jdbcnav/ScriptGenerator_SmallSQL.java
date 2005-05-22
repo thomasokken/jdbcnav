@@ -4,7 +4,7 @@ import jdbcnav.model.Table;
 import jdbcnav.util.MiscUtils;
 
 public class ScriptGenerator_SmallSQL extends ScriptGenerator {
-    protected String printTypeNOT(Table table, int column) {
+    protected String printType(Table table, int column) {
 	String driver = table.getDatabase().getInternalDriverName();
 	String name = table.getDbTypes()[column];
 	Integer size = table.getColumnSizes()[column];
