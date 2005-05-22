@@ -97,7 +97,78 @@ public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
 	    else
 		return name + "(" + size + ", " + scale + ")";
 
+	} else if (driver.equals("SmallSQL")) {
+
+	    if (name.equals("BIT")
+		    || name.equals("BOOLEAN"))
+		return "boolean";
+	    else if (name.equals("TINYINT")
+		    || name.equals("BYTE")
+		    || name.equals("SMALLINT"))
+		return "smallint";
+	    else if (name.equals("INT"))
+		return "integer";
+	    else if (name.equals("BIGINT"))
+		return "bigint";
+	    else if (name.equals("REAL"))
+		return "real";
+	    else if (name.equals("DOUBLE")
+		    || name.equals("FLOAT"))
+		return "double precision";
+	    else if (name.equals("MONEY"))
+		return "numeric(19, 4)";
+	    else if (name.equals("SMALLMONEY"))
+		return "numeric(10, 4)";
+	    else if (name.equals("NUMERIC")
+		    || name.equals("DECIMAL")
+		    || name.equals("NUMBER")
+		    || name.equals("VARNUM")) {
+		if (scale == null)
+		    return "numeric(" + size + ")";
+		else
+		    return "numeric(" + size + ", " + scale + ")";
+	    } else if (name.equals("CHAR")
+		    || name.equals("CHARACTER")
+		    || name.equals("NCHAR"))
+		return "character(" + size + ")";
+	    else if (name.equals("VARCHAR")
+		    || name.equals("NVARCHAR")
+		    || name.equals("VARCHAR2")
+		    || name.equals("NVARCHAR2"))
+		return "character varying(" + size + ")";
+	    else if (name.equals("LONGVARCHAR")
+		    || name.equals("TEXT")
+		    || name.equals("LONGNVARCHAR")
+		    || name.equals("NTEXT")
+		    || name.equals("LONG")
+		    || name.equals("CLOB"))
+		return "character varying(0)"; // text?
+	    // The following are types not mentioned in the SmallSQL doc,
+	    // but which do occur in the sample database...
+	    else if (name.equals("BINARY")
+		    || name.equals("VARBINARY")
+		    || name.equals("LONGVARBINARY"))
+		return "bytea";
+	    else if (name.equals("DATETIME")
+		    || name.equals("SMALLDATETIME"))
+		return "timestamp";
+	    else {
+		// Unexpected value... Print as is and hope the user can
+		// straighten out the SQL script manually.
+		System.out.println("Unrecognized: \"" + name + "\"");
+		if (size == null)
+		    return name;
+		else if (scale == null)
+		    return name + "(" + size + ")";
+		else
+		    return name + "(" + size + ", " + scale + ")";
+	    }
+
 	} else { // driver = "Generic" or unknown
+
+	    // TODO - this code simply prints generic SQL data type names;
+	    // this yields scripts that PostgreSQL can't digest. Generate
+	    // appropriate PostgreSQL equivalents instead.
 
 	    int sqlType = table.getSqlTypes()[column];
 	    String sqlName = MiscUtils.sqlTypeIntToString(sqlType);

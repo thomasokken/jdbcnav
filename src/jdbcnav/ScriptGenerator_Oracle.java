@@ -139,7 +139,90 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 		    return name + "(" + size + ", " + scale + ")";
 	    }
 
+	} else if (driver.equals("SmallSQL")) {
+
+	    if (name.equals("BIT")
+		    || name.equals("BOOLEAN"))
+		return "NUMBER(1)";
+	    else if (name.equals("TINYINT")
+		    || name.equals("BYTE"))
+		return "NUMBER(3)";
+	    else if (name.equals("SMALLINT"))
+		return "NUMBER(5)";
+	    else if (name.equals("INT"))
+		return "NUMBER(10)";
+	    else if (name.equals("BIGINT"))
+		return "NUMBER(19)";
+	    else if (name.equals("REAL")
+		    || name.equals("DOUBLE")
+		    || name.equals("FLOAT"))
+		return "NUMBER";
+	    else if (name.equals("MONEY"))
+		return "NUMBER(19, 4)";
+	    else if (name.equals("SMALLMONEY"))
+		return "NUMBER(10, 4)";
+	    else if (name.equals("NUMERIC")
+		    || name.equals("DECIMAL")
+		    || name.equals("NUMBER")
+		    || name.equals("VARNUM")) {
+		if (scale == null || scale.intValue() == 0)
+		    return "NUMBER(" + size + ")";
+		else
+		    return "NUMBER(" + size + ", " + scale + ")";
+	    } else if (name.equals("CHAR")
+		    || name.equals("CHARACTER"))
+		return "CHAR(" + size + ")";
+	    else if (name.equals("NCHAR"))
+		return "NCHAR(" + size + ")";
+	    else if (name.equals("VARCHAR")
+		    || name.equals("VARCHAR2"))
+		return "VARCHAR2(" + size + ")";
+	    else if (name.equals("NVARCHAR")
+		    || name.equals("NVARCHAR2"))
+		return "NVARCHAR2(" + size + ")";
+	    else if (name.equals("LONGVARCHAR")
+		    || name.equals("TEXT")
+		    || name.equals("LONG")
+		    || name.equals("CLOB")) {
+		if (columnIsPartOfIndex(table, column))
+		    // TODO -- emit comment containing warning
+		    return "VARCHAR2(4000)";
+		else
+		    return "CLOB";
+	    } else if (name.equals("LONGNVARCHAR")
+		    || name.equals("NTEXT")) {
+		if (columnIsPartOfIndex(table, column))
+		    // TODO -- emit comment containing warning
+		    return "NVARCHAR2(4000)";
+		else
+		    return "NCLOB";
+	    // The following are types not mentioned in the SmallSQL doc,
+	    // but which do occur in the sample database...
+	    } else if (name.equals("BINARY")
+		    || name.equals("VARBINARY"))
+		return "RAW(" + size + ")";
+	    else if (name.equals("LONGVARBINARY"))
+		return "BLOB";
+	    else if (name.equals("DATETIME")
+		    || name.equals("SMALLDATETIME"))
+		return "DATE";
+	    else {
+		// Unexpected value... Print as is and hope the user can
+		// straighten out the SQL script manually.
+		System.out.println("Unrecognized: \"" + name + "\"");
+		if (size == null)
+		    return name;
+		else if (scale == null)
+		    return name + "(" + size + ")";
+		else
+		    return name + "(" + size + ", " + scale + ")";
+	    }
+
 	} else { // driver = "Generic" or unknown
+
+	    // TODO - this code simply prints generic SQL data type names;
+	    // this yields scripts that Oracle can't digest. Generate
+	    // appropriate Oracle equivalents instead.
 
 	    int sqlType = table.getSqlTypes()[column];
 	    String sqlName = MiscUtils.sqlTypeIntToString(sqlType);

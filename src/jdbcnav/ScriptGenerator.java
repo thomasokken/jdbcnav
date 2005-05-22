@@ -178,6 +178,78 @@ public class ScriptGenerator {
 		    return name + "(" + size + ", " + scale + ")";
 	    }
 
+	} else if (driver.equals("SmallSQL")) {
+
+	    if (name.equals("BIT")
+		    || name.equals("BOOLEAN"))
+		return "BOOLEAN";
+	    else if (name.equals("TINYINT")
+		    || name.equals("BYTE"))
+		return "TINYINT";
+	    else if (name.equals("SMALLINT"))
+		return "SMALLINT";
+	    else if (name.equals("INT"))
+		return "INTEGER";
+	    else if (name.equals("BIGINT"))
+		return "BIGINT";
+	    else if (name.equals("REAL"))
+		return "REAL";
+	    else if (name.equals("DOUBLE")
+		    || name.equals("FLOAT"))
+		return "DOUBLE PRECISION";
+	    else if (name.equals("MONEY"))
+		return "NUMERIC(19, 4)";
+	    else if (name.equals("SMALLMONEY"))
+		return "NUMERIC(10, 4)";
+	    else if (name.equals("NUMERIC")
+		    || name.equals("DECIMAL")
+		    || name.equals("NUMBER")
+		    || name.equals("VARNUM")) {
+		if (scale == null)
+		    return "NUMERIC(" + size + ")";
+		else
+		    return "NUMERIC(" + size + ", " + scale + ")";
+	    } else if (name.equals("CHAR")
+		    || name.equals("CHARACTER")
+		    || name.equals("NCHAR"))
+		return "CHARACTER(" + size + ")";
+	    else if (name.equals("VARCHAR")
+		    || name.equals("NVARCHAR")
+		    || name.equals("VARCHAR2")
+		    || name.equals("NVARCHAR2"))
+		return "CHARACTER VARYING(" + size + ")";
+	    else if (name.equals("LONGVARCHAR")
+		    || name.equals("TEXT")
+		    || name.equals("LONG"))
+		return "LONGVARCHAR";
+	    else if (name.equals("LONGNVARCHAR")
+		    || name.equals("NTEXT"))
+		return "LONGNVARCHAR"; // NATIONAL CLOB? (See the Oracle case)
+	    else if (name.equals("CLOB"))
+		return "CLOB";
+	    // The following are types not mentioned in the SmallSQL doc,
+	    // but which do occur in the sample database...
+	    else if (name.equals("BINARY"))
+		return "BINARY(" + size + ")"; // Is this SQL?
+	    else if (name.equals("VARBINARY"))
+		return "VARBINARY(" + size + ")";
+	    else if (name.equals("LONGVARBINARY"))
+		return "LONGVARBINARY";
+	    else if (name.equals("DATETIME")
+		    || name.equals("SMALLDATETIME"))
+		return "TIMESTAMP";
+	    else {
+		// Unexpected value... Print as is and hope the user can
+		// straighten out the SQL script manually.
+		System.out.println("Unrecognized: \"" + name + "\"");
+		if (size == null)
+		    return name;
+		else if (scale == null)
+		    return name + "(" + size + ")";
+		else
+		    return name + "(" + size + ", " + scale + ")";
+	    }
+
 	} else { // driver = "Generic" or unknown
 
 	    int sqlType = table.getSqlTypes()[column];
@@ -797,7 +869,8 @@ public class ScriptGenerator {
     private static ScriptGenerator genericInstance = new ScriptGenerator();
 
     public static String[] getNames() {
-	return new String[] { "Generic", "Oracle", "PostgreSQL", "SmallSQL" };
+	return new String[] { "Generic", /*"DBTypes",*/ "Oracle",
+			      "PostgreSQL", "SmallSQL" };
     }
 
     public static ScriptGenerator getInstance(String name) {

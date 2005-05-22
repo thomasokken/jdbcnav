@@ -1,4 +1,4 @@
-21 May 2005:
+22 May 2005:
 1) Added SmallSQL support (JDBCDatabase and ScriptGenerator subclasses).
 
 2 May 2005:
