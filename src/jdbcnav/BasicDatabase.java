@@ -630,13 +630,57 @@ public abstract class BasicDatabase implements Database {
 	return tables;
     }
 
+    protected String getIdentifierQuoteString() {
+	return " ";
+    }
+
+    public String quote(String s) {
+	if (s == null)
+	    return null;
+	String q = getIdentifierQuoteString();
+	if (q.equals(" "))
+	    return s;
+	else {
+	    int sl = s.length();
+	    for (int i = 0; i < sl; i++) {
+		char c = s.charAt(i);
+		if (!((c >= 'A' && c <= 'Z')
+			    || (c >= 'a' && c <= 'z')
+			    || (c >= '0' && c <= '9')
+			    || c == '_'))
+		    return q + s + q;
+	    }
+	    return s;
+	}
+    }
+
+    public String unquote(String s) {
+	if (s == null)
+	    return null;
+	String q = getIdentifierQuoteString();
+	if (q.equals(" "))
+	    return s;
+	else {
+	    int ql = q.length();
+	    if (s.length() > 2 * ql
+		    && s.substring(0, ql).equals(q)
+		    && s.substring(s.length() - ql).equals(q))
+		return s.substring(ql, s.length() - ql);
+	    else
+		return s;
+	}
+    }
+
     /**
      * Generate a name that represents a table uniquely to the RDBMS, i.e.
      * something that can be used in SQL scripts and is guaranteed not to
      * access the wrong table.
      */
-    protected String makeQualifiedName(String catalog, String schema,
+    public String makeQualifiedName(String catalog, String schema,
 				       String name) {
+	catalog = quote(catalog);
+	schema = quote(schema);
+	name = quote(name);
 	if (catalog != null)
 	    if (schema != null)
 		return catalog + "." + schema + "." + name;
@@ -648,11 +692,33 @@ public abstract class BasicDatabase implements Database {
 	    return name;
     }
 
-    protected String[] parseQualifiedName(String qualifiedName) {
+    public String[] parseQualifiedName(String qualifiedName) {
 	ArrayList al = new ArrayList();
-	StringTokenizer tok = new StringTokenizer(qualifiedName, ".");
-	while (tok.hasMoreTokens())
-	    al.add(tok.nextToken());
+	String q = getIdentifierQuoteString();
+	if (q.equals(" ")) {
+	    StringTokenizer tok = new StringTokenizer(qualifiedName, ".");
+	    while (tok.hasMoreTokens())
+		al.add(tok.nextToken());
+	} else {
+	    int ql = q.length();
+	    int m = qualifiedName.length() - ql;
+	    int p;
+	    boolean inQuotes = false;
+	    StringBuffer buf = new StringBuffer(qualifiedName);
+	    int i = 0;
+	    while (i <= buf.length() - ql) {
+		if (buf.substring(i, i + ql).equals(q)) {
+		    buf.delete(i, i + ql);
+		    inQuotes = !inQuotes;
+		} else if (!inQuotes && buf.charAt(i) == '.') {
+		    al.add(buf.substring(0, i));
+		    buf.delete(0, i + 1);
+		    i = 0;
+		} else
+		    i++;
+	    }
+	    al.add(buf.toString());
+	}
 	for (int i = al.size(); i < 3; i++)
 	    al.add(0, null);
 	return (String[]) al.toArray(new String[3]);

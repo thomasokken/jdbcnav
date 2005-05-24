@@ -321,7 +321,7 @@ public class ScriptGenerator {
 	if (fqtn)
 	    buf.append(table.getQualifiedName());
 	else
-	    buf.append(table.getName());
+	    buf.append(table.getQuotedName());
 	buf.append(";\n");
     }
 
@@ -357,7 +357,7 @@ public class ScriptGenerator {
 	if (fqtn)
 	    buf.append(table.getQualifiedName());
 	else
-	    buf.append(table.getName());
+	    buf.append(table.getQuotedName());
 	buf.append("\n(");
 
 	int columns = table.getColumnCount();
@@ -446,7 +446,7 @@ public class ScriptGenerator {
 	    if (fqtn)
 		buf.append(table.getQualifiedName());
 	    else
-		buf.append(table.getName());
+		buf.append(table.getQuotedName());
 	    buf.append("(");
 	    for (int j = 0; j < index.getColumnCount(); j++) {
 		if (j > 0)
@@ -491,7 +491,7 @@ public class ScriptGenerator {
 		    if (fqtn)
 			buf.append(table.getQualifiedName());
 		    else
-			buf.append(table.getName());
+			buf.append(table.getQuotedName());
 		    buf.append("(");
 		    for (int j = 0; j < rk.getColumnCount(); j++) {
 			if (j > 0)
@@ -569,7 +569,7 @@ public class ScriptGenerator {
 	    if (fqtn)
 		buf.append(table.getQualifiedName());
 	    else
-		buf.append(table.getName());
+		buf.append(table.getQuotedName());
 	    buf.append("(");
 	    for (int i = 0; i < row.length; i++) {
 		if (i > 0)
@@ -599,7 +599,7 @@ public class ScriptGenerator {
 	    if (fqtn)
 		buf.append(table.getQualifiedName());
 	    else
-		buf.append(table.getName());
+		buf.append(table.getQuotedName());
 	    buf.append(" where");
 	    int[] pkColumns = table.getPKColumns();
 	    for (int i = 0; i < key.length; i++) {
@@ -629,7 +629,7 @@ public class ScriptGenerator {
 	    if (fqtn)
 		buf.append(table.getQualifiedName());
 	    else
-		buf.append(table.getName());
+		buf.append(table.getQuotedName());
 	    buf.append(" set");
 	    boolean comma = false;
 	    for (int i = 0; i < newRow.length; i++)

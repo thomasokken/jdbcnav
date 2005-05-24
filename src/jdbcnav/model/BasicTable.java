@@ -64,6 +64,7 @@ public abstract class BasicTable implements Table, Scriptable {
     public String getType() { return type; }
     public String getRemarks() { return remarks; }
     public String getQualifiedName() { return qualifiedName; }
+    public String getQuotedName() { return getDatabase().quote(name); }
     public int getColumnCount() { return columnNames.length; }
     public String[] getColumnNames() { return columnNames; }
     public String[] getDbTypes() { return dbTypes; }
@@ -84,28 +85,24 @@ public abstract class BasicTable implements Table, Scriptable {
     }
 
     public final void makeOrphan() {
-	// For the new name, use the old qualified name, with dots replaced
-	// by slashes.
-	StringBuffer buf = new StringBuffer();
-	StringTokenizer tok = new StringTokenizer(qualifiedName, ".", true);
-	while (tok.hasMoreTokens()) {
-	    String t = tok.nextToken();
-	    if (t.equals("."))
-		buf.append("_");
+	// For the new base name, we use the old qualified name
+	if (catalog != null)
+	    if (schema != null)
+		name = catalog + "." + schema + "." + name;
 	    else
-		buf.append(t);
-	}
-	name = buf.toString();
+		name = catalog + "." + name;
+	else
+	    if (schema != null)
+		name = schema + "." + name;
+	schema = null;
+	catalog = null;
 
-	// The new base name is constructed in such a way that it cannot
+	// The new qualified name is constructed in such a way that it cannot
 	// possibly clash with any legitimate DB object; we achieve this
 	// by using lots of dots (a legit qualified name can never have
 	// more than two dots).
-	qualifiedName = BasicDatabase.ORPHANAGE + "..." + name;
-
-	// These aren't relevant any more...
-	schema = null;
-	catalog = null;
+	qualifiedName = BasicDatabase.ORPHANAGE + "..."
+			+ getDatabase().makeQualifiedName(null, null, name);
     }
 
     /**
@@ -118,13 +115,12 @@ public abstract class BasicTable implements Table, Scriptable {
 	suffix++;
 	if (suffix == 1) {
 	    name += "_1";
-	    qualifiedName += "_1";
 	} else {
 	    int pos = name.lastIndexOf('_');
 	    name = name.substring(0, pos + 1) + suffix;
-	    pos = qualifiedName.lastIndexOf('_');
-	    qualifiedName = qualifiedName.substring(0, pos + 1) + suffix;
 	}
+	qualifiedName = BasicDatabase.ORPHANAGE + "..."
+			+ getDatabase().makeQualifiedName(null, null, name);
     }
 
     public boolean needsCommit() {

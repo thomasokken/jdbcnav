@@ -1900,6 +1900,17 @@ public class JDBCDatabase extends BasicDatabase {
 	}
     }
 
+    private String q = null;
+    protected String getIdentifierQuoteString() {
+	if (q == null)
+	    try {
+		q = con.getMetaData().getIdentifierQuoteString();
+	    } catch (SQLException e) {
+		q = " ";
+	    }
+	return q;
+    }
+
     /**
      * Guess a table's qualified name, given nothing but a bare name.
      */

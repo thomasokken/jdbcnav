@@ -64,4 +64,10 @@ public interface Database {
     Scriptable createStatement() throws NavigatorException;
     Scriptable prepareStatement(String statement) throws NavigatorException;
     Scriptable prepareCall(String call) throws NavigatorException;
+
+    // Utilities for quoting/unquoting identifiers
+    String quote(String s);
+    String unquote(String s);
+    String makeQualifiedName(String catalog, String schema, String name);
+    String[] parseQualifiedName(String qualifiedName);
 }

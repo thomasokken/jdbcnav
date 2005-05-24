@@ -13,6 +13,7 @@ public interface Table extends Comparable {
     String getType();
     String getRemarks();
     String getQualifiedName();
+    String getQuotedName();
     int getColumnCount();
     String[] getColumnNames();
     String[] getDbTypes();
