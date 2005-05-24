@@ -638,7 +638,10 @@ public abstract class BasicDatabase implements Database {
     protected String makeQualifiedName(String catalog, String schema,
 				       String name) {
 	if (catalog != null)
-	    return catalog + "." + schema + "." + name;
+	    if (schema != null)
+		return catalog + "." + schema + "." + name;
+	    else
+		return catalog + "." + name;
 	else if (schema != null)
 	    return schema + "." + name;
 	else

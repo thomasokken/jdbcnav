@@ -314,8 +314,8 @@ public class MyTable extends JTable {
 		// Clip 'r' vertically against view rectangle.
 		// This is necessary to prevent vertical scrolling.
 		Rectangle vr = view.getViewRect();
-		r.x = vr.x;
-		r.width = vr.width;
+		r.y = vr.y;
+		r.height = vr.height;
 	    }
 	    scrollRectToVisible(r);
 	}

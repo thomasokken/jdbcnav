@@ -120,7 +120,9 @@ public class ScriptGenerator_SmallSQL extends ScriptGenerator {
 		    || name.equals("VARCHAR")
 		    || name.equals("NVARCHAR")
 		    || name.equals("VARCHAR2")
-		    || name.equals("NVARCHAR2")) {
+		    || name.equals("NVARCHAR2")
+		    || name.equals("BINARY")
+		    || name.equals("VARBINARY")) {
 		scale = null;
 	    } else {
 		size = null;
