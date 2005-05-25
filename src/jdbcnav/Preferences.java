@@ -58,6 +58,10 @@ public class Preferences {
     // Look-and-Feel name
     private String lafName = null;
 
+    // Key highlight colors
+    private Color pkHighlightColor = Color.YELLOW;
+    private Color fkHighlightColor = Color.PINK;
+
     // Contains system properties: names at even-numbered indices,
     // followed by the corresponding values. Names and values are
     // Strings.
@@ -127,6 +131,23 @@ public class Preferences {
 
     public void setLookAndFeelName(String lafName) {
 	this.lafName = lafName;
+    }
+
+
+    public Color getPkHighlightColor() {
+	return pkHighlightColor;
+    }
+
+    public void setPkHighlightColor(Color c) {
+	pkHighlightColor = c;
+    }
+
+    public Color getFkHighlightColor() {
+	return fkHighlightColor;
+    }
+
+    public void setFkHighlightColor(Color c) {
+	fkHighlightColor = c;
     }
 
 
@@ -460,6 +481,18 @@ public class Preferences {
 		    inClassPath = false;
 	    } else if (name.equals("laf-name")) {
 		lafName = value;
+	    } else if (name.equals("pk-highlight-color")) {
+		try {
+		    int c = Integer.parseInt(value, 16);
+		    pkHighlightColor = new Color((c >> 16) & 255,
+			    (c >> 8) & 255, c & 255);
+		} catch (NumberFormatException e) {}
+	    } else if (name.equals("fk-highlight-color")) {
+		try {
+		    int c = Integer.parseInt(value, 16);
+		    fkHighlightColor = new Color((c >> 16) & 255,
+			    (c >> 8) & 255, c & 255);
+		} catch (NumberFormatException e) {}
 	    } else if (name.equals("encrypted-connection-configs")) {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		int nybble1 = -1;
@@ -594,6 +627,13 @@ public class Preferences {
 	    xml.writeComment("Swing Look and Feel");
 	    xml.wholeTag("laf-name", lafName);
 	}
+
+	xml.newLine();
+	xml.writeComment("Key highlight colors");
+	xml.wholeTag("pk-highlight-color",
+		Integer.toHexString(pkHighlightColor.getRGB() & 0xFFFFFF));
+	xml.wholeTag("fk-highlight-color",
+		Integer.toHexString(fkHighlightColor.getRGB() & 0xFFFFFF));
 
 	if (systemProps.size() > 0) {
 	    xml.newLine();

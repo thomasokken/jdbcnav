@@ -14,6 +14,8 @@ public class PreferencesFrame extends MyFrame {
     private UIManager.LookAndFeelInfo[] laf =
 				UIManager.getInstalledLookAndFeels();
     private JComboBox lafNameCB;
+    private JLabel pkHighColL;
+    private JLabel fkHighColL;
     private JTextArea systemPropsTA;
 
     JTable classPathTable;
@@ -23,31 +25,94 @@ public class PreferencesFrame extends MyFrame {
     JButton cpInsert;
     JButton cpRemove;
 
+    Color pkHighC;
+    Color fkHighC;
+
+    private static ColorChooser pkColorChooser = null;
+    private static ColorChooser fkColorChooser = null;
+    private static ArrayList highlightColorChangeListeners = new ArrayList();
+
     public PreferencesFrame() {
 	super("Preferences", true, true, true, true);
 	Container c = getContentPane();
 	c.setLayout(new MyGridBagLayout());
 	MyGridBagConstraints gbc = new MyGridBagConstraints();
+	int totalwidth = 1;
 
-	JPanel p = new JPanel();
-	p.setLayout(new BoxLayout(p, BoxLayout.X_AXIS));
+
+	///////////////////////////////
+	///// Look And Feel panel /////
+	///////////////////////////////
+
+	JPanel p = new JPanel(new MyGridBagLayout());
 	p.setBorder(BorderFactory.createTitledBorder("Look and Feel"));
 
+	gbc.gridx = 0;
+	gbc.gridy = 0;
+	gbc.anchor = MyGridBagConstraints.WEST;
+	gbc.gridwidth = 3;
+	JPanel p2 = new JPanel();
+	p2.setLayout(new BoxLayout(p2, BoxLayout.X_AXIS));
+	p2.add(new JLabel("Swing Look-and-Feel Name: "));
 	String[] lafName = new String[laf.length];
 	for (int i = 0; i < laf.length; i++)
 	    lafName[i] = laf[i].getName();
 	Arrays.sort(lafName);
-	p.add(new JLabel("Name: "));
 	lafNameCB = new JComboBox(lafName);
 	lafNameCB.setSelectedItem(prefs.getLookAndFeelName());
-	p.add(lafNameCB);
+	p2.add(lafNameCB);
+	p.add(p2, gbc);
+
+	gbc.gridx = 0;
+	gbc.gridy = 1;
+	gbc.gridwidth = 1;
+	p.add(new JLabel("PK Highlight Color:"), gbc);
+
+	gbc.gridx = 1;
+	pkHighC = prefs.getPkHighlightColor();
+	pkHighColL = new JLabel(new SolidColorIcon(pkHighC, 40, 20));
+	gbc.insets = new Insets(0, 10, 0, 10);
+	p.add(pkHighColL, gbc);
+
+	gbc.gridx = 2;
+	gbc.insets = new Insets(0, 0, 0, 0);
+	JButton b = new JButton("Change");
+	b.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    changePkHighCol();
+		}
+	    });
+	p.add(b, gbc);
+
+	gbc.gridx = 0;
+	gbc.gridy = 2;
+	p.add(new JLabel("FK Highlight Color:"), gbc);
+
+	gbc.gridx = 1;
+	fkHighC = prefs.getFkHighlightColor();
+	fkHighColL = new JLabel(new SolidColorIcon(fkHighC, 40, 20));
+	gbc.insets = new Insets(0, 10, 0, 10);
+	p.add(fkHighColL, gbc);
+
+	gbc.gridx = 2;
+	gbc.insets = new Insets(0, 0, 0, 0);
+	b = new JButton("Change");
+	b.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    changeFkHighCol();
+		}
+	    });
+	p.add(b, gbc);
 
 	gbc.gridx = 0;
 	gbc.gridy = 0;
 	gbc.anchor = MyGridBagConstraints.WEST;
 	c.add(p, gbc);
 
-	int totalwidth = 1;
+
+	////////////////////////////
+	///// Class Path panel /////
+	////////////////////////////
 
 	if (prefs.usingSneakyClassLoader()) {
 	    p = new JPanel();
@@ -77,7 +142,7 @@ public class PreferencesFrame extends MyFrame {
 	    JScrollPane scroll = new JScrollPane(classPathTable);
 	    scroll.setPreferredSize(new Dimension(300, 100));
 	    p.add(scroll);
-	    JPanel p2 = new JPanel();
+	    p2 = new JPanel();
 	    p2.setLayout(new BoxLayout(p2, BoxLayout.X_AXIS));
 	    JPanel p3 = new JPanel(new GridLayout(1, 4));
 	    Insets insets = new Insets(2, 4, 2, 4);
@@ -154,7 +219,8 @@ public class PreferencesFrame extends MyFrame {
 
 	    gbc.weightx = 1;
 	    gbc.weighty = 1;
-	    gbc.fill = MyGridBagConstraints.BOTH;
+	    gbc.fill = MyGridBagConstraints.HORIZONTAL;
+	    gbc.anchor = MyGridBagConstraints.NORTH;
 	    gbc.gridx = 1;
 	    gbc.gridheight = 2;
 	    c.add(p, gbc);
@@ -164,6 +230,10 @@ public class PreferencesFrame extends MyFrame {
 	    totalwidth = 2;
 	}
 
+
+	///////////////////////////////////
+	///// System Properties panel /////
+	///////////////////////////////////
 
 	p = new JPanel();
 	p.setLayout(new GridLayout(1, 1));
@@ -193,7 +263,7 @@ public class PreferencesFrame extends MyFrame {
 	button.addActionListener(
 		new ActionListener() {
 		    public void actionPerformed(ActionEvent e) {
-			dispose();
+			cancel();
 		    }
 		});
 	p.add(button);
@@ -207,6 +277,78 @@ public class PreferencesFrame extends MyFrame {
 	c.add(p, gbc);
 
 	pack();
+    }
+
+    public static void addHighlightColorChangeListener(
+	    HighlightColorChangeListener hccl) {
+	highlightColorChangeListeners.add(hccl);
+    }
+
+    public static void removeHighlightColorChangeListener(
+	    HighlightColorChangeListener hccl) {
+	highlightColorChangeListeners.remove(hccl);
+    }
+
+    private void changePkHighCol() {
+	if (pkColorChooser == null) {
+	    pkColorChooser = new ColorChooser("PK Highlight Color", pkHighC);
+	    pkColorChooser.setListener(new ColorChooser.Listener() {
+		    public void apply(Color c) {
+			pkHighColChanged(c);
+		    }
+		    public void close() {
+			pkColorChooser = null;
+		    }
+		});
+	    pkColorChooser.showCentered();
+	} else {
+	    pkColorChooser.moveToFront();
+	    try {
+		pkColorChooser.setSelected(true);
+	    } catch (java.beans.PropertyVetoException e) {}
+	}
+    }
+
+    private void pkHighColChanged(Color c) {
+	pkHighC = c;
+	pkHighColL.setIcon(new SolidColorIcon(c, 40, 20));
+	for (Iterator iter = highlightColorChangeListeners.iterator();
+		iter.hasNext();) {
+	    HighlightColorChangeListener hccl =
+		    (HighlightColorChangeListener) iter.next();
+	    hccl.pkHighlightColorChanged(c);
+	}
+    }
+
+    private void changeFkHighCol() {
+	if (fkColorChooser == null) {
+	    fkColorChooser = new ColorChooser("FK Highlight Color", fkHighC);
+	    fkColorChooser.setListener(new ColorChooser.Listener() {
+		    public void apply(Color c) {
+			fkHighColChanged(c);
+		    }
+		    public void close() {
+			fkColorChooser = null;
+		    }
+		});
+	    fkColorChooser.showCentered();
+	} else {
+	    fkColorChooser.moveToFront();
+	    try {
+		fkColorChooser.setSelected(true);
+	    } catch (java.beans.PropertyVetoException e) {}
+	}
+    }
+
+    private void fkHighColChanged(Color c) {
+	fkHighC = c;
+	fkHighColL.setIcon(new SolidColorIcon(c, 40, 20));
+	for (Iterator iter = highlightColorChangeListeners.iterator();
+		iter.hasNext();) {
+	    HighlightColorChangeListener hccl =
+		    (HighlightColorChangeListener) iter.next();
+	    hccl.fkHighlightColorChanged(c);
+	}
     }
 
     private void ok() {
@@ -226,9 +368,21 @@ public class PreferencesFrame extends MyFrame {
 	    return;
 	}
 
+	prefs.setPkHighlightColor(pkHighC);
+	prefs.setFkHighlightColor(fkHighC);
 	prefs.setSystemPropertiesAsText(systemPropsTA.getText());
 	prefs.setClassPath(classPathModel.getItems());
 	prefs.write();
+	dispose();
+    }
+
+    private void cancel() {
+	Color c = prefs.getPkHighlightColor();
+	if (!c.equals(pkHighC))
+	    pkHighColChanged(c);
+	c = prefs.getFkHighlightColor();
+	if (!c.equals(fkHighC))
+	    fkHighColChanged(c);
 	dispose();
     }
 
@@ -313,6 +467,26 @@ public class PreferencesFrame extends MyFrame {
 	    }
 	    fireTableRowsInserted(insert, insert);
 	    return new int[] { insert };
+	}
+    }
+
+    private static class SolidColorIcon implements Icon {
+	private Color color;
+	private int width, height;
+	public SolidColorIcon(Color color, int width, int height) {
+	    this.color = color;
+	    this.width = width;
+	    this.height = height;
+	}
+	public int getIconWidth() {
+	    return width;
+	}
+	public int getIconHeight() {
+	    return height;
+	}
+	public void paintIcon(Component c, Graphics g, int x, int y) {
+	    g.setColor(color);
+	    g.fillRect(x, y, width, height);
 	}
     }
 }

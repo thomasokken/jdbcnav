@@ -12,7 +12,8 @@ import jdbcnav.model.Table;
 import jdbcnav.util.NavigatorException;
 
 
-public class TableFrame extends QueryResultFrame {
+public class TableFrame extends QueryResultFrame
+				    implements HighlightColorChangeListener {
     private JPopupMenu popupMenu;
     private int popupRow;
     private int popupColumn;
@@ -37,11 +38,14 @@ public class TableFrame extends QueryResultFrame {
 					    showPopup(e);
 				    }
 				});
+
+	PreferencesFrame.addHighlightColorChangeListener(this);
     }
 
     public void dispose() {
 	if (!dbTable.isUpdatableQueryResult())
 	    dbTable.getDatabase().tableFrameClosed(dbTable.getQualifiedName());
+	PreferencesFrame.removeHighlightColorChangeListener(this);
 	super.dispose();
     }
 
@@ -321,6 +325,12 @@ public class TableFrame extends QueryResultFrame {
 
     protected void doneLoadingRows() {
 	//
+    }
+
+    public void pkHighlightColorChanged(Color c) {
+    }
+
+    public void fkHighlightColorChanged(Color c) {
     }
 
     private class MyMenuItem extends JMenuItem {
