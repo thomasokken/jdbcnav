@@ -1,3 +1,6 @@
+27 May 2005:
+1) TableFrame now highlights PK and FK columns using special background color.
+
 22 May 2005:
 1) Added SmallSQL support (JDBCDatabase and ScriptGenerator subclasses).
 

@@ -279,13 +279,11 @@ public class PreferencesFrame extends MyFrame {
 	pack();
     }
 
-    public static void addHighlightColorChangeListener(
-	    HighlightColorChangeListener hccl) {
+    public static void addHighlightColorChangeListener(Component hccl) {
 	highlightColorChangeListeners.add(hccl);
     }
 
-    public static void removeHighlightColorChangeListener(
-	    HighlightColorChangeListener hccl) {
+    public static void removeHighlightColorChangeListener(Component hccl) {
 	highlightColorChangeListeners.remove(hccl);
     }
 
@@ -312,11 +310,11 @@ public class PreferencesFrame extends MyFrame {
     private void pkHighColChanged(Color c) {
 	pkHighC = c;
 	pkHighColL.setIcon(new SolidColorIcon(c, 40, 20));
+	MyTable.setTypeColor(1, c);
 	for (Iterator iter = highlightColorChangeListeners.iterator();
 		iter.hasNext();) {
-	    HighlightColorChangeListener hccl =
-		    (HighlightColorChangeListener) iter.next();
-	    hccl.pkHighlightColorChanged(c);
+	    Component hccl = (Component) iter.next();
+	    hccl.repaint();
 	}
     }
 
@@ -343,11 +341,11 @@ public class PreferencesFrame extends MyFrame {
     private void fkHighColChanged(Color c) {
 	fkHighC = c;
 	fkHighColL.setIcon(new SolidColorIcon(c, 40, 20));
+	MyTable.setTypeColor(2, c);
 	for (Iterator iter = highlightColorChangeListeners.iterator();
 		iter.hasNext();) {
-	    HighlightColorChangeListener hccl =
-		    (HighlightColorChangeListener) iter.next();
-	    hccl.fkHighlightColorChanged(c);
+	    Component hccl = (Component) iter.next();
+	    hccl.repaint();
 	}
     }
 

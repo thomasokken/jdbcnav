@@ -16,6 +16,7 @@ public class MyTable extends JTable {
 
     private int highlightIndex = 0;
     private ArrayList userInteractionListeners = new ArrayList();
+    private ArrayList columnTypeMap = new ArrayList();
 
     public MyTable(TableModel dm) {
 	super();
@@ -41,10 +42,14 @@ public class MyTable extends JTable {
 	    setDefaultRenderer(bfileClass, new BfileRenderer());
 	} catch (ClassNotFoundException e) {}
 
-	setDefaultEditor(java.util.Date.class, new DateEditor(java.util.Date.class));
-	setDefaultEditor(java.sql.Time.class, new DateEditor(java.sql.Time.class));
-	setDefaultEditor(java.sql.Date.class, new DateEditor(java.sql.Date.class));
-	setDefaultEditor(java.sql.Timestamp.class, new DateEditor(java.sql.Timestamp.class));
+	setDefaultEditor(java.util.Date.class,
+			 new DateEditor(java.util.Date.class));
+	setDefaultEditor(java.sql.Time.class,
+			 new DateEditor(java.sql.Time.class));
+	setDefaultEditor(java.sql.Date.class,
+			 new DateEditor(java.sql.Date.class));
+	setDefaultEditor(java.sql.Timestamp.class,
+			 new DateEditor(java.sql.Timestamp.class));
 
 	if (dm instanceof SortedTableModel) {
 	    getTableHeader().addMouseListener(
@@ -155,6 +160,31 @@ public class MyTable extends JTable {
 	    }
 	}
     }
+
+
+    public void setColumnType(int column, int type) {
+	Integer t = new Integer(type);
+	try {
+	    columnTypeMap.set(column, t);
+	} catch (IndexOutOfBoundsException e) {
+	    while (column > columnTypeMap.size())
+		columnTypeMap.add(null);
+	    columnTypeMap.add(t);
+	}
+    }
+
+    public int getColumnType(int column) {
+	try {
+	    return ((Integer) columnTypeMap.get(column)).intValue();
+	} catch (IndexOutOfBoundsException e) {
+	    return 0;
+	}
+    }
+
+    public static void setTypeColor(int type, Color color) {
+	FastTableCellRenderer.setTypeColor(type, color);
+    }
+
 
     /**
      * The JTable version of this method looks in defaultRenderersByColumnClass
@@ -491,14 +521,14 @@ public class MyTable extends JTable {
 
 
     private static class FastTableCellRenderer extends JComponent
-						implements TableCellRenderer {
+					       implements TableCellRenderer {
 	private static Font nonNullFont;
 	private static FontMetrics nonNullFontMetrics;
 	private static Font nullFont;
 	private static FontMetrics nullFontMetrics;
-	private static Color unselectedBackground;
-	private static Color unselectedForeground;
-	private static Color unselectedNullColor;
+	private static ArrayList unselectedBackground = new ArrayList();
+	private static ArrayList unselectedForeground = new ArrayList();
+	private static ArrayList unselectedNullColor = new ArrayList();
 	private static Color selectedBackground;
 	private static Color selectedForeground;
 	private static Color selectedNullColor;
@@ -507,29 +537,9 @@ public class MyTable extends JTable {
 	private boolean isSelected;
 	private boolean hasFocus;
 	private boolean leftJustified;
+	private int type;
 
-	private static void initialize() {
-	    if (nullFont != null)
-		return;
-	    JTable table = new JTable(1, 1);
-	    TableCellRenderer renderer = table.getDefaultRenderer(String.class);
-	    Component comp = renderer.getTableCellRendererComponent(
-					    table, "foo", false, false, 0, 0);
-	    nonNullFont = comp.getFont();
-	    nonNullFontMetrics = comp.getFontMetrics(nonNullFont);
-	    unselectedBackground = comp.getBackground();
-	    unselectedForeground = comp.getForeground();
-	    unselectedNullColor = mixColors(unselectedBackground,
-					    unselectedForeground);
-	    comp = renderer.getTableCellRendererComponent(
-					    table, "foo", true, false, 0, 0);
-	    selectedBackground = comp.getBackground();
-	    selectedForeground = comp.getForeground();
-	    selectedNullColor = mixColors(selectedBackground,
-					  selectedForeground);
-	    nullFont = nonNullFont.deriveFont(Font.ITALIC);
-	    nullFontMetrics = comp.getFontMetrics(nullFont);
-	}
+	private static ArrayList typeColorMap = new ArrayList();
 
 	public FastTableCellRenderer() {
 	    initialize();
@@ -541,6 +551,65 @@ public class MyTable extends JTable {
 	    this.leftJustified = leftJustified;
 	}
 
+	private static void initialize() {
+	    if (nullFont != null)
+		return;
+	    JTable table = new JTable(1, 1);
+	    TableCellRenderer renderer = table.getDefaultRenderer(String.class);
+	    Component comp = renderer.getTableCellRendererComponent(
+					    table, "foo", false, false, 0, 0);
+	    nonNullFont = comp.getFont();
+	    nonNullFontMetrics = comp.getFontMetrics(nonNullFont);
+	    nullFont = nonNullFont.deriveFont(Font.ITALIC);
+	    nullFontMetrics = comp.getFontMetrics(nullFont);
+
+	    Color unsel_bg = comp.getBackground();
+	    Color unsel_fg = comp.getForeground();
+	    Color unsel_null = mixColors(unsel_bg, unsel_fg);
+	    if (unselectedBackground.size() == 0) {
+		unselectedBackground.add(unsel_bg);
+		unselectedForeground.add(unsel_fg);
+		unselectedNullColor.add(unsel_null);
+	    } else {
+		unselectedBackground.set(0, unsel_bg);
+		unselectedForeground.set(0, unsel_fg);
+		unselectedNullColor.set(0, unsel_null);
+	    }
+
+	    comp = renderer.getTableCellRendererComponent(
+					    table, "foo", true, false, 0, 0);
+	    selectedBackground = comp.getBackground();
+	    selectedForeground = comp.getForeground();
+	    selectedNullColor = mixColors(selectedBackground,
+					  selectedForeground);
+	}
+
+	public static void setTypeColor(int type, Color color) {
+	    double value = 0.299 * color.getRed()
+			 + 0.587 * color.getGreen()
+			 + 0.114 * color.getBlue();
+	    Color fg;
+	    if (value < 0.5)
+		fg = Color.WHITE;
+	    else
+		fg = Color.BLACK;
+	    Color nl = mixColors(color, fg);
+	    try {
+		unselectedBackground.set(type, color);
+		unselectedForeground.set(type, fg);
+		unselectedNullColor.set(type, nl);
+	    } catch (IndexOutOfBoundsException e) {
+		while (type > unselectedBackground.size()) {
+		    unselectedBackground.add(null);
+		    unselectedForeground.add(null);
+		    unselectedNullColor.add(null);
+		}
+		unselectedBackground.add(color);
+		unselectedForeground.add(fg);
+		unselectedNullColor.add(nl);
+	    }
+	}
+
 	public Component getTableCellRendererComponent(JTable table,
 						    Object value,
 						    boolean isSelected,
@@ -550,6 +619,16 @@ public class MyTable extends JTable {
 	    this.value = valueToString(value);
 	    this.isSelected = isSelected;
 	    this.hasFocus = hasFocus;
+	    column = table.convertColumnIndexToModel(column);
+	    if (column < ((MyTable) table).columnTypeMap.size())
+		type = ((Integer) ((MyTable) table).columnTypeMap.get(column)).intValue();
+	    else
+		type = 0;
+	    // Special type for columns that are both PK and FK; we don't want
+	    // to use a special color for this, but instead we use the PK and
+	    // FK colors on alternating rows.
+	    if (type == 3)
+		type = (row & 1) == 0 ? 1 : 2;
 	    return this;
 	}
 
@@ -578,12 +657,12 @@ public class MyTable extends JTable {
 	    if (hasFocus) {
 		g.setColor(selectedBackground);
 		g.drawRect(0, 0, d.width - 1, d.height - 1);
-		g.setColor(unselectedBackground);
+		g.setColor((Color) unselectedBackground.get(type));
 		g.fillRect(1, 1, d.width - 2, d.height - 2);
 		if (value == null)
-		    g.setColor(unselectedNullColor);
+		    g.setColor((Color) unselectedNullColor.get(type));
 		else
-		    g.setColor(unselectedForeground);
+		    g.setColor((Color) unselectedForeground.get(type));
 	    } else if (isSelected) {
 		g.setColor(selectedBackground);
 		g.fillRect(0, 0, d.width, d.height);
@@ -592,12 +671,12 @@ public class MyTable extends JTable {
 		else
 		    g.setColor(selectedForeground);
 	    } else {
-		g.setColor(unselectedBackground);
+		g.setColor((Color) unselectedBackground.get(type));
 		g.fillRect(0, 0, d.width, d.height);
 		if (value == null)
-		    g.setColor(unselectedNullColor);
+		    g.setColor((Color) unselectedNullColor.get(type));
 		else
-		    g.setColor(unselectedForeground);
+		    g.setColor((Color) unselectedForeground.get(type));
 	    }
 	    Font f;
 	    FontMetrics fm;

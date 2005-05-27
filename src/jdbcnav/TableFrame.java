@@ -8,12 +8,12 @@ import javax.swing.*;
 import jdbcnav.model.Data;
 import jdbcnav.model.Database;
 import jdbcnav.model.ForeignKey;
+import jdbcnav.model.PrimaryKey;
 import jdbcnav.model.Table;
 import jdbcnav.util.NavigatorException;
 
 
-public class TableFrame extends QueryResultFrame
-				    implements HighlightColorChangeListener {
+public class TableFrame extends QueryResultFrame {
     private JPopupMenu popupMenu;
     private int popupRow;
     private int popupColumn;
@@ -39,13 +39,33 @@ public class TableFrame extends QueryResultFrame
 				    }
 				});
 
-	PreferencesFrame.addHighlightColorChangeListener(this);
+	// Apply FK highlight color
+	ForeignKey[] fks = dbTable.getForeignKeys();
+	TreeSet fkcol = new TreeSet();
+	for (int i = 0; i < fks.length; i++) {
+	    ForeignKey fk = fks[i];
+	    for (int j = 0; j < fk.getColumnCount(); j++)
+		fkcol.add(fk.getThisColumnName(j));
+	}
+	for (int i = 0; i < dbTable.getColumnCount(); i++)
+	    if (fkcol.contains(dbTable.getColumnNames()[i]))
+		table.setColumnType(i, 2);
+
+	// Apply PK highlight color
+	PrimaryKey pk = dbTable.getPrimaryKey();
+	if (pk != null) {
+	    int[] pkcol = dbTable.getPKColumns();
+	    for (int i = 0; i < pkcol.length; i++)
+		table.setColumnType(i, table.getColumnType(i) | 1);
+	}
+
+	PreferencesFrame.addHighlightColorChangeListener(table);
     }
 
     public void dispose() {
 	if (!dbTable.isUpdatableQueryResult())
 	    dbTable.getDatabase().tableFrameClosed(dbTable.getQualifiedName());
-	PreferencesFrame.removeHighlightColorChangeListener(this);
+	PreferencesFrame.removeHighlightColorChangeListener(table);
 	super.dispose();
     }
 
@@ -73,8 +93,13 @@ public class TableFrame extends QueryResultFrame
 		    ForeignKey fk = fks[i];
 		    String name;
 		    if (fk.getThatCatalog() != null)
-			name = fk.getThatCatalog() + "." + fk.getThatSchema()
-				+ "." + fk.getThatName();
+			if (fk.getThatSchema() != null)
+			    name = fk.getThatCatalog()
+				    + "." + fk.getThatSchema()
+				    + "." + fk.getThatName();
+			else
+			    name = fk.getThatCatalog()
+				    + "." + fk.getThatName();
 		    else if (fk.getThatSchema() != null)
 			name = fk.getThatSchema() + "." + fk.getThatName();
 		    else
@@ -91,8 +116,13 @@ public class TableFrame extends QueryResultFrame
 		    ForeignKey rk = rks[i];
 		    String name;
 		    if (rk.getThatCatalog() != null)
-			name = rk.getThatCatalog() + "." + rk.getThatSchema()
-				+ "." + rk.getThatName();
+			if (rk.getThatSchema() != null)
+			    name = rk.getThatCatalog()
+				    + "." + rk.getThatSchema()
+				    + "." + rk.getThatName();
+			else
+			    name = rk.getThatCatalog()
+				    + "." + rk.getThatName();
 		    else if (rk.getThatSchema() != null)
 			name = rk.getThatSchema() + "." + rk.getThatName();
 		    else
@@ -325,12 +355,6 @@ public class TableFrame extends QueryResultFrame
 
     protected void doneLoadingRows() {
 	//
-    }
-
-    public void pkHighlightColorChanged(Color c) {
-    }
-
-    public void fkHighlightColorChanged(Color c) {
     }
 
     private class MyMenuItem extends JMenuItem {

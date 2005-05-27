@@ -99,6 +99,9 @@ public class Main extends JFrame {
 	}
 	Main nav = new Main();
 	nav.setVisible(true);
+
+	MyTable.setTypeColor(1, prefs.getPkHighlightColor());
+	MyTable.setTypeColor(2, prefs.getFkHighlightColor());
     }
 
     private static ArrayList callbacks = new ArrayList();
