@@ -24,8 +24,7 @@ public class MyFrame extends JInternalFrame {
 
     private void init() {
 	if (this instanceof Clipboard.Listener)
-	    Main.getClipboard().addListener(
-					    (Clipboard.Listener) this);
+	    Main.getClipboard().addListener((Clipboard.Listener) this);
     }
 
     public void showCentered() {

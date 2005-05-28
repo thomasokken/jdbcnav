@@ -1,5 +1,7 @@
-27 May 2005:
-1) TableFrame now highlights PK and FK columns using special background color.
+28 May 2005:
+1) TableFrame now highlights PK and FK columns using special background colors.
+2) Added window cycling (Alt-W, Alt-Shift-W).
+3) Added website URL to splash screen.
 
 22 May 2005:
 1) Added SmallSQL support (JDBCDatabase and ScriptGenerator subclasses).

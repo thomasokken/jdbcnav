@@ -59,8 +59,8 @@ public class Preferences {
     private String lafName = null;
 
     // Key highlight colors
-    private Color pkHighlightColor = Color.YELLOW;
-    private Color fkHighlightColor = Color.PINK;
+    private Color pkHighlightColor = new Color(0xffff99);
+    private Color fkHighlightColor = new Color(0x99ff99);
 
     // Contains system properties: names at even-numbered indices,
     // followed by the corresponding values. Names and values are
@@ -629,7 +629,7 @@ public class Preferences {
 	}
 
 	xml.newLine();
-	xml.writeComment("Key highlight colors");
+	xml.writeComment("Key Highlight Colors");
 	xml.wholeTag("pk-highlight-color",
 		Integer.toHexString(pkHighlightColor.getRGB() & 0xFFFFFF));
 	xml.wholeTag("fk-highlight-color",

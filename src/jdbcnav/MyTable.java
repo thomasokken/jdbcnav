@@ -589,7 +589,7 @@ public class MyTable extends JTable {
 			 + 0.587 * color.getGreen()
 			 + 0.114 * color.getBlue();
 	    Color fg;
-	    if (value < 0.5)
+	    if (value < 128)
 		fg = Color.WHITE;
 	    else
 		fg = Color.BLACK;

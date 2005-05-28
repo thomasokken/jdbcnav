@@ -1,8 +1,9 @@
-package jdbcnav;
+package jdbcnav.util;
 
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import jdbcnav.MyFrame;
 
 public class ColorChooser extends MyFrame {
     private JColorChooser jcc;
@@ -16,9 +17,19 @@ public class ColorChooser extends MyFrame {
     public ColorChooser(String title, Color color) {
 	super(title, false, true, false, false);
 	Container c = getContentPane();
-	c.setLayout(new BoxLayout(c, BoxLayout.Y_AXIS));
+	c.setLayout(new MyGridBagLayout());
+	MyGridBagConstraints gbc = new MyGridBagConstraints();
+
+	gbc.gridx = 0;
+	gbc.gridy = 0;
+	gbc.fill = MyGridBagConstraints.BOTH;
 	jcc = new JColorChooser(color);
-	c.add(jcc);
+	c.add(jcc, gbc);
+
+	gbc.gridx = 0;
+	gbc.gridy = 1;
+	gbc.fill = MyGridBagConstraints.NONE;
+	gbc.anchor = MyGridBagConstraints.CENTER;
 	JPanel p = new JPanel();
 	p.setLayout(new GridLayout(1, 3));
 	JButton b = new JButton("OK");
@@ -43,7 +54,8 @@ public class ColorChooser extends MyFrame {
 		}
 	    });
 	p.add(b);
-	c.add(p);
+	c.add(p, gbc);
+
 	pack();
     }
 

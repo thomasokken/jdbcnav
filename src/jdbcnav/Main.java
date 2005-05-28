@@ -21,10 +21,14 @@ import jdbcnav.util.FileUtils;
 public class Main extends JFrame {
 
     private static Main instance;
+    private static ArrayList frameList = new ArrayList();
 
     private static BufferedImage splash;
     private static String version;
-    private static String copyright;
+    private static String copyright =
+		"(C) 2001-2005 Thomas Okken -- thomas_okken@hotmail.com";
+    private static String website =
+		"http://home.planet.nl/~demun000/thomas_projects/jdbcnav/";
 
     static {
 	InputStream is = Main.class.getResourceAsStream("images/splash.gif");
@@ -55,8 +59,6 @@ public class Main extends JFrame {
 	}
 	if (version == null)
 	    version = "Could not read version information";
-
-	copyright = "(C) 2001-2005 Thomas Okken -- thomas_okken@hotmail.com";
     }
 
     private JDesktopPane desktop;
@@ -274,6 +276,23 @@ public class Main extends JFrame {
 	mb.add(m);
 	
 	windowsMenu = new JMenu("Windows");
+	mi = new JMenuItem("Cycle Up");
+	mi.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+				    cycleWindows(true);
+				}
+			    });
+	mi.setAccelerator(KeyStroke.getKeyStroke('W', Event.ALT_MASK));
+	windowsMenu.add(mi);
+	mi = new JMenuItem("Cycle Down");
+	mi.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+				    cycleWindows(false);
+				}
+			    });
+	mi.setAccelerator(KeyStroke.getKeyStroke('W',
+					Event.ALT_MASK | Event.SHIFT_MASK));
+	windowsMenu.add(mi);
 	windowsMenu.setEnabled(false);
 	mb.add(windowsMenu);
     }
@@ -291,11 +310,20 @@ public class Main extends JFrame {
     }
     
     public static void addToWindowsMenu(JInternalFrame f) {
+	addToWindowsMenu(f, true);
+    }
+
+    private static void addToWindowsMenu(JInternalFrame f,
+					 boolean addToFrameList) {
 	JMenu windowsMenu = instance.windowsMenu;
 	int count = windowsMenu.getItemCount();
+	if (count == 2) {
+	    windowsMenu.addSeparator();
+	    count++;
+	}
 	String title = f.getTitle();
 	outer: {
-	    for (int i = 0; i < count; i++) {
+	    for (int i = 3; i < count; i++) {
 		JMenuItem mi = windowsMenu.getItem(i);
 		String mtitle = mi.getText();
 		if (title.compareToIgnoreCase(mtitle) <= 0) {
@@ -306,30 +334,35 @@ public class Main extends JFrame {
 	    windowsMenu.add(new WindowsMenuItem(f));
 	}
 	windowsMenu.setEnabled(true);
+	if (addToFrameList)
+	    frameList.add(f);
     }
 
     public static void removeFromWindowsMenu(JInternalFrame f) {
 	JMenu windowsMenu = instance.windowsMenu;
 	int count = windowsMenu.getItemCount();
-	for (int i = 0; i < count; i++) {
+	for (int i = 3; i < count; i++) {
 	    WindowsMenuItem wmi = (WindowsMenuItem) windowsMenu.getItem(i);
 	    if (wmi.getWindow() == f) {
 		windowsMenu.remove(i);
 		break;
 	    }
 	}
-	if (windowsMenu.getItemCount() == 0)
+	if (windowsMenu.getItemCount() == 3) {
+	    windowsMenu.remove(2);
 	    windowsMenu.setEnabled(false);
+	}
+	frameList.remove(f);
     }
 
     public static void renameInWindowsMenu(JInternalFrame f) {
 	JMenu windowsMenu = instance.windowsMenu;
 	int count = windowsMenu.getItemCount();
-	for (int i = 0; i < count; i++) {
+	for (int i = 3; i < count; i++) {
 	    WindowsMenuItem wmi = (WindowsMenuItem) windowsMenu.getItem(i);
 	    if (wmi.getWindow() == f) {
 		windowsMenu.remove(i);
-		addToWindowsMenu(f);
+		addToWindowsMenu(f, false);
 		break;
 	    }
 	}
@@ -436,9 +469,41 @@ public class Main extends JFrame {
     private void about() {
 	if (splash == null)
 	    JOptionPane.showInternalMessageDialog(desktop,
-		    "JDBC Navigator\n" + version + "\n" + copyright);
+		    "JDBC Navigator\n" + version + "\n" + copyright
+		    + "\n" + website);
 	else
 	    ((AboutGlassPane) getGlassPane()).showAbout();
+    }
+
+    private void cycleWindows(boolean up) {
+	int fs = frameList.size();
+	if (fs == 0)
+	    return;
+	int index;
+	JInternalFrame f = desktop.getSelectedFrame();
+	if (f == null)
+	    index = fs - 1;
+	else {
+	    index = frameList.indexOf(f);
+	    if (index == -1)
+		index = fs - 1;
+	    else if (up) {
+		if (index == 0)
+		    index = fs - 1;
+		else
+		    index--;
+	    } else {
+		if (++index == fs)
+		    index = 0;
+	    }
+	}
+	f = (JInternalFrame) frameList.get(index);
+	f.moveToFront();
+	try {
+	    f.setSelected(true);
+	} catch (PropertyVetoException ex) {
+	    //
+	}
     }
 
     public void nuke() {
@@ -559,12 +624,17 @@ public class Main extends JFrame {
 	    int version_w = (int) rect.getWidth();
 	    rect = f.getStringBounds(copyright, frc);
 	    int copyright_w = (int) rect.getWidth();
+	    rect = f.getStringBounds(website, frc);
+	    int website_w = (int) rect.getWidth();
 
-	    LineMetrics lm = f.getLineMetrics(copyright, frc);
+	    LineMetrics lm = f.getLineMetrics(version, frc);
+	    int version_base = (int) (lm.getDescent() + lm.getLeading());
+	    lm = f.getLineMetrics(copyright, frc);
 	    int copyright_h = (int) lm.getHeight();
 	    int copyright_base = (int) (lm.getDescent() + lm.getLeading());
 	    lm = f.getLineMetrics(version, frc);
-	    int version_base = (int) (lm.getDescent() + lm.getLeading());
+	    int website_h = (int) lm.getHeight();
+	    int website_base = (int) (lm.getDescent() + lm.getLeading());
 
 	    int image_w = splash.getWidth();
 	    int image_h = splash.getHeight();
@@ -573,11 +643,15 @@ public class Main extends JFrame {
 	    int image_y = (d.height - image_h) / 2;
 	    g2.setColor(new Color(169, 0, 248));
 	    int x = image_x + (image_w - version_w) / 2;
-	    int y = image_y + image_h - copyright_h - version_base - 14;
+	    int y = image_y + image_h - website_h - copyright_h
+						  - version_base - 14;
 	    g2.drawString(version, x, y);
 	    x = image_x + (image_w - copyright_w) / 2;
-	    y = image_y + image_h - copyright_base - 14;
+	    y = image_y + image_h - website_h - copyright_base - 14;
 	    g2.drawString(copyright, x, y);
+	    x = image_x + (image_w - website_w) / 2;
+	    y = image_y + image_h - website_base - 14;
+	    g2.drawString(website, x, y);
 	}
     }
 
