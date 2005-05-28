@@ -644,13 +644,13 @@ public class Main extends JFrame {
 	    g2.setColor(new Color(169, 0, 248));
 	    int x = image_x + (image_w - version_w) / 2;
 	    int y = image_y + image_h - website_h - copyright_h
-						  - version_base - 14;
+						  - version_base - 11;
 	    g2.drawString(version, x, y);
 	    x = image_x + (image_w - copyright_w) / 2;
-	    y = image_y + image_h - website_h - copyright_base - 14;
+	    y = image_y + image_h - website_h - copyright_base - 11;
 	    g2.drawString(copyright, x, y);
 	    x = image_x + (image_w - website_w) / 2;
-	    y = image_y + image_h - website_base - 14;
+	    y = image_y + image_h - website_base - 11;
 	    g2.drawString(website, x, y);
 	}
     }
