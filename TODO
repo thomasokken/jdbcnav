@@ -1,3 +1,24 @@
+Work in progress:
+
+ForeignKeySelector, or rather, the TableFrame code that uses it, is still full
+of bugs:
+
+1) Selecting a value doesn't seem to actually populate the table. What's wrong?
+   Is ResultSetTableModel.setValueAt() even getting called?
+2) On subsequent invocations of the "Select FK Value" command, when the
+   selection is actually made in the ForeignKeySelector (whether through
+   clicking "Select" or double-clicking the row, regardless), an NPE is thrown
+   at TableFrame.java:273. Something not working in the key column remapping.
+3) The columns in the ForeignKeySelector should be in the same order as on the
+   TableFrame, even taking the Model/View mapping into account. Since I already
+   have to massage the Data object in order to put in the right column headers,
+   this sounds like a good reason to create a wrapper around the Data object;
+   this eliminates all the copying, and can deal with the column headers by
+   overriding getColumnName(), and deal with column reshuffling by massaging
+   column indexes before forwarding to the underlying Data object's
+   getValueAt() method.
+
+-------------------------------------------------------------------------------
 Maximized windows behaving badly? This may be specific to the Windows look and
 feel. Check, and investigate possibility of work-around.
 

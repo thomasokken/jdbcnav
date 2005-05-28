@@ -1293,6 +1293,22 @@ public class JDBCDatabase extends BasicDatabase {
 	    return JDBCDatabase.this;
 	}
 
+	protected Data getPKValues2() throws NavigatorException {
+	    if (pk == null)
+		return null;
+	    int ncols = pk.getColumnCount();
+	    StringBuffer buf = new StringBuffer();
+	    buf.append("select ");
+	    for (int i = 0; i < ncols; i++) {
+		if (i > 0)
+		    buf.append(", ");
+		buf.append(pk.getColumnName(i));
+	    }
+	    buf.append(" from ");
+	    buf.append(qualifiedName);
+	    return (Data) runQuery(buf.toString(), false, false);
+	}
+
 	public Data getData(boolean async) throws NavigatorException {
 	    return (Data) runQuery("select * from " + qualifiedName,
 				   async, false);

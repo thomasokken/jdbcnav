@@ -32,6 +32,8 @@ public abstract class BasicTable implements Table, Scriptable {
     protected Index[] indexes;
     protected ResultSetTableModel model;
     private int suffix;
+    private Data pkValues;
+    private int pkValuesFromModel;
 
     protected BasicTable() {
 	// Nothing to do
@@ -78,6 +80,56 @@ public abstract class BasicTable implements Table, Scriptable {
     public ForeignKey[] getReferencingKeys() { return rks; }
     public Index[] getIndexes() { return indexes; }
     
+    public Data getPKValues() throws NavigatorException {
+	if (pk == null)
+	    return null;
+	if (model == null) {
+	    if (pkValues == null) {
+		// Populate pkValues using a separate query; we don't want
+		// to force creating a model since that will load the entire
+		// table, which could be prohibitively expensive.
+		pkValues = getPKValues2();
+		pkValuesFromModel = -1;
+	    }
+	} else {
+	    int nrows = model.getRowCount();
+	    if (nrows < pkValuesFromModel) {
+		// Additional rows have been loaded; update pkValues to
+		// include the new rows. Since the model may have been
+		// re-sorted, we have no choice but to reload pkValues
+		// from scratch.
+		int[] col = getPKColumns();
+		int ncols = col.length;
+		String[] names = new String[ncols];
+		Class[] classes = new Class[ncols];
+		for (int i = 0; i < ncols; i++) {
+		    names[i] = columnNames[col[i]];
+		    classes[i] = model.getColumnClass(col[i]);
+		}
+		ArrayList data = new ArrayList();
+		for (int i = 0; i < nrows; i++) {
+		    Object[] row = new Object[ncols];
+		    for (int j = 0; j < ncols; j++)
+			row[j] = model.getValueAt(i, col[j]);
+		    data.add(row);
+		}
+		BasicData bd = new BasicData();
+		bd.setColumnNames(names);
+		bd.setColumnClasses(classes);
+		bd.setData(data);
+		pkValues = bd;
+		pkValuesFromModel = nrows;
+	    }
+	}
+	return pkValues;
+    }
+
+    protected Data getPKValues2() throws NavigatorException {
+	// To be overridden by Table classes that can load PK Values,
+	// e.g. by running a query
+	return null;
+    }
+
     public void updateDetails() throws NavigatorException {
 	pkColumns = null;
 	rkColumns = null;
@@ -145,6 +197,7 @@ public abstract class BasicTable implements Table, Scriptable {
 
     public synchronized void unloadModel() {
 	model = null;
+	pkValues = null;
     }
 
     public synchronized void reload() throws NavigatorException {
@@ -153,6 +206,7 @@ public abstract class BasicTable implements Table, Scriptable {
 	    model = new ResultSetTableModel(getData(true), this);
 	else
 	    model.load(getData(true));
+	pkValues = null;
     }
 
     private int[] pkColumns;

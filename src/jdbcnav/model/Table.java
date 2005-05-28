@@ -27,6 +27,7 @@ public interface Table extends Comparable {
     ForeignKey[] getReferencingKeys();
     Index[] getIndexes();
     Data getData(boolean async) throws NavigatorException;
+    Data getPKValues() throws NavigatorException;
 
     void updateDetails() throws NavigatorException;
     void makeOrphan();

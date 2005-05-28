@@ -5,11 +5,13 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 
+import jdbcnav.model.BasicData;
 import jdbcnav.model.Data;
 import jdbcnav.model.Database;
 import jdbcnav.model.ForeignKey;
 import jdbcnav.model.PrimaryKey;
 import jdbcnav.model.Table;
+import jdbcnav.util.MiscUtils;
 import jdbcnav.util.NavigatorException;
 
 
@@ -18,6 +20,8 @@ public class TableFrame extends QueryResultFrame {
     private int popupRow;
     private int popupColumn;
     private RowSelectionHandler rowSelectionHandler;
+    private int fkIndex = -1;
+    private int fkRow;
 
     public TableFrame(Table dbTable, BrowserFrame browser)
 						    throws NavigatorException {
@@ -88,6 +92,13 @@ public class TableFrame extends QueryResultFrame {
 			};
 
 	    if (haveFks) {
+		JMenuItem jmi = new JMenuItem("Select FK Value...");
+		jmi.addActionListener(new ActionListener() {
+			    public void actionPerformed(ActionEvent e) {
+				selectFkValue();
+			    }
+			});
+		popupMenu.add(jmi);
 		JMenu m = new JMenu("References");
 		for (int i = 0; i < fks.length; i++) {
 		    ForeignKey fk = fks[i];
@@ -143,8 +154,9 @@ public class TableFrame extends QueryResultFrame {
 	String columnName = model.getColumnName(popupColumn);
 
 	if (haveFks) {
-	    Component[] items = ((JMenu) popupMenu.getComponent(0))
+	    Component[] items = ((JMenu) popupMenu.getComponent(1))
 						    .getMenuComponents();
+	    fkIndex = -1;
 	    for (int i = 0; i < items.length; i++) {
 		ForeignKey fk = fks[i];
 		boolean matches = false;
@@ -156,12 +168,18 @@ public class TableFrame extends QueryResultFrame {
 		Component c = items[i];
 		Font f = c.getFont();
 		f = f.deriveFont(matches ? Font.BOLD : Font.PLAIN);
+		if (matches) {
+		    fkIndex = i;
+		    fkRow = popupRow;
+		}
 		c.setFont(f);
 	    }
+	    JMenuItem jmi = (JMenuItem) popupMenu.getComponent(0);
+	    jmi.setEnabled(fkIndex != -1);
 	}
 	if (haveRks) {
 	    Component[] items = ((JMenu) popupMenu.getComponent(
-				    haveFks ? 1 : 0)).getMenuComponents();
+				    haveFks ? 2 : 0)).getMenuComponents();
 	    for (int i = 0; i < items.length; i++) {
 		ForeignKey rk = rks[i];
 		boolean matches = false;
@@ -220,6 +238,66 @@ public class TableFrame extends QueryResultFrame {
 	    new TableDetailsFrame(dbTable, db.getBrowser()).showStaggered();
 	else
 	    db.showTableDetailsFrame(dbTable.getQualifiedName());
+    }
+
+    private void selectFkValue() {
+	if (fkIndex == -1)
+	    return;
+	ForeignKey fk = dbTable.getForeignKeys()[fkIndex];
+	String thatName = fk.getThatQualifiedName();
+	Database db = dbTable.getDatabase();
+	Data pkValues = null;
+	try {
+	    Table thatTable = db.getTable(thatName);
+	    pkValues = thatTable.getPKValues();
+	} catch (NavigatorException e) {
+	    MessageBox.show("Can't load primary key values.", e);
+	    return;
+	}
+
+	// Replace the referenced table's column names with the referencing
+	// table's.
+	BasicData bd;
+	try {
+	    bd = (BasicData) pkValues;
+	} catch (ClassCastException e) {
+	    bd = new BasicData(pkValues);
+	}
+	// TODO: can this code be simplified by making a safe assumption
+	// about the order of the PK components?
+	int ncols = bd.getColumnCount();
+	String[] newnames = new String[ncols];
+	for (int i = 0; i < ncols; i++) {
+	    String name = bd.getColumnName(i);
+	    for (int j = 0; j < ncols; j++)
+		if (name.equals(fk.getThatColumnName(j))) {
+		    newnames[i] = fk.getThisColumnName(j);
+		    break;
+		}
+	}
+	bd.setColumnNames(newnames);
+	// TODO: reorder the columns so that their order matches the order
+	// of the corresponding columns in this TableFrame, taking the
+	// Model/View mapping into account
+
+	ForeignKeySelector fksel = new ForeignKeySelector(fkRow, pkValues);
+	fksel.setParent(this);
+	fksel.setCallback(new ForeignKeySelector.Callback() {
+		public void select(int row, String[] names, Object[] values) {
+		    fkValueSelected(row, names, values);
+		}
+	    });
+	fksel.showCentered();
+    }
+
+    private void fkValueSelected(int row, String[] names, Object[] values) {
+	int ncols = model.getColumnCount();
+	for (int i = 0; i < ncols; i++) {
+	    String colName = model.getColumnName(i);
+	    int col = MiscUtils.arrayLinearSearch(names, model.getColumnName(i));
+	    if (col != -1)
+		model.setValueAt(values[col], row, i);
+	}
     }
 
     private void selectRows(String[] key, Object[] value) {
