@@ -739,7 +739,11 @@ public class ResultSetTableModel extends AbstractTableModel
 			    continue;
 		    else if (bc == null)
 			return ascending ? -1 : 1;
-		    int res = ac.compareTo(bc);
+		    int res;
+		    if ((ac instanceof String) && (bc instanceof String))
+			res = ((String) ac).compareToIgnoreCase((String) bc);
+		    else
+			res = ac.compareTo(bc);
 		    if (res != 0)
 			return ascending ? res : -res;
 		} catch (ClassCastException e) {

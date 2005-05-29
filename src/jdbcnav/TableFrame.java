@@ -246,41 +246,66 @@ public class TableFrame extends QueryResultFrame {
 	ForeignKey fk = dbTable.getForeignKeys()[fkIndex];
 	String thatName = fk.getThatQualifiedName();
 	Database db = dbTable.getDatabase();
+	PrimaryKey pk = null;
 	Data pkValues = null;
 	try {
 	    Table thatTable = db.getTable(thatName);
+	    pk = thatTable.getPrimaryKey();
 	    pkValues = thatTable.getPKValues();
 	} catch (NavigatorException e) {
 	    MessageBox.show("Can't load primary key values.", e);
 	    return;
 	}
-
-	// Replace the referenced table's column names with the referencing
-	// table's.
-	BasicData bd;
-	try {
-	    bd = (BasicData) pkValues;
-	} catch (ClassCastException e) {
-	    bd = new BasicData(pkValues);
+	if (pkValues == null) {
+	    MessageBox.show("Can't load primary key values.", null);
+	    return;
 	}
-	// TODO: can this code be simplified by making a safe assumption
-	// about the order of the PK components?
-	int ncols = bd.getColumnCount();
-	String[] newnames = new String[ncols];
-	for (int i = 0; i < ncols; i++) {
-	    String name = bd.getColumnName(i);
-	    for (int j = 0; j < ncols; j++)
-		if (name.equals(fk.getThatColumnName(j))) {
-		    newnames[i] = fk.getThisColumnName(j);
+
+	// We wrap the Data object in an FkData object, which takes care
+	// of displaying the referencing table's column names (instead of the
+	// names of the PK columns of the referenced table), and of ordering
+	// the columns to make their order match the order in this TableFrame.
+
+	int ncols = pkValues.getColumnCount();
+	String[] oldNames = new String[ncols];
+	String[] newNames = new String[ncols];
+	int mcols = model.getColumnCount();
+	int n = 0;
+	boolean allowNull = true;
+	for (int i = 0; i < mcols; i++) {
+	    int c = table.convertColumnIndexToModel(i);
+	    String name = model.getColumnName(c);
+	    for (int j = 0; j < ncols; j++) {
+		if (name.equals(fk.getThisColumnName(j))) {
+		    oldNames[n] = fk.getThatColumnName(j);
+		    newNames[n] = name;
+		    n++;
+		    if (!"YES".equals(dbTable.getIsNullable()[c]))
+			allowNull = false;
 		    break;
 		}
+	    }
 	}
-	bd.setColumnNames(newnames);
-	// TODO: reorder the columns so that their order matches the order
-	// of the corresponding columns in this TableFrame, taking the
-	// Model/View mapping into account
 
-	ForeignKeySelector fksel = new ForeignKeySelector(fkRow, pkValues);
+	pkValues = new FkData(pkValues, allowNull, oldNames, newNames);
+
+	// We want the PK data to be sorted in the same order as the referenced
+	// table would be, if opened in a new window; this means, sort
+	// according to the order of the PK columns in the PrimaryKey object.
+
+	int[] sortOrder = new int[ncols];
+	for (int i = 0; i < ncols; i++) {
+	    String name = pk.getColumnName(i);
+	    for (int j = 0; j < ncols; j++) {
+		if (name.equals(oldNames[j])) {
+		    sortOrder[i] = j;
+		    break;
+		}
+	    }
+	}
+
+	ForeignKeySelector fksel = new ForeignKeySelector(fkRow, pkValues,
+								sortOrder);
 	fksel.setParent(this);
 	fksel.setCallback(new ForeignKeySelector.Callback() {
 		public void select(int row, String[] names, Object[] values) {
@@ -442,6 +467,65 @@ public class TableFrame extends QueryResultFrame {
 	    super(title);
 	    this.foreign = foreign;
 	    this.index = index;
+	}
+    }
+
+    private static class FkData implements Data {
+	private Data data;
+	private int[] colIndexes;
+	private String[] colNames;
+	private boolean allowNull;
+	public FkData(Data data, boolean allowNull,
+			    String[] oldNames, String[] newNames) {
+	    this.data = data;
+	    this.allowNull = allowNull;
+	    int ncols = data.getColumnCount();
+	    colIndexes = new int[ncols];
+	    colNames = new String[ncols];
+	    for (int i = 0; i < ncols; i++) {
+		String oldName = oldNames[i];
+		String newName = newNames[i];
+		for (int j = 0; j < ncols; j++) {
+		    String name = data.getColumnName(j);
+		    if (name.equals(oldName)) {
+			colIndexes[i] = j;
+			colNames[i] = newName;
+			break;
+		    }
+		}
+	    }
+	}
+	public int getRowCount() {
+	    return data.getRowCount() + (allowNull ? 1 : 0);
+	}
+	public int getColumnCount() {
+	    return data.getColumnCount();
+	}
+	public String getColumnName(int col) {
+	    return colNames[col];
+	}
+	public Class getColumnClass(int col) {
+	    return data.getColumnClass(colIndexes[col]);
+	}
+	public Object getValueAt(int row, int col) {
+	    if (allowNull)
+		row--;
+	    if (row == -1)
+		return null;
+	    else
+		return data.getValueAt(row, colIndexes[col]);
+	}
+	public void setState(int state) {
+	    data.setState(state);
+	}
+	public int getState() {
+	    return data.getState();
+	}
+	public void addStateListener(StateListener listener) {
+	    data.addStateListener(listener);
+	}
+	public void removeStateListener(StateListener listener) {
+	    data.removeStateListener(listener);
 	}
     }
 }

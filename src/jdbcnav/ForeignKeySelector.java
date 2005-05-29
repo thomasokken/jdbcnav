@@ -17,10 +17,12 @@ public class ForeignKeySelector extends MyFrame {
 	void select(int row, String[] names, Object[] values);
     }
 
-    public ForeignKeySelector(int tableRow, Data fkValues) {
-	super("Select FK Value");
+    public ForeignKeySelector(int tableRow, Data fkValues, int[] sortOrder) {
+	super("Select FK Value", true, true, false, false);
 	this.tableRow = tableRow;
 	model = new ResultSetTableModel(fkValues, null);
+	for (int i = sortOrder.length - 1; i >= 0; i--)
+	    model.sortColumn(sortOrder[i]);
 	table = new MyTable(model);
 
 	ListSelectionModel lsm = table.getSelectionModel();

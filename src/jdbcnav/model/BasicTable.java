@@ -93,7 +93,7 @@ public abstract class BasicTable implements Table, Scriptable {
 	    }
 	} else {
 	    int nrows = model.getRowCount();
-	    if (nrows < pkValuesFromModel) {
+	    if (nrows > pkValuesFromModel) {
 		// Additional rows have been loaded; update pkValues to
 		// include the new rows. Since the model may have been
 		// re-sorted, we have no choice but to reload pkValues

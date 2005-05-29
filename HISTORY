@@ -4,6 +4,8 @@
 from the referenced table's corresponding PK columns.
 3) Added window cycling (Alt-W, Alt-Shift-W).
 4) Added website URL to splash screen.
+5) ResultSetTableModel and ArrayTableModel now sort String values using case-
+insensitive comparisons, instead of case-sensitive.
 
 22 May 2005:
 1) Added SmallSQL support (JDBCDatabase and ScriptGenerator subclasses).
