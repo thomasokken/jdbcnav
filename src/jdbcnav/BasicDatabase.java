@@ -84,12 +84,9 @@ public abstract class BasicDatabase implements Database {
 	    MyNode n = (MyNode) o;
 	    if (!n.isLeaf())
 		continue;
-	    if (n.edit != null) {
-		n.edit.moveToFront();
-		try {
-		    n.edit.setSelected(true);
-		} catch (java.beans.PropertyVetoException e) {}
-	    } else {
+	    if (n.edit != null)
+		n.edit.deiconifyAndRaise();
+	    else {
 		try {
 		    n.edit = new TableFrame(n.getTable(), browser);
 		    n.edit.setParent(browser);
@@ -110,12 +107,9 @@ public abstract class BasicDatabase implements Database {
 	    MyNode n = (MyNode) o;
 	    if (!n.isLeaf())
 		continue;
-	    if (n.details != null) {
-		n.details.moveToFront();
-		try {
-		    n.details.setSelected(true);
-		} catch (java.beans.PropertyVetoException e) {}
-	    } else {
+	    if (n.details != null)
+		n.details.deiconifyAndRaise();
+	    else {
 		try {
 		    n.details = new TableDetailsFrame(n.getTable(), browser);
 		    n.details.setParent(browser);
@@ -541,10 +535,7 @@ public abstract class BasicDatabase implements Database {
 	    return null;
 	}
 	if (n.edit != null) {
-	    n.edit.moveToFront();
-	    try {
-		n.edit.setSelected(true);
-	    } catch (java.beans.PropertyVetoException e) {}
+	    n.edit.deiconifyAndRaise();
 	    n.show();
 	    return n.edit;
 	}
@@ -567,10 +558,7 @@ public abstract class BasicDatabase implements Database {
 	    return null;
 	}
 	if (n.details != null) {
-	    n.details.moveToFront();
-	    try {
-		n.details.setSelected(true);
-	    } catch (java.beans.PropertyVetoException e) {}
+	    n.details.deiconifyAndRaise();
 	    n.show();
 	    return n.details;
 	}

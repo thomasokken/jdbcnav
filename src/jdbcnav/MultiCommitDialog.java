@@ -15,10 +15,12 @@ import jdbcnav.util.NavigatorException;
 public class MultiCommitDialog extends MyFrame {
     private Table[] dirty;
     private JCheckBox[] checkboxes;
+    private boolean doCommit;
 
-    public MultiCommitDialog(Table tt, Collection dirtyColl) {
-	super("Commit Tables");
+    public MultiCommitDialog(Table tt, Collection dirtyColl, boolean doCommit) {
+	super(doCommit ? "Commit Tables" : "Roll Back Tables");
 	this.dirty = (Table[]) dirtyColl.toArray(new Table[0]);
+	this.doCommit = doCommit;
 
 	JPanel p = new JPanel(new MyGridBagLayout());
 	checkboxes = new JCheckBox[dirty.length];
@@ -57,7 +59,8 @@ public class MultiCommitDialog extends MyFrame {
 	gbc.weightx = 1;
 	gbc.weighty = 0;
 	gbc.fill = MyGridBagConstraints.BOTH;
-	c.add(new JLabel("Select tables to commit:"), gbc);
+	c.add(new JLabel(doCommit ? "Select tables to commit:"
+				  : "Select tables to roll back:"), gbc);
 
 	gbc.gridy = 1;
 	gbc.weighty = 1;
@@ -114,19 +117,29 @@ public class MultiCommitDialog extends MyFrame {
     }
 
     private void ok() {
-	ArrayList selected = new ArrayList();
-	for (int i = 0; i < checkboxes.length; i++)
-	    if (checkboxes[i].isSelected())
-		selected.add(dirty[i]);
-	if (selected.size() > 0)
-	    try {
-		dirty[0].getDatabase().commitTables(selected);
+	if (doCommit) {
+	    ArrayList selected = new ArrayList();
+	    for (int i = 0; i < checkboxes.length; i++)
+		if (checkboxes[i].isSelected())
+		    selected.add(dirty[i]);
+	    if (selected.size() > 0)
+		try {
+		    dirty[0].getDatabase().commitTables(selected);
+		    dispose();
+		} catch (NavigatorException e) {
+		    MessageBox.show("Commit failed!", e);
+		}
+	    else
 		dispose();
-	    } catch (NavigatorException e) {
-		MessageBox.show("Commit failed!", e);
-	    }
-	else
+	} else {
+	    for (int i = 0; i < checkboxes.length; i++)
+		if (checkboxes[i].isSelected()) {
+		    ResultSetTableModel model = dirty[i].getModel();
+		    if (model != null)
+			model.rollback();
+		}
 	    dispose();
+	}
     }
 
     private void cancel() {

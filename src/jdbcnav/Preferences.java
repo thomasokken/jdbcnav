@@ -903,12 +903,7 @@ public class Preferences {
 		instance.showCentered();
 	    } else {
 		instance.callback = callback;
-		instance.moveToFront();
-		try {
-		    instance.setSelected(true);
-		} catch (java.beans.PropertyVetoException e) {
-		    //
-		}
+		instance.deiconifyAndRaise();
 	    }
 	}
 

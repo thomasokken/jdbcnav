@@ -1,4 +1,4 @@
-29 May 2005:
+30 May 2005:
 1) TableFrame now highlights PK and FK columns using special background colors.
 2) TableFrame now supports populating FK columns by selecting available values
 from the referenced table's corresponding PK columns.
@@ -6,6 +6,7 @@ from the referenced table's corresponding PK columns.
 4) Added website URL to splash screen.
 5) ResultSetTableModel and ArrayTableModel now sort String values using case-
 insensitive comparisons, instead of case-sensitive.
+6) In BrowserFrame, added a multi-table rollback command.
 
 22 May 2005:
 1) Added SmallSQL support (JDBCDatabase and ScriptGenerator subclasses).

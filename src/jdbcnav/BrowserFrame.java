@@ -160,6 +160,13 @@ public class BrowserFrame extends MyFrame {
 				}
 			    });
 	m.add(mi);
+	mi = new JMenuItem("Rollback...");
+	mi.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+				    rollback();
+				}
+			    });
+	m.add(mi);
 	mi = new JMenuItem("Close");
 	mi.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -320,7 +327,20 @@ public class BrowserFrame extends MyFrame {
 	    JOptionPane.showInternalMessageDialog(Main.getDesktop(),
 				"There is nothing to commit!");
 	} else {
-	    MultiCommitDialog mcd = new MultiCommitDialog(null, dirty);
+	    MultiCommitDialog mcd = new MultiCommitDialog(null, dirty, true);
+	    mcd.setParent(this);
+	    mcd.showCentered();
+	}
+    }
+
+    private void rollback() {
+	Collection dirty = db.getDirtyTables();
+	if (dirty == null || dirty.isEmpty()) {
+	    Toolkit.getDefaultToolkit().beep();
+	    JOptionPane.showInternalMessageDialog(Main.getDesktop(),
+				"There is nothing to roll back!");
+	} else {
+	    MultiCommitDialog mcd = new MultiCommitDialog(null, dirty, false);
 	    mcd.setParent(this);
 	    mcd.showCentered();
 	}

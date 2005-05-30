@@ -468,7 +468,7 @@ public class QueryResultFrame extends MyFrame
 		MessageBox.show(e);
 	    }
 	} else {
-	    MultiCommitDialog mcd = new MultiCommitDialog(dbTable, dirty);
+	    MultiCommitDialog mcd = new MultiCommitDialog(dbTable, dirty, true);
 	    mcd.setParent(this);
 	    mcd.showCentered();
 	}
@@ -968,7 +968,7 @@ public class QueryResultFrame extends MyFrame
 
 	// There are other dirty tables besides dbTable.
 	// Give the user the option of committing any or all of them.
-	MultiCommitDialog mcd = new MultiCommitDialog(dbTable, dirty);
+	MultiCommitDialog mcd = new MultiCommitDialog(dbTable, dirty, true);
 	mcd.setParent(this);
 	mcd.showCentered();
     }

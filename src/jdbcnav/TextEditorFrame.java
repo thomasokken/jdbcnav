@@ -419,12 +419,7 @@ public class TextEditorFrame extends MyFrame {
 
     private void find() {
 	if (findReplaceDialog != null) {
-	    findReplaceDialog.moveToFront();
-	    try {
-		findReplaceDialog.setSelected(true);
-	    } catch (java.beans.PropertyVetoException ex) {
-		//
-	    }
+	    findReplaceDialog.deiconifyAndRaise();
 	} else {
 	    findReplaceDialog = new FindReplaceDialog(this);
 	    findReplaceDialog.setParent(this);

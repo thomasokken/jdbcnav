@@ -61,6 +61,16 @@ public class MyFrame extends JInternalFrame {
 	Main.addToWindowsMenu(this);
     }
 
+    public void deiconifyAndRaise() {
+	try {
+	    setIcon(false);
+	} catch (java.beans.PropertyVetoException e) {}
+	moveToFront();
+	try {
+	    setSelected(true);
+	} catch (java.beans.PropertyVetoException e) {}
+    }
+
     public void dispose() {
 	if (children != null)
 	    while (!children.isEmpty())

@@ -92,13 +92,15 @@ public class TableFrame extends QueryResultFrame {
 			};
 
 	    if (haveFks) {
-		JMenuItem jmi = new JMenuItem("Select FK Value...");
-		jmi.addActionListener(new ActionListener() {
-			    public void actionPerformed(ActionEvent e) {
-				selectFkValue();
-			    }
-			});
-		popupMenu.add(jmi);
+		if (dbTable.isEditable()) {
+		    JMenuItem jmi = new JMenuItem("Select FK Value...");
+		    jmi.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+				    selectFkValue();
+				}
+			    });
+		    popupMenu.add(jmi);
+		}
 		JMenu m = new JMenu("References");
 		for (int i = 0; i < fks.length; i++) {
 		    ForeignKey fk = fks[i];
@@ -154,8 +156,9 @@ public class TableFrame extends QueryResultFrame {
 	String columnName = model.getColumnName(popupColumn);
 
 	if (haveFks) {
-	    Component[] items = ((JMenu) popupMenu.getComponent(1))
-						    .getMenuComponents();
+	    int id = dbTable.isEditable() ? 1 : 0;
+	    Component[] items = ((JMenu) popupMenu.getComponent(id))
+						  .getMenuComponents();
 	    fkIndex = -1;
 	    for (int i = 0; i < items.length; i++) {
 		ForeignKey fk = fks[i];
@@ -178,8 +181,9 @@ public class TableFrame extends QueryResultFrame {
 	    jmi.setEnabled(fkIndex != -1);
 	}
 	if (haveRks) {
-	    Component[] items = ((JMenu) popupMenu.getComponent(
-				    haveFks ? 2 : 0)).getMenuComponents();
+	    int id = haveFks ? dbTable.isEditable() ? 2 : 1 : 0;
+	    Component[] items = ((JMenu) popupMenu.getComponent(id))
+						  .getMenuComponents();
 	    for (int i = 0; i < items.length; i++) {
 		ForeignKey rk = rks[i];
 		boolean matches = false;

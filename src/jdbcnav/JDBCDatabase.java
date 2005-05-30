@@ -1587,12 +1587,7 @@ public class JDBCDatabase extends BasicDatabase {
 		instance.showCentered();
 	    } else {
 		instance.opencb = opencb;
-		instance.moveToFront();
-		try {
-		    instance.setSelected(true);
-		} catch (java.beans.PropertyVetoException e) {
-		    //
-		}
+		instance.deiconifyAndRaise();
 	    }
 	}
 

@@ -300,10 +300,7 @@ public class PreferencesFrame extends MyFrame {
 		});
 	    pkColorChooser.showCentered();
 	} else {
-	    pkColorChooser.moveToFront();
-	    try {
-		pkColorChooser.setSelected(true);
-	    } catch (java.beans.PropertyVetoException e) {}
+	    pkColorChooser.deiconifyAndRaise();
 	}
     }
 
@@ -331,10 +328,7 @@ public class PreferencesFrame extends MyFrame {
 		});
 	    fkColorChooser.showCentered();
 	} else {
-	    fkColorChooser.moveToFront();
-	    try {
-		fkColorChooser.setSelected(true);
-	    } catch (java.beans.PropertyVetoException e) {}
+	    fkColorChooser.deiconifyAndRaise();
 	}
     }
 

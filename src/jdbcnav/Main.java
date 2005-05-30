@@ -5,7 +5,6 @@ import java.awt.event.*;
 import java.awt.font.*;
 import java.awt.geom.*;
 import java.awt.image.*;
-import java.beans.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
@@ -309,12 +308,11 @@ public class Main extends JFrame {
 	return instance.clipboard;
     }
     
-    public static void addToWindowsMenu(JInternalFrame f) {
+    public static void addToWindowsMenu(MyFrame f) {
 	addToWindowsMenu(f, true);
     }
 
-    private static void addToWindowsMenu(JInternalFrame f,
-					 boolean addToFrameList) {
+    private static void addToWindowsMenu(MyFrame f, boolean addToFrameList) {
 	JMenu windowsMenu = instance.windowsMenu;
 	int count = windowsMenu.getItemCount();
 	if (count == 2) {
@@ -338,7 +336,7 @@ public class Main extends JFrame {
 	    frameList.add(f);
     }
 
-    public static void removeFromWindowsMenu(JInternalFrame f) {
+    public static void removeFromWindowsMenu(MyFrame f) {
 	JMenu windowsMenu = instance.windowsMenu;
 	int count = windowsMenu.getItemCount();
 	for (int i = 3; i < count; i++) {
@@ -355,7 +353,7 @@ public class Main extends JFrame {
 	frameList.remove(f);
     }
 
-    public static void renameInWindowsMenu(JInternalFrame f) {
+    public static void renameInWindowsMenu(MyFrame f) {
 	JMenu windowsMenu = instance.windowsMenu;
 	int count = windowsMenu.getItemCount();
 	for (int i = 3; i < count; i++) {
@@ -374,14 +372,9 @@ public class Main extends JFrame {
     }
 
     private void showClipboard() {
-	if (clipboardFrame != null) {
-	    clipboardFrame.moveToFront();
-	    try {
-		clipboardFrame.setSelected(true);
-	    } catch (PropertyVetoException ex) {
-		//
-	    }
-	} else {
+	if (clipboardFrame != null)
+	    clipboardFrame.deiconifyAndRaise();
+	else {
 	    clipboardFrame = new ClipboardFrame(clipboard);
 	    clipboardFrame.addInternalFrameListener(
 		    new InternalFrameAdapter() {
@@ -447,14 +440,9 @@ public class Main extends JFrame {
     }
 
     private void preferences() {
-	if (preferencesFrame != null) {
-	    preferencesFrame.moveToFront();
-	    try {
-		preferencesFrame.setSelected(true);
-	    } catch (PropertyVetoException ex) {
-		//
-	    }
-	} else {
+	if (preferencesFrame != null)
+	    preferencesFrame.deiconifyAndRaise();
+	else {
 	    preferencesFrame = new PreferencesFrame();
 	    preferencesFrame.addInternalFrameListener(
 		    new InternalFrameAdapter() {
@@ -480,7 +468,12 @@ public class Main extends JFrame {
 	if (fs == 0)
 	    return;
 	int index;
-	JInternalFrame f = desktop.getSelectedFrame();
+	MyFrame f;
+	try {
+	    f = (MyFrame) desktop.getSelectedFrame();
+	} catch (ClassCastException e) {
+	    f = null;
+	}
 	if (f == null)
 	    index = fs - 1;
 	else {
@@ -497,13 +490,8 @@ public class Main extends JFrame {
 		    index = 0;
 	    }
 	}
-	f = (JInternalFrame) frameList.get(index);
-	f.moveToFront();
-	try {
-	    f.setSelected(true);
-	} catch (PropertyVetoException ex) {
-	    //
-	}
+	f = (MyFrame) frameList.get(index);
+	f.deiconifyAndRaise();
     }
 
     public void nuke() {
@@ -657,22 +645,17 @@ public class Main extends JFrame {
 
     private static class WindowsMenuItem extends JMenuItem
 					    implements ActionListener {
-	private JInternalFrame f;
-	public WindowsMenuItem(JInternalFrame f) {
+	private MyFrame f;
+	public WindowsMenuItem(MyFrame f) {
 	    super(f.getTitle());
 	    this.f = f;
 	    addActionListener(this);
 	}
-	public JInternalFrame getWindow() {
+	public MyFrame getWindow() {
 	    return f;
 	}
 	public void actionPerformed(ActionEvent e) {
-	    f.moveToFront();
-	    try {
-		f.setSelected(true);
-	    } catch (PropertyVetoException ex) {
-		//
-	    }
+	    f.deiconifyAndRaise();
 	}
     }
 
