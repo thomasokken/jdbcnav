@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
 import javax.swing.table.*;
+import jdbcnav.util.MenuLayout;
 
 
 public class MyTable extends JTable {
@@ -305,12 +306,15 @@ public class MyTable extends JTable {
 	    JPopupMenu menu = new JPopupMenu();
 	    int columns = getModel().getColumnCount();
 	    for (int i = 0; i < columns; i++) {
-		int col = convertColumnIndexToView(i);
-		JMenuItem mi = new JMenuItem(getColumnName(col));
-		mi.addActionListener(new ColumnJumper(col));
+		JMenuItem mi = new JMenuItem(getColumnName(i));
+		mi.addActionListener(new ColumnJumper(i));
 		menu.add(mi);
 	    }
-	    menu.show(e.getComponent(), e.getX(), e.getY());
+	    int x = e.getX();
+	    int y = e.getY();
+	    Point cpos = e.getComponent().getLocationOnScreen();
+	    menu.setLayout(new MenuLayout(x + cpos.x, y + cpos.y));
+	    menu.show(e.getComponent(), x, y);
 	} else {
 	    // Left (or middle) click: change the sorting order
 	    SortedTableModel model = (SortedTableModel) getModel();
