@@ -337,6 +337,8 @@ public class FileDatabase extends BasicDatabase {
 		     fk.getThatSchema());
 	xml.wholeTag(imported ? "foreign_name" : "referencing_name",
 		     fk.getThatName());
+	xml.wholeTag(imported ? "foreign_qualified_name" : "referencing_qualified_name",
+		     fk.getThatQualifiedName());
 	xml.wholeTag(imported ? "foreign_key_name" : "referencing_key_name",
 		     fk.getThatKeyName());
 	xml.openTag(imported ? "foreign_columns" : "referencing_columns");
@@ -543,6 +545,9 @@ public class FileDatabase extends BasicDatabase {
 	    else if (name.equals("foreign_name")
 		    || name.equals("referencing_name"))
 		fk.setThatName(data);
+	    else if (name.equals("foreign_qualified_name")
+		    || name.equals("referencing_qualified_name"))
+		fk.setThatQualifiedName(data);
 	    else if (name.equals("foreign_key_name")
 		    || name.equals("referencing_key_name"))
 		fk.setThatKeyName(data);

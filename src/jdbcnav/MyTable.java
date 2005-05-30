@@ -308,6 +308,21 @@ public class MyTable extends JTable {
 	    for (int i = 0; i < columns; i++) {
 		JMenuItem mi = new JMenuItem(getColumnName(i));
 		mi.addActionListener(new ColumnJumper(i));
+		int col = convertColumnIndexToModel(i);
+		try {
+		    int type = ((Integer) columnTypeMap.get(col)).intValue();
+		    if (type == 3)
+			type = 1;
+		    Color bg = FastTableCellRenderer.getTypeColor(type, true);
+		    Color fg = FastTableCellRenderer.getTypeColor(type, false);
+		    if (bg != null && fg != null) {
+			mi.setBackground(bg);
+			mi.setForeground(fg);
+		    }
+		} catch (IndexOutOfBoundsException ex) {
+		    // columnTypeMap does not have an entry for 'col';
+		    // no worries, we just leave the menu item's color alone.
+		}
 		menu.add(mi);
 	    }
 	    int x = e.getX();
@@ -611,6 +626,19 @@ public class MyTable extends JTable {
 		unselectedBackground.add(color);
 		unselectedForeground.add(fg);
 		unselectedNullColor.add(nl);
+	    }
+	}
+
+	// TODO: this supports coloring in the ColumnJumper menu.
+	// It doesn't really belong here, and neither does setTypeColor().
+	public static Color getTypeColor(int type, boolean isBackground) {
+	    try {
+		if (isBackground)
+		    return (Color) unselectedBackground.get(type);
+		else
+		    return (Color) unselectedForeground.get(type);
+	    } catch (IndexOutOfBoundsException e) {
+		return null;
 	    }
 	}
 

@@ -44,8 +44,8 @@ public class MenuLayout implements LayoutManager {
 	}
 
 	Dimension scr = Toolkit.getDefaultToolkit().getScreenSize();
-	int availWidth = scr.width - x;
-	int availHeight = scr.height - y;
+	int availWidth = scr.width - x - 4;
+	int availHeight = scr.height - y - 4;
 
 	for (int attempt = 0; attempt < 2; attempt++) {
 	    if (attempt == 1) {
@@ -79,7 +79,7 @@ public class MenuLayout implements LayoutManager {
 	    if (!reallyDoIt) {
 		if (n < rows)
 		    rows = n;
-		return new Dimension(totalwidth, h * rows);
+		return new Dimension(totalwidth + 4, h * rows + 4);
 	    }
 
 	    int xx = 0;
@@ -90,7 +90,7 @@ public class MenuLayout implements LayoutManager {
 		for (int r = 0; r < rows; r++) {
 		    if (p >= n)
 			break;
-		    kids[p].setBounds(xx, yy, w, h);
+		    kids[p].setBounds(xx + 2, yy + 2, w, h);
 		    yy += h;
 		    p++;
 		}

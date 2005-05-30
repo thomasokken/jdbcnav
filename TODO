@@ -1,12 +1,10 @@
-Highlight PK and FK columns in the ColumnJumper menu.
-
-MenuLayout should probably leave one or two pixels around the edges, to make
-the menu look a bit nicer.
-
 Add a multi-rollback feature; UI like multi-commit.
 
-Using the "Select FK Value" feature throws NPE at BasicDatabase.java:735
-when using a File Data Source (~/test.xml).
+Using the "Select FK Value" feature with a FileDatabase fails if the referenced
+table is not open; it does work if a TableFrame for the referenced table is
+open. Probably because it tries to use Database.runQuery(), which of course
+does nothing with a FileDatabase; therefore probably need to override
+Table.getPKValues() in FileDatabase.FileTable.
 
 When a window is selected using the Windows menu, it should be de-iconified as
 well as raised.
