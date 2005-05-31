@@ -169,7 +169,7 @@ public class MyTable extends JTable {
 	    columnTypeMap.set(column, t);
 	} catch (IndexOutOfBoundsException e) {
 	    while (column > columnTypeMap.size())
-		columnTypeMap.add(null);
+		columnTypeMap.add(new Integer(0));
 	    columnTypeMap.add(t);
 	}
     }
