@@ -99,6 +99,7 @@
       <fileset dir="classes"/>
       <fileset dir="javadoc"/>
       <fileset file="jdbcnav.jar"/>
+      <fileset file="jdbcnav-small.jar"/>
       <fileset file="jdbcnav.tgz"/>
     </delete>
   </target>
