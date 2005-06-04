@@ -1,6 +1,7 @@
 package jdbcnav;
 
 import java.awt.*;
+import java.lang.reflect.*; // See dispose()
 import java.util.*;
 import javax.swing.*;
 
@@ -82,6 +83,37 @@ public class MyFrame extends JInternalFrame {
 	    Main.getClipboard().removeListener((Clipboard.Listener) this);
 	if (parent != null)
 	    parent.childDisposed(this);
+
+	// TODO: The following is code to work around a JInternalFrame bug:
+	// when a window is closed by the user, and the default close operation
+	// is DO_DISPOSE_ON_CLOSE, the next lower window is activated; when the
+	// default close operation is DO_NOTHING_ON_CLOSE, and an
+	// InternalFrameListener is used to call dispose(), the next lower
+	// window is *not* activated. This is because
+	// JInternalFrame.doDefaultCloseOperation(), before calling dispose(),
+	// fires a property change and sets isClosed to true; apparently, these
+	// activities are instrumental in making the DesktopManager activate
+	// the next window. So, just to be safe, I perform those activities
+	// here.
+	// I would like to perform these operations via reflection, but because
+	// the involved methods and members are all protected, I can't. So,
+	// here's hoping the JInternalFrame internals will never change in a
+	// backward-incompatible manner...
+	// TODO: If and when the JInternalFrame behavior is fixed, this code
+	// should be made conditional on the JVM version.
+
+	if (!isClosed()) {
+	    try {
+		fireVetoableChange(IS_CLOSED_PROPERTY, Boolean.FALSE, Boolean.TRUE);
+	    } catch (java.beans.PropertyVetoException e) {
+		//
+	    }
+	    isClosed = true;
+	    firePropertyChange(IS_CLOSED_PROPERTY, Boolean.FALSE, Boolean.TRUE);
+	}
+
+	// End of JInternalFrame bug work-around code
+
 	super.dispose();
     }
 

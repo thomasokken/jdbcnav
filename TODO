@@ -1,9 +1,6 @@
 Scenario: open SmallSQL connection, open SQL window, create a table, then do
 "Reload Tree". An NPE gets thrown; expanding the "Table" node does not work.
 
-Maximized windows behaving badly? This may be specific to the Windows look and
-feel. Check, and investigate possibility of work-around.
-
 Change window placement code so that windows are always entirely on-screen. The
 current behavior is annoying when opening large tables, since such windows are
 typically the size of the entire screen, so you always have to move (or zoom)
