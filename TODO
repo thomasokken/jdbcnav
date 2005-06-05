@@ -1,6 +1,16 @@
 Scenario: open SmallSQL connection, open SQL window, create a table, then do
 "Reload Tree". An NPE gets thrown; expanding the "Table" node does not work.
 
+In ColumnJumper menu, highlight columns with "not null" constraint (italic?).
+
+Loading large queries can cause OutOfMemoryError. These should be caught and a
+message displayed to the user. (Currently, all that happens is a message being
+printed on standard output by the JVM, where most users will never see it; this
+means that the user can't tell the difference between an operation that failed
+because it ran out of memory and an operation that is simply taking very long.)
+Apart from better user feedback, another reason for catching this error is to
+prevent the AWT event thread from dying.
+
 Change window placement code so that windows are always entirely on-screen. The
 current behavior is annoying when opening large tables, since such windows are
 typically the size of the entire screen, so you always have to move (or zoom)

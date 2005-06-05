@@ -299,7 +299,10 @@ public class MyTable extends JTable {
 
     private void mouseInHeader(MouseEvent e) {
 	int physicalColumn = columnAtPoint(e.getPoint());
+	if (physicalColumn == -1)
+	    return;
 	int logicalColumn = convertColumnIndexToModel(physicalColumn);
+
 	if ((e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
 	    // Right-click: present a menu of column names allowing
 	    // the user to jump to a column
