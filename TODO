@@ -1,24 +1,6 @@
 Scenario: open SmallSQL connection, open SQL window, create a table, then do
 "Reload Tree". An NPE gets thrown; expanding the "Table" node does not work.
 
-When a window is closed, the next underlying window is selected (as it should
-be) but it does *not* appear to get the keyboard focus: typing goes nowhere,
-and closing this next window with Ctrl-W does not work.
-My suspicion is a Swing bug, where the keyboard focus ends up in limbo. Perhaps
-the focus stays on the window that just closed -- I have seen something like
-that while working on the OnTrac GUI. Using JProbe this is relatively easy to
-debug; lacking that, need to find out where the focus is at somehow.
-There is a test case in jdbcnav/junk/FocusTest.java. Note that simply calling
-dispose() does not work *at all*, focus-wise (next window isn't even
-selected!), which means that my JInternalFrame.setDefaultCloseAction() bug
-report should really have been about JInternalFrame.dispose()... But even if I
-work around that by calling doDefaultCloseAction() myself, or using
-setClosed(true), the focus still goes nowhere.
-Note that this bug does not seem to appear when the focus is *already* gone:
-when closing a series of windows one by one, the newly topmost window fails
-to get the focus if the just-closed window had it; it does get the focus if
-the just-closed window did not have it.
-
 Change window placement code so that windows are always entirely on-screen. The
 current behavior is annoying when opening large tables, since such windows are
 typically the size of the entire screen, so you always have to move (or zoom)
