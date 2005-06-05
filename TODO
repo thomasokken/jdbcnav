@@ -12,10 +12,10 @@ while working on the OnTrac GUI. Using JProbe this is relatively easy to debug;
 lacking that, need to find out where the focus is at somehow.
 There is a test case in jdbcnav/junk/FocusTest.java. Note that simply calling
 dispose() in the Ctrl-W handler does not work *at all* (next window isn't even
-selected!), which means that my JInternalFrame.setDefaultCloseOperation() bug
+selected!), which means that my JInternalFrame.setDefaultCloseAction() bug
 report should really have been about JInternalFrame.dispose()... But even if I
-work around that by calling doDefaultCloseOperation() myself, the focus still
-goes nowhere.
+work around that by calling doDefaultCloseAction() myself, the focus still goes
+nowhere.
 
 Change window placement code so that windows are always entirely on-screen. The
 current behavior is annoying when opening large tables, since such windows are
