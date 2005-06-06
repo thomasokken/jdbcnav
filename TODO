@@ -1,6 +1,3 @@
-Scenario: open SmallSQL connection, open SQL window, create a table, then do
-"Reload Tree". An NPE gets thrown; expanding the "Table" node does not work.
-
 In ColumnJumper menu, highlight columns with "not null" constraint (italic?).
 
 Loading large queries can cause OutOfMemoryError. These should be caught and a

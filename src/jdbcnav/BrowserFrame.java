@@ -523,8 +523,8 @@ public class BrowserFrame extends MyFrame {
 	///////////////////////////////////
 
 	public void childAddedAt(int index, BrowserNode kid) {
-	    if (kids == null)
-		kids = new ArrayList();
+            if (kids == null)
+                return;
 	    MyTreeNode n = new MyTreeNode(this, kid);
 	    kids.add(index, n);
 	    ((DefaultTreeModel) tree.getModel()).nodesWereInserted(
@@ -533,6 +533,8 @@ public class BrowserFrame extends MyFrame {
 	}
 
 	public void childRemovedAt(int index) {
+            if (kids == null)
+                return;
 	    MyTreeNode deadKid = (MyTreeNode) kids.remove(index);
 	    ((DefaultTreeModel) tree.getModel()).nodesWereRemoved(
 						    this,
@@ -597,7 +599,7 @@ public class BrowserFrame extends MyFrame {
 	}
 	public Object get(int index, Scriptable start) {
 	    try {
-		Object kid = kids.get(index);
+		Object kid = kids().get(index);
 		try {
 		    Table t = ((MyTreeNode) kid).browserNode.getTable();
 		    if (t == null)
