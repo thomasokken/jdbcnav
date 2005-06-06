@@ -16,6 +16,7 @@ public abstract class BasicDatabase implements Database {
     protected BrowserFrame browser;
     private ScriptGenerator sg;
     private MyNode rootNode;
+    private MyNode orphanage;
 
     // Initialize this object using the seemingly redundant String(String)
     // constructor, in order to ensure that we have a unique instance.
@@ -288,7 +289,6 @@ public abstract class BasicDatabase implements Database {
 
 
     private void removeOrphans() {
-	MyNode orphanage = rootNode.getChildNamed(ORPHANAGE);
 	if (orphanage == null)
 	    return;
 	Collection selection = browser.getSelectedNodes();
@@ -455,8 +455,13 @@ public abstract class BasicDatabase implements Database {
 	    } else
 		tableNode.dead = false;
 	}
+
 	ArrayList newOrphans = new ArrayList();
+	boolean orphanageDidNotExistYet = orphanage == null;
 	rootNode.reapRecursively(newOrphans);
+	if (orphanageDidNotExistYet && orphanage != null)
+	    rootNode.addChild(orphanage);
+
 	if (newOrphans.size() > 0) {
 	    StringBuffer buf = new StringBuffer();
 	    if (newOrphans.size() == 1)
@@ -511,11 +516,8 @@ public abstract class BasicDatabase implements Database {
     protected abstract boolean shouldMoveToOrphanage(Table table);
 
     private void moveToOrphanage(Table table) {
-	MyNode orphanage = rootNode.getChildNamed(ORPHANAGE);
-	if (orphanage == null) {
+	if (orphanage == null)
 	    orphanage = new MyNode(ORPHANAGE);
-	    rootNode.addChild(orphanage);
-	}
 	table.makeOrphan();
 	while (orphanage.getChildNamed(table.getName()) != null)
 	    table.tryNextOrphanName();
@@ -596,7 +598,6 @@ public abstract class BasicDatabase implements Database {
     }
 
     public boolean hasOrphans() {
-	MyNode orphanage = rootNode.getChildNamed(ORPHANAGE);
 	if (orphanage == null)
 	    return false;
 	Iterator iter = orphanage.getChildren();
@@ -725,7 +726,6 @@ public abstract class BasicDatabase implements Database {
 	    // orphans (tables that exist in memory but have been deleted from
 	    // the database).
 
-	    MyNode orphanage = rootNode.getChildNamed(ORPHANAGE);
 	    if (orphanage != null) {
 		String name = qualifiedName.substring(dots + 3);
 		MyNode orphan = orphanage.getChildNamed(name);
@@ -916,14 +916,22 @@ public abstract class BasicDatabase implements Database {
 	public void reapRecursively(ArrayList newOrphans) {
 	    if (children != null) {
 		int index = 0;
-		for (Iterator iter = children.values().iterator();
+		ArrayList removed = null;
+		for (Iterator iter = children.entrySet().iterator();
 							iter.hasNext();) {
-		    MyNode child = (MyNode) iter.next();
+		    Map.Entry entry = (Map.Entry) iter.next();
+		    MyNode child = (MyNode) entry.getValue();
 		    child.reapRecursively(newOrphans);
 		    if (child.dead) {
 			if (displayNode != null)
 			    displayNode.childRemovedAt(index);
-			iter.remove();
+			// Adding the child to be removed to a list; we'll do
+			// the actual removal *after* this loop, since the
+			// Iterators returned by TreeMap do not support calling
+			// next() again after remove().
+			if (removed == null)
+			    removed = new ArrayList();
+			removed.add(entry.getKey());
 			if (child.table != null)
 			    if (shouldMoveToOrphanage(child.table)) {
 				newOrphans.add(child.table.getQualifiedName());
@@ -935,6 +943,10 @@ public abstract class BasicDatabase implements Database {
 			index++;
 		    }
 		}
+		if (removed != null)
+		    for (Iterator r_iter = removed.iterator();
+							r_iter.hasNext();)
+			children.remove((String) r_iter.next());
 	    }
 	}
     }

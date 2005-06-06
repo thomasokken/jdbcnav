@@ -153,8 +153,7 @@ public abstract class BasicTable implements Table, Scriptable {
 	// possibly clash with any legitimate DB object; we achieve this
 	// by using lots of dots (a legit qualified name can never have
 	// more than two dots).
-	qualifiedName = BasicDatabase.ORPHANAGE + "..."
-			+ getDatabase().makeQualifiedName(null, null, name);
+	qualifiedName = BasicDatabase.ORPHANAGE + "..." + name;
     }
 
     /**

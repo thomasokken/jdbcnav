@@ -17,7 +17,8 @@ public class MyTable extends JTable {
 
     private int highlightIndex = 0;
     private ArrayList userInteractionListeners = new ArrayList();
-    private ArrayList columnTypeMap = new ArrayList();
+    private boolean[] notNull;
+    private ArrayList columnTypeMap;
 
     public MyTable(TableModel dm) {
 	super();
@@ -74,6 +75,12 @@ public class MyTable extends JTable {
 				eventInTableHappened();
 			    }
 			});
+    }
+
+    public void setModel(TableModel dm) {
+	notNull = new boolean[dm.getColumnCount()];
+	columnTypeMap = new ArrayList();
+	super.setModel(dm);
     }
 
     public void setNiceSize() {
@@ -162,6 +169,10 @@ public class MyTable extends JTable {
 	}
     }
 
+
+    public void setColumnNotNull(int column, boolean notNull) {
+	this.notNull[column] = notNull;
+    }
 
     public void setColumnType(int column, int type) {
 	Integer t = new Integer(type);
@@ -312,6 +323,10 @@ public class MyTable extends JTable {
 		JMenuItem mi = new JMenuItem(getColumnName(i));
 		mi.addActionListener(new ColumnJumper(i));
 		int col = convertColumnIndexToModel(i);
+
+		mi.setFont(mi.getFont().deriveFont(
+				    notNull[col] ? Font.BOLD : Font.PLAIN));
+
 		try {
 		    int type = ((Integer) columnTypeMap.get(col)).intValue();
 		    if (type == 3)

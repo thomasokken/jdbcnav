@@ -1,10 +1,3 @@
-Orphanage seems utterly broken. When I drop a table whose editing window is
-open, and then Reload Tree, nothing happens; if I close the editing window (w/o
-committing) and then Reload Tree, a ConcurrentModificationException is thrown
-in BasicDatabase$MyNode.reapRecursively(BasicDatabase.java:921).
-
-In ColumnJumper menu, highlight columns with "not null" constraint (italic?).
-
 Loading large queries can cause OutOfMemoryError. These should be caught and a
 message displayed to the user. (Currently, all that happens is a message being
 printed on standard output by the JVM, where most users will never see it; this
@@ -20,6 +13,9 @@ them before you can use them.
 
 The Windows menu can become too long; should use MenuLayout or some variation
 thereof to make it switch to multiple-column mode if necessary.
+
+JavaScript: it should be possible to issue the "Reload Tree" command from a
+script.
 
 Oracle INTERVAL type support
 

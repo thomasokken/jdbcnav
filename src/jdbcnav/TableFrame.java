@@ -43,6 +43,12 @@ public class TableFrame extends QueryResultFrame {
 				    }
 				});
 
+	// Highlight "not null" columns
+	for (int i = 0; i < dbTable.getColumnCount(); i++) {
+	    if (!"YES".equals(dbTable.getIsNullable()[i]))
+		table.setColumnNotNull(i, true);
+	}
+
 	// Apply FK highlight color
 	ForeignKey[] fks = dbTable.getForeignKeys();
 	TreeSet fkcol = new TreeSet();

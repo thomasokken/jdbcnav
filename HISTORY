@@ -1,8 +1,14 @@
 6 June 2005:
+*) In the column-jumping menu, columns with "not null" constraints are now
+highlighted by showing their names in boldface.
 *) Executing "Reload Tree", after a table had been added to a node that had not
 been expanded previously (so that the 'kids' array in the MyTreeNode object was
 still null), would throw an IndexOutOfBoundsException, and subsequent attempts
 to view that node would all fail. Fixed.
+*) Fixed a couple of orphanage-related bugs: "Reload Tree" would throw a
+ConcurrentModificationException when the orphanage was first created; also,
+makeOrphan() generated names that findTableNode() couldn't resolve in some
+cases, having to do with quoting.
 
 4 June 2005:
 *) MyFrame.dispose(): added work-around for JInternalFrame bug, where the
