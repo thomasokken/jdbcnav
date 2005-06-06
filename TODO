@@ -1,3 +1,8 @@
+Orphanage seems utterly broken. When I drop a table whose editing window is
+open, and then Reload Tree, nothing happens; if I close the editing window (w/o
+committing) and then Reload Tree, a ConcurrentModificationException is thrown
+in BasicDatabase$MyNode.reapRecursively(BasicDatabase.java:921).
+
 In ColumnJumper menu, highlight columns with "not null" constraint (italic?).
 
 Loading large queries can cause OutOfMemoryError. These should be caught and a
