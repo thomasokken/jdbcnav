@@ -15,6 +15,7 @@ import jdbcnav.javascript.JavaScriptFrame;
 import jdbcnav.javascript.JavaScriptGlobal;
 import jdbcnav.model.Database;
 import jdbcnav.util.FileUtils;
+import jdbcnav.util.MenuLayout;
 
 
 public class Main extends JFrame {
@@ -275,6 +276,7 @@ public class Main extends JFrame {
 	mb.add(m);
 	
 	windowsMenu = new JMenu("Windows");
+	windowsMenu.getPopupMenu().setLayout(new MenuLayout());
 	mi = new JMenuItem("Cycle Up");
 	mi.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {

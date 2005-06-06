@@ -343,11 +343,8 @@ public class MyTable extends JTable {
 		}
 		menu.add(mi);
 	    }
-	    int x = e.getX();
-	    int y = e.getY();
-	    Point cpos = e.getComponent().getLocationOnScreen();
-	    menu.setLayout(new MenuLayout(x + cpos.x, y + cpos.y));
-	    menu.show(e.getComponent(), x, y);
+	    menu.setLayout(new MenuLayout());
+	    menu.show(e.getComponent(), e.getX(), e.getY());
 	} else {
 	    // Left (or middle) click: change the sorting order
 	    SortedTableModel model = (SortedTableModel) getModel();

@@ -1,3 +1,7 @@
+?? ??? ????:
+*) Added custom layout manager to the Windows menu, so it stays usable even
+when very many windows are open.
+
 6 June 2005:
 *) In the column-jumping menu, columns with "not null" constraints are now
 highlighted by showing their names in boldface.

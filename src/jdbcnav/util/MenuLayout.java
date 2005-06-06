@@ -3,19 +3,67 @@ package jdbcnav.util;
 import java.awt.*;
 
 public class MenuLayout implements LayoutManager {
-    private int x, y;
-
-    public MenuLayout(int x, int y) {
-	this.x = x;
-	this.y = y;
-    }
-
     public void layoutContainer(Container parent) {
-	doLayout(parent, true);
+	Component[] kids = parent.getComponents();
+	int h = Toolkit.getDefaultToolkit().getScreenSize().height - 4;
+	int n = kids.length;
+	Dimension[] size = new Dimension[n];
+
+	int colStart = 0;
+	int colHeight = 0;
+	int colWidth = 0;
+	int colX = 0;
+	for (int i = 0; i <= n; i++) {
+	    Dimension d = null;
+	    if (i < n)
+		size[i] = d = kids[i].getPreferredSize();
+	    if (i == n || (colHeight > 0 && colHeight + d.height > h)) {
+		// Finish current column
+		int colY = 0;
+		for (int j = colStart; j < i; j++) {
+		    int kh = size[j].height;
+		    kids[j].setBounds(colX + 2, colY + 2, colWidth, kh);
+		    colY += kh;
+		}
+		colX += colWidth;
+		colStart = i;
+		colHeight = 0;
+		colWidth = 0;
+	    }
+	    if (i == n)
+		break;
+	    if (colWidth < d.width)
+		colWidth = d.width;
+	    colHeight += d.height;
+	}
     }
 
     public Dimension preferredLayoutSize(Container parent) {
-	return doLayout(parent, false);
+	Component[] kids = parent.getComponents();
+	int h = Toolkit.getDefaultToolkit().getScreenSize().height - 4;
+	int n = kids.length;
+	int pw = 0;
+	int ph = 0;
+
+	int colHeight = 0;
+	int colWidth = 0;
+	for (int i = 0; i <= n; i++) {
+	    Dimension d = i < n ? kids[i].getPreferredSize() : null;
+	    if (i == n || colHeight > 0 && colHeight + d.height > h) {
+		if (ph < colHeight)
+		    ph = colHeight;
+		pw += colWidth;
+		colHeight = 0;
+		colWidth = 0;
+	    }
+	    if (i == n)
+		break;
+	    if (colWidth < d.width)
+		colWidth = d.width;
+	    colHeight += d.height;
+	}
+
+	return new Dimension(pw + 4, ph + 4);
     }
 
     public Dimension minimumLayoutSize(Container parent) {
@@ -28,78 +76,5 @@ public class MenuLayout implements LayoutManager {
 
     public void removeLayoutComponent(Component comp) {
 	// Nothing to do
-    }
-
-    private Dimension doLayout(Container parent, boolean reallyDoIt) {
-	Component[] kids = parent.getComponents();
-	int n = kids.length;
-	int[] widths = new int[n];
-	int h = 0;
-
-	for (int i = 0; i < n; i++) {
-	    Dimension d = kids[i].getPreferredSize();
-	    widths[i] = d.width;
-	    if (d.height > h)
-		h = d.height;
-	}
-
-	Dimension scr = Toolkit.getDefaultToolkit().getScreenSize();
-	int availWidth = scr.width - x - 4;
-	int availHeight = scr.height - y - 4;
-
-	for (int attempt = 0; attempt < 2; attempt++) {
-	    if (attempt == 1) {
-		availWidth += x;
-		availHeight += y;
-	    }
-	    int rows = availHeight / h;
-	    if (rows == 0 && attempt == 0)
-		continue;
-	    int cols = (n + rows - 1) / rows;
-	    int[] colwidths = new int[cols];
-	    int totalwidth = 0;
-
-	    int p = 0;
-	    for (int c = 0; c < cols; c++) {
-		int colwidth = 0;
-		for (int r = 0; r < rows; r++) {
-		    if (p >= n)
-			break;
-		    if (widths[p] > colwidth)
-			colwidth = widths[p];
-		    p++;
-		}
-		colwidths[c] = colwidth;
-		totalwidth += colwidth;
-	    }
-
-	    if (attempt == 0 && totalwidth > availWidth)
-		continue;
-
-	    if (!reallyDoIt) {
-		if (n < rows)
-		    rows = n;
-		return new Dimension(totalwidth + 4, h * rows + 4);
-	    }
-
-	    int xx = 0;
-	    p = 0;
-	    for (int c = 0; c < cols; c++) {
-		int yy = 0;
-		int w = colwidths[c];
-		for (int r = 0; r < rows; r++) {
-		    if (p >= n)
-			break;
-		    kids[p].setBounds(xx + 2, yy + 2, w, h);
-		    yy += h;
-		    p++;
-		}
-		xx += w;
-	    }
-	    return null;
-	}
-
-	// Can't get here, but the compiler doesn't understand that...
-	return null;
     }
 }

@@ -11,9 +11,6 @@ current behavior is annoying when opening large tables, since such windows are
 typically the size of the entire screen, so you always have to move (or zoom)
 them before you can use them.
 
-The Windows menu can become too long; should use MenuLayout or some variation
-thereof to make it switch to multiple-column mode if necessary.
-
 JavaScript: it should be possible to issue the "Reload Tree" command from a
 script.
 
