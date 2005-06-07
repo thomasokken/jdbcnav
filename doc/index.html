@@ -4,11 +4,21 @@
     <meta name="description" content="JDBC Navigator, a free database browser and editor.">
 </head>
 <body>
-    <h3>JDBC Navigator</h3>
+    <h1>JDBC Navigator</h1>
+    <h3>A free database browser and editor</h3>
     JDBC Navigator is a free database browser and editor. It lets you open JDBC
-    database connections, browse schemas and tables, find rows referencing a
-    row's primary key, find rows referenced by a row's foreign keys, and edit
-    table data (inserting new rows, and editing or deleting existing rows).
+    database connections, browse schemas and tables, traverse relations by
+    finding rows referencing a row's primary key, traverse relations by finding
+    rows referenced by a row's foreign keys, edit table data (inserting new
+    rows, and editing or deleting existing rows). When you edit two or more
+    related tables, JDBC Navigator will automatically commit all edits in the
+    right order so as not to violate any constraints at any time.
+    <br>
+    JDBC Navigator runs interactive queries and table loading operations in the
+    background, so the application stays responsive while the query is in
+    progress; you can pause or cancel an incomplete query at any time, and you
+    can also edit incompletely-loaded tables without having to wait for the
+    query to finish.
     <br>
     You can copy and paste rows between tables; when you perform the paste
     operation, you can specify how to map the source table's columns to the
@@ -30,18 +40,23 @@
     <br>
     You can also open a SQL window where you can interactively type SQL
     statements, rather like a terminal, except the window is also a text editor
-    so you can easily tweak your commands and rerun them, and save them to disk
-    so you can reuse them later.
+    so you can easily tweak your statements and rerun them, and save them to
+    disk so you can reuse them later.
     <br>
-    There's also an embedded JavaScript interpreter, through which you can
-    access the contents of table editing windows.
+    There's also an embedded JavaScript interpreter, which you can use to load
+    tables, edit their contents, and query their meta-data; the JavaScript
+    interpreter allows you to access the same underlying data objects that are
+    displayed on the screen, so you can load tables interactively, then
+    manipulate their data using JavaScript procedures, and so on. You can also
+    run SQL commands from JavaScript code, using the provided embedding of the
+    <code>java.sql.Statement</code>, <code>java.sql.PreparedStatement</code>,
+    and <code>java.sql.CallableStatement</code> interfaces. See <a
+    href="javascript_embedding.txt">here</a> for details.
     <p>
-    Interested? Download <a href="jdbcnav.zip">jdbcnav.zip</a> (1241421 bytes;
-    MD5 checksum: 4183416af61f890832137e92c4b9c3eb), which contains JDBC
-    Navigator, <a href="http://www.mozilla.org/rhino/">Rhino</a> (a
-    free-as-in-speech JavaScript engine), and <a
-    href="http://xml.apache.org/xerces-j/">Xerces</a> (a free-as-in-speech XML
-    parser). JDBC Navigator needs Rhino and Xerces to be in the classpath.
+    Interested? Download <a href="jdbcnav.jar">jdbcnav.jar</a> (1069518 bytes;
+    MD5 checksum: fe4eda222a5e30876c06a0ad9a6a0267), which contains JDBC
+    Navigator and <a href="http://www.mozilla.org/rhino/">Rhino</a> (a
+    free-as-in-speech JavaScript engine, used by JDBC Navigator).
     <br>
     In addition to this, you will need JDBC drivers for your databases. These
     should be provided by your RDBMS vendor. For Oracle, the file to look for
@@ -49,25 +64,22 @@
     <br>
     Did I mention JDBC Navigator is a Java application? You will need Java to
     run this thing; <a href="http://java.sun.com/j2se/">Sun's JDK or JRE</a>,
-    version 1.2.2 or later, will do the job (1.4 or later recommended).
+    version 1.4 or later, will do the job.
     <p>
-    How to use: put the jar files from <code>jdbcnav.zip</code>, and the JDBC
-    driver(s), in one directory; cd to that directory and say
+    How to use: put <code>jdbcnav.jar</code> wherever you like; cd to that
+    directory and say
     <p>
-    <code>&nbsp;&nbsp;&nbsp;&nbsp;java -classpath
-    jdbcnav.jar;js.jar;xerces.jar;classes12.jar
-    thomas.jdbcnavigator.JDBCNavigator</code>
+    <code>&nbsp;&nbsp;&nbsp;&nbsp;java -jar jdbcnav.jar</code>
     <p>
-    If you are using Unix, replace the semicolons in the above command with
-    colons.
-    <br>
-    Note: the above example assumes you are using Oracle 9; if you are using a
-    different RDBMS, replace <code>classes12.jar</code> with the appropriate
-    JDBC driver.
-    <br>
-    Also note: if you want to access more than one database at the same time,
-    and if those databases require different JDBC drivers, just put all those
-    drivers in the classpath.
+    Alternatively, you may also be able to launch JDBC Navigator by simply
+    double-clicking the jdbcnav.jar icon in the Windows Explorer or Macintosh
+    Finder.
+    <p>
+    Before opening any database connections, you will have to tell JDBC
+    Navigator how to find your JDBC drivers. To do this, select
+    <code>Preferences</code> from the <code>Navigator</code> menu, and add the
+    drivers' <code>zip</code> or <code>jar</code> files to the <code>Class
+    Path</code> list.
     <br>
     If you are accessing multiple databases, and some of those databases are
     different versions of one vendor's product (e.g., you want to access an
@@ -80,7 +92,7 @@
     time; the Oracle 9 driver knows how to talk to Oracle 8 databases, so just
     use that one, and don't put the Oracle 8 driver in the classpath.)
     <p>
-    <b>This version of JDBC Navigator (build 790, dated 9/7/2002) is available
+    <b>This version of JDBC Navigator (build 1958, dated 5/2/2005) is available
     free-as-in-beer, but it is copyrighted</b>. I'm not publishing the
     source code yet. I'm still debating whether or not to turn this into a
     commercial product. Even if I decide to go the commercial route, I want to
@@ -89,17 +101,18 @@
     out of the tool even without the source.
     <p>
     Questions? Comments? Suggestions? Bug reports? Contact me, Thomas Okken, at
-    <img src="me.gif" width="153" height="10" align="baseline">.
-    <h3>Screen Shots</h3>
-    These screen shots were taken while running JDBC Navigator under Microsoft
-    Windows. If you run it under a different operating system, the look and
-    feel of the user interface will be different (but the functionality, and
-    the user interface layout, will not change).
+    <img src="thomas.png" width="177" height="15" align="center">.
+
+    <h3>Quick Tour</h3>
+    The following screen shots were taken while running JDBC Navigator under
+    Microsoft Windows. If you run it under a different operating system, the
+    look and feel of the user interface will be different (but the
+    functionality, and the user interface layout, will be the same).
     <br>
-    JDBC Navigator uses the platform's native look and feel by default, but you
-    can override the default by adding <code>motif</code>, <code>metal</code>,
-    or <code>windows</code> at the end of the command line. Note: the Windows
-    look and feel only works under Windows.
+    You can select which look and feel you want to use by selecting
+    <code>Preferences</code> from the <code>Navigator</code> menu, and then
+    selecting the desired option from the menu in the top left corner of the
+    dialog.
     <h4>Opening a connection, browsing tables, manipulating table data using
     the embedded JavaScript interpreter</h4>
     <img src="snapshot1.png" width="900" height="700">
@@ -115,5 +128,8 @@
     <img src="snapshot5.png" width="900" height="700">
     <h4>Finding rows that reference, or are referenced by, another row</h4>
     <img src="snapshot6.png" width="900" height="700">
+
+    <hr>
+    <a href="../index.html">Back to Thomas Okken's Projects home page</a>
 </body>
 </html>
