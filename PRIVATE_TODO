@@ -1,0 +1,16 @@
+ //////////////////////////////////////////////////////////////////////////
+ ///// Use this file to track good & noble plans that you do not wish /////
+ /////            to announce until they're actually done             /////
+ //////////////////////////////////////////////////////////////////////////
+
+Revisit LOB handling: don't load them when running a query; defer loading until
+the user tries to edit the cell in question. Also, after editing, don't write
+them back to the DB immediately, but store a String or byte[] in the model, and
+rely on the (already existing) JDBCDatabase.setObject() magic to make sure they
+get written properly on commit().
+While we're at it... Do I handle *creating* LOBs (i.e. inserting new rows into
+tables with LOB columns) correctly?
+
+Make "Reload Tree", "Clear Cache", and "Remove Orphans" scriptable, so that
+you can mix the SQL embedding and the JDBCNav functionality in one script --
+this could be useful for testing etc.

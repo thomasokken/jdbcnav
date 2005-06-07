@@ -31,9 +31,9 @@ public class MyFrame extends JInternalFrame {
     public void showCentered() {
 	JDesktopPane desktop = Main.getDesktop();
 	desktop.add(this);
-	Dimension d1 = getSize();
-	Dimension d2 = desktop.getSize();
-	setLocation((d2.width - d1.width) / 2, (d2.height - d1.height) / 2);
+	Dimension ws = getSize();
+	Dimension ds = desktop.getSize();
+	setLocation((ds.width - ws.width) / 2, (ds.height - ws.height) / 2);
 	setVisible(true);
 	Main.addToWindowsMenu(this);
     }
@@ -49,13 +49,24 @@ public class MyFrame extends JInternalFrame {
 	    Point inner = getRootPane().getLocationOnScreen();
 	    titleBarHeight = inner.y - outer.y;
 	} else {
-	    Dimension d = desktop.getSize();
+	    Dimension ws = getSize();
+	    Dimension ds = desktop.getSize();
 	    position.x += titleBarHeight;
-	    if (position.x > d.width / 2)
+	    if (position.x > ds.width / 2)
 		position.x = 0;
+	    else if (position.x + ws.width > ds.width) {
+		position.x = ds.width - ws.width;
+		if (position.x < 0)
+		    position.x = 0;
+	    }
 	    position.y += titleBarHeight;
-	    if (position.y > d.height / 2)
+	    if (position.y > ds.height / 2)
 		position.y = 0;
+	    else if (position.y + ws.height > ds.height) {
+		position.y = ds.height - ws.height;
+		if (position.y < 0)
+		    position.y = 0;
+	    }
 	    setLocation(position);
 	    setVisible(true);
 	}
