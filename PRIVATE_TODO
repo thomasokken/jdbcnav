@@ -10,6 +10,9 @@ rely on the (already existing) JDBCDatabase.setObject() magic to make sure they
 get written properly on commit().
 While we're at it... Do I handle *creating* LOBs (i.e. inserting new rows into
 tables with LOB columns) correctly?
+Note: instead of cleaning up LOB handling, I could also simply try to document
+the current behavior. After all, it's not as if it's broken at the moment; it's
+just confusing as to what gets read and written when.
 
 Make "Reload Tree", "Clear Cache", and "Remove Orphans" scriptable, so that
 you can mix the SQL embedding and the JDBCNav functionality in one script --
