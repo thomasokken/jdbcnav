@@ -52,21 +52,13 @@ public class MyFrame extends JInternalFrame {
 	    Dimension ws = getSize();
 	    Dimension ds = desktop.getSize();
 	    position.x += titleBarHeight;
-	    if (position.x > ds.width / 2)
+	    if (position.x > ds.width / 2
+		    || position.x + ws.width > ds.width)
 		position.x = 0;
-	    else if (position.x + ws.width > ds.width) {
-		position.x = ds.width - ws.width;
-		if (position.x < 0)
-		    position.x = 0;
-	    }
 	    position.y += titleBarHeight;
-	    if (position.y > ds.height / 2)
+	    if (position.y > ds.height / 2
+		    || position.y + ws.height > ds.height)
 		position.y = 0;
-	    else if (position.y + ws.height > ds.height) {
-		position.y = ds.height - ws.height;
-		if (position.y < 0)
-		    position.y = 0;
-	    }
 	    setLocation(position);
 	    setVisible(true);
 	}
