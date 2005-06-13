@@ -1,4 +1,4 @@
-?? ??? ????:
+13 June 2005:
 *) Added custom layout manager to the Windows menu, so it stays usable even
 when very many windows are open.
 *) Added code to window placement code to ensure that new windows are placed
