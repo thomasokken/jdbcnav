@@ -38,6 +38,7 @@ public class MyTable extends JTable {
 	setDefaultRenderer(Object.class, new FastTableCellRenderer());
 	setDefaultRenderer((new byte[1]).getClass(), new ByteArrayRenderer());
 	setDefaultRenderer(java.sql.Blob.class, new BlobRenderer());
+	setDefaultRenderer(java.sql.Clob.class, new FastTableCellRenderer());
 
 	try {
 	    Class bfileClass = Class.forName("oracle.sql.BFILE");
