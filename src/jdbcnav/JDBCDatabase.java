@@ -1975,7 +1975,7 @@ public class JDBCDatabase extends BasicDatabase {
 		    Object[] row = new Object[columns];
 		    for (int i = 0; i < columns; i++) {
 			Object o = rs.getObject(i + 1);
-			if (isClob[i]) {
+			if (isClob[i] && o != null) {
 			    // TODO -- why special case handling for Clobs?
 			    // Why not treat them exactly like Blobs, i.e.,
 			    // put the Clob object in the Data object, and

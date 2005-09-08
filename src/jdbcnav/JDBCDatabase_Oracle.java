@@ -262,9 +262,23 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
     protected void setObject(PreparedStatement stmt, int index,
 			     int dbtable_col, Object o,
 			     Table table) throws SQLException {
-	if (o != null &&
-		((HasStreamingInfo) table).getNeedsStreaming()[dbtable_col]) {
-	    if (o instanceof String) {
+	if (((HasStreamingInfo) table).getNeedsStreaming()[dbtable_col]) {
+	    if (o == null) {
+		// Oracle returns 1111 (OTHER) for BLOB and CLOB columns;
+		// passing this value to PreparedStatement.setObject(int index,
+		// Object o, int sqlType) causes the JDBC driver to throw a
+		// SQLException with the message "Invalid column type".
+		// I avoid this error by calling setString() or setBytes()
+		// instead of setObject().
+		// This code also executes for LONG and LONG RAW columns, which
+		// is just as well, since the code below does not handle NULL
+		// anyway.
+		String dbType = table.getDbTypes()[dbtable_col];
+		if ("CLOB".equals(dbType) || "LONG".equals(dbType))
+		    stmt.setString(index, null);
+		else
+		    stmt.setBytes(index, null);
+	    } else if (o instanceof String) {
 		String s = (String) o;
 		stmt.setCharacterStream(index, new StringReader(s), s.length());
 	    } else if (o instanceof byte[]) {
