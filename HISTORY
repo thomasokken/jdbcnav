@@ -1,3 +1,9 @@
+8 September 2005:
+*) Fixed handling of NULL values in CLOB, BLOB, LONG, and LONG RAW columns.
+*) Fixed NullPointerException that occurred in CLOB columns when the Java type
+returned by ResultSetMetaData.getColumnClassName() was an interface rather than
+a class (affects DB2).
+
 13 June 2005:
 *) Added custom layout manager to the Windows menu, so it stays usable even
 when very many windows are open.
