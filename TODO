@@ -12,3 +12,8 @@ style "hourglass+arrow" cursor for QueryResultFrame while query is in progess.
 Oracle INTERVAL type support
 
 Support for additional database products (MySQL, DB2, etc.).
+
+Script generation should use a two-stage process, using an intermediate data
+type specification. This is needed to fix the current situation, where there
+have to be (n+1)^2 script generators; with a flexible intermediate language,
+this can be reduced to 2*(n+1).

@@ -1,3 +1,10 @@
+25 October 2005:
+*) Added Transbase driver; this is needed because the Transbase JDBC driver
+does not support ResultSetMetaData.getCatalogName() etc. (no surprises there,
+I guess -- I have not seen *any* JDBC drivers yet that support this). The
+new driver fixes the situation that simple queries in the SQL window do not
+work.
+
 8 September 2005:
 *) Fixed handling of NULL values in CLOB, BLOB, LONG, and LONG RAW columns.
 *) Fixed NullPointerException that occurred in CLOB columns when the Java type
