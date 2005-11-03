@@ -29,6 +29,8 @@ public interface Table extends Comparable {
     Data getData(boolean async) throws NavigatorException;
     Data getPKValues() throws NavigatorException;
 
+    TypeDescription getTypeDescription(int column);
+
     void updateDetails() throws NavigatorException;
     void makeOrphan();
     void tryNextOrphanName();

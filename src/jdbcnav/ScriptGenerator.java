@@ -10,11 +10,14 @@ import jdbcnav.model.ForeignKey;
 import jdbcnav.model.Index;
 import jdbcnav.model.PrimaryKey;
 import jdbcnav.model.Table;
+import jdbcnav.model.TypeDescription;
 import jdbcnav.util.MiscUtils;
 import jdbcnav.util.NavigatorException;
 
 
 public class ScriptGenerator {
+
+    protected static final double LOG10_2 = Math.log(2) / Math.log(10);
 
     ////////////////////////
     ///// Overridables /////
@@ -51,216 +54,149 @@ public class ScriptGenerator {
     }
 
     /**
+     * Generate a vendor-neutral column data type description.
+     * <br>
+     * When a CREATE script is generated for a different RDBMS product than
+     * the source, data types must be translated, since each product has its
+     * own idiosyncrasies. The translation is performed in two steps: first,
+     * this method is called to convert the data type to a generic form;
+     * second, printType() is called to convert the generic form to a form
+     * appropriate for the destination RDBMS product. The getTypeDescription()
+     * call should be performed on a ScriptGenerator object that matches the
+     * source DB (in the case of FileDatabase, use the internalDriverName
+     * property to determine the source DB that the snapshot was originally
+     * taken from); the printType() call is performed on the ScriptGenerator
+     * instance that is actually generating the script.
+     * <br>
+     * The generic version of this method claims ignorance about all data types
+     * and simply returns the type as described by the JDBC driver; subclasses
+     * should override this method and return accurate descriptions for all the
+     * source RDBMS' native types.
+     */
+    public TypeDescription getTypeDescription(String dbType, Integer size,
+					      Integer scale) {
+	// TODO: Optionally use sqlType instead of dbType, and try to take
+	// a reasonable stab at describing the exact data types.
+
+	TypeDescription td = new TypeDescription();
+	td.type = TypeDescription.UNKNOWN;
+
+	// The 'size', 'scale', and 'national_char' fields only have meaning
+	// when 'type' is set to something that requires them; their meaning
+	// depends on 'type' (for example, 'size' can refer to a number of
+	// characters, digits, or bits, etc.). They are *not* equivalent to the
+	// 'size' and 'scale' fields in jdbcnav.model.Table.
+
+	// The 'part_of_key', 'part_of_index', and 'native_representation'
+	// fields are filled in in BasicTable.getTypeDescription().
+	return td;
+    }
+
+    /**
      * Every database has its own needs when it comes to representing its
      * data types in SQL scripts... printType() should take a table's
      * originating driver (table.getDatabase().getIntenalDriverName()) into
      * account when trying to find the best way to represent the originating
      * data type in terms of the target's SQL dialect.
      */
-    protected String printType(Table table, int column) {
-	String driver = table.getDatabase().getInternalDriverName();
-	String name = table.getDbTypes()[column];
-	Integer size = table.getColumnSizes()[column];
-	Integer scale = table.getColumnScales()[column];
+    protected String printType(TypeDescription td) {
+	switch (td.type) {
+	    case TypeDescription.UNKNOWN: {
+		return td.native_representation;
+	    }
+	    case TypeDescription.FIXED: {
+		if (td.size_in_bits && td.scale == 0) {
+		    if (td.size <= 16)
+			return "SMALLINT";
+		    else if (td.size <= 32)
+			return "INTEGER";
+		    else if (td.size <= 64)
+			return "BIGINT";
+		}
 
-	if (driver.equals("Oracle")) {
+		int size;
+		if (td.size_in_bits)
+		    size = (int) Math.ceil(td.size * LOG10_2);
+		else
+		    size = td.size;
 
-	    if (name.equals("CHAR"))
-		return "CHARACTER(" + size + ")";
-	    else if (name.equals("VARCHAR2"))
-		return "CHARACTER VARYING(" + size + ")";
-	    else if (name.equals("NCHAR"))
-		return "NATIONAL CHARACTER(" + size + ")";
-	    else if (name.equals("NVARCHAR2"))
-		return"NATIONAL CHARACTER VARYING(" + size + ")"; 
-	    else if (name.equals("NUMBER")) {
-		if (scale == null)
-		    return "DOUBLE PRECISION";
-		else if (scale.intValue() == 0)
+		int scale;
+		if (td.scale_in_bits)
+		    scale = (int) Math.ceil(td.scale * LOG10_2);
+		else
+		    scale = td.scale;
+
+		if (scale == 0)
 		    return "NUMERIC(" + size + ")";
 		else
 		    return "NUMERIC(" + size + ", " + scale + ")";
-	    } else if (name.equals("FLOAT"))
-		// Not a true Oracle type?
-		return "FLOAT(" + size + ")";
-	    else if (name.equals("LONG"))
-		return "LONGVARCHAR";
-	    else if (name.equals("RAW"))
-		return "VARBINARY(" + size + ")";
-	    else if (name.equals("LONG RAW"))
-		return "LONGVARBINARY";
-	    else if (name.equals("DATE"))
-		return "TIMESTAMP";
-	    else if (name.equals("BLOB"))
+	    }
+	    case TypeDescription.FLOAT: {
+		if (td.size > (td.size_in_bits ? 24 : 7))
+		    return "DOUBLE PRECISION";
+		if (td.exp_of_2) {
+		    if (td.min_exp < -127 || td.max_exp > 127)
+			return "DOUBLE PRECISION";
+		} else {
+		    if (td.min_exp < -38 || td.max_exp > 38)
+			return "DOUBLE PRECISION";
+		}
+		return "REAL";
+	    }
+	    case TypeDescription.CHAR: {
+		return "CHAR(" + td.size + ")";
+	    }
+	    case TypeDescription.VARCHAR: {
+		return "CHAR VARYING(" + td.size + ")";
+	    }
+	    case TypeDescription.LONGVARCHAR: {
+		// TODO: is this SQL92?
+		return "CLOB";
+	    }
+	    case TypeDescription.NCHAR: {
+		return "NCHAR(" + td.size + ")";
+	    }
+	    case TypeDescription.VARNCHAR: {
+		return "NCHAR VARYING(" + td.size + ")";
+	    }
+	    case TypeDescription.LONGVARNCHAR: {
+		// TODO: is this SQL92?
+		return "NCLOB";
+	    }
+	    case TypeDescription.RAW:
+	    case TypeDescription.VARRAW: {
+		// TODO: is this SQL92?
+		return "RAW(" + td.size + ")";
+	    }
+	    case TypeDescription.LONGVARRAW: {
+		// TODO: is this SQL92?
 		return "BLOB";
-	    else if (name.equals("CLOB"))
-		return "CLOB";
-	    else if (name.equals("NCLOB"))
-		// I'm just making this one up, but who knows, java.sql.Types
-		// doesn't mention NATIONAL CHARACTER either. Who's lying,
-		// java.sql.Types or the Oracle SQL reference, page 2-5? Eh.
-		return "NATIONAL CLOB";
-	    else if (name.equals("BFILE"))
-		// I doubt if ANSI even has something like this... But I have
-		// to return something.
-		return "BFILE";
-	    else if (name.equals("ROWID"))
-		return "ROWID";
-	    else if (name.equals("UROWID"))
-		return "UROWID(" + size + ")";
-	    else {
-		// Unexpected value... Print as is and hope the user can
-		// straighten out the SQL script manually.
-		if (size == null)
-		    return name;
-		else if (scale == null)
-		    return name + "(" + size + ")";
-		else
-		    return name + "(" + size + ", " + scale + ")";
 	    }
-
-	} else if (driver.equals("PostgreSQL")) {
-
-	    if (name.equals("biginit")
-		    || name.equals("int8"))
-		return "BIGINT";
-	    else if (name.equals("integer")
-		    || name.equals("int")
-		    || name.equals("int4"))
-		return "INTEGER";
-	    else if (name.equals("smallint")
-		    || name.equals("int2"))
-		return "SMALLINT";
-	    else if (name.equals("real")
-		    || name.equals("float4"))
-		return "REAL";
-	    else if (name.equals("double precision")
-		    || name.equals("float8"))
-		return "DOUBLE PRECISION";
-	    else if (name.equals("numeric")
-		    || name.equals("decimal")) {
-		if (size.intValue() == 65535 && scale.intValue() == 65531)
-		    // Is there an ANSI way to specify NUMERIC
-		    // without scale coercion?
-		    return "DOUBLE PRECISION";
-		else if (scale.intValue() == 0)
-		    return "NUMERIC(" + size + ")";
-		else
-		    return "NUMERIC(" + size + ", " + scale + ")";
-	    } else if (name.equals("date"))
+	    case TypeDescription.DATE: {
 		return "DATE";
-	    else if (name.equals("time"))
+	    }
+	    case TypeDescription.TIME: {
 		return "TIME";
-	    else if (name.equals("timestamp"))
-		return "TIMESTAMP";
-	    else if (name.equals("bytea"))
-		return "BLOB"; // VARBINARY? LONGVARBINARY?
-	    else if (name.equals("char")
-		    || name.equals("character"))
-		return "CHARACTER(" + size + ")";
-	    else if (name.equals("varchar")
-		    || name.equals("character varying"))
-		if (size.intValue() == 0)
-		    return "CLOB"; // LONGVARCHAR?
-		else
-		    return "CHARACTER VARYING(" + size + ")";
-	    else if (name.equals("text"))
-		return "CLOB"; // LONGVARCHAR?
-	    else {
-		// Unsupported value, such as one of PostgreSQL's geometric
-		// data types... Return what we can and let the user try to
-		// figure it out.
-		if (size == null)
-		    return name;
-		else if (scale == null)
-		    return name + "(" + size + ")";
-		else
-		    return name + "(" + size + ", " + scale + ")";
 	    }
-
-	} else if (driver.equals("SmallSQL")) {
-
-	    if (name.equals("BIT")
-		    || name.equals("BOOLEAN"))
-		return "BOOLEAN";
-	    else if (name.equals("TINYINT")
-		    || name.equals("BYTE"))
-		return "TINYINT";
-	    else if (name.equals("SMALLINT"))
-		return "SMALLINT";
-	    else if (name.equals("INT"))
-		return "INTEGER";
-	    else if (name.equals("BIGINT"))
-		return "BIGINT";
-	    else if (name.equals("REAL"))
-		return "REAL";
-	    else if (name.equals("DOUBLE")
-		    || name.equals("FLOAT"))
-		return "DOUBLE PRECISION";
-	    else if (name.equals("MONEY"))
-		return "NUMERIC(19, 4)";
-	    else if (name.equals("SMALLMONEY"))
-		return "NUMERIC(10, 4)";
-	    else if (name.equals("NUMERIC")
-		    || name.equals("DECIMAL")
-		    || name.equals("NUMBER")
-		    || name.equals("VARNUM")) {
-		if (scale == null)
-		    return "NUMERIC(" + size + ")";
-		else
-		    return "NUMERIC(" + size + ", " + scale + ")";
-	    } else if (name.equals("CHAR")
-		    || name.equals("CHARACTER")
-		    || name.equals("NCHAR"))
-		return "CHARACTER(" + size + ")";
-	    else if (name.equals("VARCHAR")
-		    || name.equals("NVARCHAR")
-		    || name.equals("VARCHAR2")
-		    || name.equals("NVARCHAR2"))
-		return "CHARACTER VARYING(" + size + ")";
-	    else if (name.equals("LONGVARCHAR")
-		    || name.equals("TEXT")
-		    || name.equals("LONG"))
-		return "LONGVARCHAR";
-	    else if (name.equals("LONGNVARCHAR")
-		    || name.equals("NTEXT"))
-		return "LONGNVARCHAR"; // NATIONAL CLOB? (See the Oracle case)
-	    else if (name.equals("CLOB"))
-		return "CLOB";
-	    // The following are types not mentioned in the SmallSQL doc,
-	    // but which do occur in the sample database...
-	    else if (name.equals("BINARY"))
-		return "BINARY(" + size + ")"; // Is this SQL?
-	    else if (name.equals("VARBINARY"))
-		return "VARBINARY(" + size + ")";
-	    else if (name.equals("LONGVARBINARY"))
-		return "LONGVARBINARY";
-	    else if (name.equals("DATETIME")
-		    || name.equals("SMALLDATETIME"))
-		return "TIMESTAMP";
-	    else {
-		// Unexpected value... Print as is and hope the user can
-		// straighten out the SQL script manually.
-		System.out.println("Unrecognized: \"" + name + "\"");
-		if (size == null)
-		    return name;
-		else if (scale == null)
-		    return name + "(" + size + ")";
-		else
-		    return name + "(" + size + ", " + scale + ")";
+	    case TypeDescription.TIME_TZ: {
+		return "TIME WITH TIME ZONE";
 	    }
-
-	} else { // driver = "Generic" or unknown
-
-	    int sqlType = table.getSqlTypes()[column];
-	    String sqlName = MiscUtils.sqlTypeIntToString(sqlType);
-	    if (size == null)
-		return sqlName;
-	    else if (scale == null)
-		return sqlName + "(" + size + ")";
-	    else
-		return sqlName + "(" + size + ", " + scale + ")";
-	
+	    case TypeDescription.TIMESTAMP: {
+		return "TIMESTAMP";
+	    }
+	    case TypeDescription.TIMESTAMP_TZ: {
+		return "TIMESTAMP WITH TIME ZONE";
+	    }
+	    case TypeDescription.INTERVAL_YM: {
+		return "INTERVAL YEAR TO MONTH";
+	    }
+	    case TypeDescription.INTERVAL_DS: {
+		return "INTERVAL DAY TO SECOND";
+	    }
+	    default: {
+		// TODO - Warning (internal error); should never get here
+		return td.native_representation;
+	    }
 	}
     }
 
@@ -370,7 +306,7 @@ public class ScriptGenerator {
 	    buf.append("\n    ");
 	    buf.append(table.getColumnNames()[i]);
 	    buf.append(" ");
-	    buf.append(printType(table, i));
+	    buf.append(printType(table.getTypeDescription(i)));
 	    if (!"YES".equals(table.getIsNullable()[i]))
 		buf.append(" not null");
 	}
@@ -869,7 +805,7 @@ public class ScriptGenerator {
     private static ScriptGenerator genericInstance = new ScriptGenerator();
 
     public static String[] getNames() {
-	return new String[] { "Generic", /*"DBTypes",*/ "Oracle",
+	return new String[] { "Generic", "Oracle", "Oracle8",
 			      "PostgreSQL", "SmallSQL" };
     }
 

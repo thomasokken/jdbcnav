@@ -1,156 +1,250 @@
 package jdbcnav;
 
-import jdbcnav.model.Table;
-import jdbcnav.util.MiscUtils;
+import jdbcnav.model.TypeDescription;
 
 public class ScriptGenerator_SmallSQL extends ScriptGenerator {
-    protected String printType(Table table, int column) {
-	String driver = table.getDatabase().getInternalDriverName();
-	String name = table.getDbTypes()[column];
-	Integer size = table.getColumnSizes()[column];
-	Integer scale = table.getColumnScales()[column];
+    public TypeDescription getTypeDescription(String dbType, Integer size,
+					      Integer scale) {
+	// NOTE: We don't populate the part_of_key, part_of_index, and
+	// native_representation here; that is left to our caller,
+	// BasicTable.getTypeDescription().
 
-	if (driver.equals("Oracle")) {
+	TypeDescription td = new TypeDescription();
 
-	    if (name.equals("CHAR")
-		    || name.equals("NCHAR"))
-		return "CHAR(" + size + ")";
-	    else if (name.equals("VARCHAR2")
-		    || name.equals("NVARCHAR2"))
-		return "VARCHAR(" + size + ")";
-	    else if (name.equals("NUMBER")) {
-		if (scale == null)
-		    return "DOUBLE";
-		else if (scale.intValue() == 0)
+	if (dbType.equals("BIT")
+		|| dbType.equals("BOOLEAN")) {
+	    td.type = TypeDescription.FIXED;
+	    td.size = 1;
+	    td.size_in_bits = true;
+	    td.scale = 0;
+	    td.scale_in_bits = true;
+	} else if (dbType.equals("TINYINT")
+		|| dbType.equals("BYTE")) {
+	    td.type = TypeDescription.FIXED;
+	    td.size = 8;
+	    td.size_in_bits = true;
+	    td.scale = 0;
+	    td.scale_in_bits = true;
+	} else if (dbType.equals("SMALLINT")) {
+	    td.type = TypeDescription.FIXED;
+	    td.size = 16;
+	    td.size_in_bits = true;
+	    td.scale = 0;
+	    td.scale_in_bits = true;
+	} else if (dbType.equals("INT")) {
+	    td.type = TypeDescription.FIXED;
+	    td.size = 32;
+	    td.size_in_bits = true;
+	    td.scale = 0;
+	    td.scale_in_bits = true;
+	} else if (dbType.equals("BIGINT")) {
+	    td.type = TypeDescription.FIXED;
+	    td.size = 64;
+	    td.size_in_bits = true;
+	    td.scale = 0;
+	    td.scale_in_bits = true;
+	} else if (dbType.equals("REAL")) {
+	    td.type = TypeDescription.FLOAT;
+	    td.size = 24;
+	    td.size_in_bits = true;
+	    td.min_exp = -127;
+	    td.max_exp = 127;
+	    td.exp_of_2 = true;
+	} else if (dbType.equals("DOUBLE")
+		|| dbType.equals("FLOAT")) {
+	    td.type = TypeDescription.FLOAT;
+	    td.size = 54;
+	    td.size_in_bits = true;
+	    td.min_exp = -1023;
+	    td.max_exp = 1023;
+	    td.exp_of_2 = true;
+	} else if (dbType.equals("MONEY")) {
+	    // TODO - verify
+	    td.type = TypeDescription.FIXED;
+	    td.size = 64;
+	    td.size_in_bits = true;
+	    td.scale = 4;
+	    td.scale_in_bits = false;
+	} else if (dbType.equals("SMALLMONEY")) {
+	    // TODO - verify
+	    td.type = TypeDescription.FIXED;
+	    td.size = 32;
+	    td.size_in_bits = true;
+	    td.scale = 4;
+	    td.scale_in_bits = false;
+	} else if (dbType.equals("NUMERIC")
+		|| dbType.equals("DECIMAL")
+		|| dbType.equals("NUMBER")
+		|| dbType.equals("VARNUM")) {
+	    td.type = TypeDescription.FIXED;
+	    td.size = size.intValue();
+	    td.size_in_bits = false;
+	    td.scale = scale.intValue();
+	    td.scale_in_bits = false;
+	} else if (dbType.equals("CHAR")
+		|| dbType.equals("CHARACTER")) {
+	    td.type = TypeDescription.CHAR;
+	    td.size = size.intValue();
+	} else if (dbType.equals("NCHAR")) {
+	    td.type = TypeDescription.NCHAR;
+	    td.size = size.intValue();
+	} else if (dbType.equals("VARCHAR")
+		|| dbType.equals("VARCHAR2")) {
+	    td.type = TypeDescription.VARCHAR;
+	    td.size = size.intValue();
+	} else if (dbType.equals("NVARCHAR")
+		|| dbType.equals("NVARCHAR2")) {
+	    td.type = TypeDescription.VARNCHAR;
+	    td.size = size.intValue();
+	} else if (dbType.equals("LONGVARCHAR")
+		|| dbType.equals("TEXT")
+		|| dbType.equals("LONG")
+		|| dbType.equals("CLOB")) {
+	    td.type = TypeDescription.LONGVARCHAR;
+	} else if (dbType.equals("LONGNVARCHAR")
+		|| dbType.equals("NTEXT")) {
+	    td.type = TypeDescription.LONGVARNCHAR;
+	// The following are types not mentioned in the SmallSQL doc,
+	// but which do occur in the sample database...
+	} else if (dbType.equals("BINARY")) {
+	    td.type = TypeDescription.VARRAW;
+	    td.size = size.intValue();
+	} else if (dbType.equals("VARBINARY")) {
+	    td.type = TypeDescription.VARRAW;
+	    td.size = size.intValue();
+	} else if (dbType.equals("LONGVARBINARY")) {
+	    td.type = TypeDescription.LONGVARRAW;
+	} else if (dbType.equals("DATETIME")
+		|| dbType.equals("SMALLDATETIME"))
+	    td.type = TypeDescription.TIMESTAMP;
+	else {
+	    // Unexpected/unsupported value. Don't know how to handle it so
+	    // we tag it UNKNOWN, which will cause the script generator to pass
+	    // it on uninterpreted and unchanged.
+	    td.type = TypeDescription.UNKNOWN;
+	}
+
+	return td;
+    }
+
+    protected String printType(TypeDescription td) {
+	switch (td.type) {
+	    case TypeDescription.UNKNOWN: {
+		return td.native_representation;
+	    }
+	    case TypeDescription.FIXED: {
+		if (td.size_in_bits) {
+		    // Look for best match within SmallSQL's binary types.
+		    if (td.scale == 0) {
+			if (td.size == 1)
+			    return "BIT";
+			else if (td.size <= 8)
+			    return "TINYINT";
+			else if (td.size <= 16)
+			    return "SMALLINT";
+			else if (td.size <= 32)
+			    return "INT";
+			else if (td.size <= 64)
+			    return "BIGINT";
+		    } else if (!td.scale_in_bits && td.scale == 4) {
+			if (td.size <= 32)
+			    return "SMALLMONEY";
+			else if (td.size <= 64)
+			    return "MONEY";
+		    }
+		}
+
+		int size;
+		if (td.size_in_bits)
+		    size = (int) Math.ceil(td.size * LOG10_2);
+		else
+		    size = td.size;
+		// TODO - check limits on size
+
+		int scale;
+		if (td.scale_in_bits)
+		    scale = (int) Math.ceil(td.scale * LOG10_2);
+		else
+		    scale = td.scale;
+		// TODO - check limits on scale
+
+		if (scale == 0)
 		    return "NUMERIC(" + size + ")";
 		else
 		    return "NUMERIC(" + size + ", " + scale + ")";
-	    } else if (name.equals("FLOAT"))
-		// Not a true Oracle type?
+	    }
+	    case TypeDescription.FLOAT: {
+		int size;
+		if (td.size_in_bits)
+		    size = td.size;
+		else
+		    size = (int) Math.ceil(td.size / LOG10_2);
+		
+		int min_exp, max_exp;
+		if (td.exp_of_2) {
+		    min_exp = td.min_exp;
+		    max_exp = td.max_exp;
+		} else {
+		    min_exp = (int) -Math.ceil(-td.min_exp / LOG10_2);
+		    max_exp = (int) Math.ceil(td.max_exp / LOG10_2);
+		}
+		
+		if (size <= 24 && min_exp >= -127 && max_exp <= 127)
+		    return "REAL";
+		if (size > 54 || min_exp < -1023 || max_exp > 1023)
+		    /* TODO - Warning */;
 		return "DOUBLE";
-	    else if (name.equals("LONG")
-		    || name.equals("CLOB")
-		    || name.equals("NCLOB"))
+	    }
+	    case TypeDescription.CHAR: {
+		return "CHAR(" + td.size + ")";
+	    }
+	    case TypeDescription.NCHAR: {
+		return "NCHAR(" + td.size + ")";
+	    }
+	    case TypeDescription.VARCHAR: {
+		return "VARCHAR(" + td.size + ")";
+	    }
+	    case TypeDescription.VARNCHAR: {
+		return "NVARCHAR(" + td.size + ")";
+	    }
+	    case TypeDescription.LONGVARCHAR: {
 		return "LONGVARCHAR";
-	    else if (name.equals("RAW")
-		    || name.equals("LONG RAW")
-		    || name.equals("BLOB"))
+	    }
+	    case TypeDescription.LONGVARNCHAR: {
+		return "LONGNVARCHAR";
+	    }
+	    case TypeDescription.RAW: {
+		return "BINARY(" + td.size + ")";
+	    }
+	    case TypeDescription.VARRAW: {
+		return "VARBINARY(" + td.size + ")";
+	    }
+	    case TypeDescription.LONGVARRAW: {
 		return "LONGVARBINARY";
-	    else if (name.equals("DATE"))
-		return "DATETIME";
-	    else {
-		// Unsupported value... Print as is and hope the user can
-		// straighten out the SQL script manually.
-		if (size == null)
-		    return name;
-		else if (scale == null)
-		    return name + "(" + size + ")";
-		else
-		    return name + "(" + size + ", " + scale + ")";
 	    }
-
-	} else if (driver.equals("PostgreSQL")) {
-
-	    if (name.equals("biginit")
-		    || name.equals("int8"))
-		return "BIGINT)";
-	    else if (name.equals("integer")
-		    || name.equals("int")
-		    || name.equals("int4"))
-		return "INT";
-	    else if (name.equals("smallint")
-		    || name.equals("int2"))
-		return "SMALLINT";
-	    else if (name.equals("real")
-		    || name.equals("float4"))
-		return "REAL";
-	    else if (name.equals("double precision")
-		    || name.equals("float8"))
-		return "DOUBLE";
-	    else if (name.equals("numeric")
-		    || name.equals("decimal")) {
-		if (size.intValue() == 65535 && scale.intValue() == 65531)
-		    return "DOUBLE";
-		else if (scale.intValue() == 0)
-		    return "NUMERIC(" + size + ")";
-		else
-		    return "NUMERIC(" + size + ", " + scale + ")";
-	    } else if (name.equals("date")
-		    || name.equals("time")
-		    || name.equals("timestamp"))
-		return "DATETIME";
-	    else if (name.equals("bytea"))
-		return "LONGVARBINARY";
-	    else if (name.equals("char")
-		    || name.equals("bpchar")
-		    || name.equals("character"))
-		return "CHAR(" + size + ")";
-	    else if (name.equals("varchar")
-		    || name.equals("character varying"))
-		if (size.intValue() == 0)
-		    return "LONGVARCHAR";
-		else
-		    return "VARCHAR(" + size + ")";
-	    else if (name.equals("text"))
-		return "LONGVARCHAR";
-	    else {
-		// Unsupported value, such as one of PostgreSQL's geometric
-		// data types... Return what we can and let the user try to
-		// figure it out.
-		if (size == null)
-		    return name;
-		else if (scale == null)
-		    return name + "(" + size + ")";
-		else
-		    return name + "(" + size + ", " + scale + ")";
+	    case TypeDescription.DATE: {
+		return "DATE";
 	    }
-
-	} else if (driver.equals("SmallSQL")) {
-
-	    if (name.equals("NUMERIC")
-		    || name.equals("DECIMAL")
-		    || name.equals("NUMBER")
-		    || name.equals("VARNUM")) {
-		// 'scale' is optional, but the SmallSQL driver
-		// does not distinguish between scale == null and
-		// scale == 0 (null is handled as 0).
-	    } else if (name.equals("CHAR")
-		    || name.equals("CHARACTER")
-		    || name.equals("NCHAR")
-		    || name.equals("VARCHAR")
-		    || name.equals("NVARCHAR")
-		    || name.equals("VARCHAR2")
-		    || name.equals("NVARCHAR2")
-		    || name.equals("BINARY")
-		    || name.equals("VARBINARY")) {
-		scale = null;
-	    } else {
-		size = null;
-		scale = null;
+	    case TypeDescription.TIME:
+	    case TypeDescription.TIME_TZ: {
+		return "TIME";
 	    }
-
-	    if (size == null)
-		return name;
-	    else if (scale == null)
-		return name + "(" + size + ")";
-	    else
-		return name + "(" + size + ", " + scale + ")";
-
-	} else { // driver = "Generic" or unknown
-
-	    // TODO - this code simply prints generic SQL data type names;
-	    // this yields scripts that SmallSQL can't digest. Generate
-	    // appropriate SmallSQL equivalents instead.
-
-	    int sqlType = table.getSqlTypes()[column];
-	    String sqlName = MiscUtils.sqlTypeIntToString(sqlType);
-	    if (size == null)
-		return sqlName;
-	    else if (scale == null)
-		return sqlName + "(" + size + ")";
-	    else
-		return sqlName + "(" + size + ", " + scale + ")";
-	
+	    case TypeDescription.TIMESTAMP:
+	    case TypeDescription.TIMESTAMP_TZ: {
+		return "TIMESTAMP";
+	    }
+	    case TypeDescription.INTERVAL_YM: {
+		// TODO - Warning
+		return "NUMERIC(6)";
+	    }
+	    case TypeDescription.INTERVAL_DS: {
+		// TODO - Warning
+		return "NUMERIC(8)";
+	    }
+	    default: {
+		// TODO - Warning (internal error); should never get here
+		return td.native_representation;
+	    }
 	}
     }
 }

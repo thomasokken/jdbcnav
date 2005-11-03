@@ -1,3 +1,9 @@
+3 November 2005:
+*) Script generation now uses a two-step process to translate data types from
+the source to destination, using a generic intermediate representation. This
+means that instead of n^2 conversion functions for n databases, I now only need
+2*n, which makes adding support for new databases a lot less daunting.
+
 25 October 2005:
 *) Added Transbase driver; this is needed because the Transbase JDBC driver
 does not support ResultSetMetaData.getCatalogName() etc. (no surprises there,

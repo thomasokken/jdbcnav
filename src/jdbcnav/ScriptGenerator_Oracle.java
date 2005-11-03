@@ -4,7 +4,7 @@ import java.text.*;
 import jdbcnav.model.Index;
 import jdbcnav.model.PrimaryKey;
 import jdbcnav.model.Table;
-import jdbcnav.util.MiscUtils;
+import jdbcnav.model.TypeDescription;
 
 public class ScriptGenerator_Oracle extends ScriptGenerator {
     private static SimpleDateFormat dateFormat =
@@ -13,6 +13,8 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	new SimpleDateFormat("HH:mm:ss");
     private static SimpleDateFormat dateTimeFormat =
 	new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    protected boolean oracle10types = true;
 
     protected String getSQLPreamble() {
 	return "set scan off;\n";
@@ -34,205 +36,256 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
     protected String onDeleteString(String del) {
 	return del.equals("cascade") ? del : null;
     }
-    protected String printType(Table table, int column) {
-	String driver = table.getDatabase().getInternalDriverName();
-	String name = table.getDbTypes()[column];
-	Integer size = table.getColumnSizes()[column];
-	Integer scale = table.getColumnScales()[column];
+    public TypeDescription getTypeDescription(String dbType, Integer size,
+					      Integer scale) {
+	// NOTE: We don't populate the part_of_key, part_of_index, and
+	// native_representation here; that is left to our caller,
+	// BasicTable.getTypeDescription().
 
-	if (driver.equals("Oracle")) {
-
-	    if (!name.equals("NUMBER")
-		    && !name.equals("CHAR")
-		    && !name.equals("VARCHAR2")
-		    && !name.equals("NCHAR")
-		    && !name.equals("NVARCHAR2")
-		    && !name.equals("RAW")
-		    && !name.equals("FLOAT")) {
-		size = null;
-		scale = null;
-	    } else if (name.equals("NUMBER")) {
-		if (scale == null)
-		    size = null;
-		else if (scale.intValue() == 0)
-		    scale = null;
+	TypeDescription td = new TypeDescription();
+	if (dbType.equals("CHAR")) {
+	    td.type = TypeDescription.CHAR;
+	    td.size = size.intValue();
+	} else if (dbType.equals("VARCHAR2")) {
+	    td.type = TypeDescription.VARCHAR;
+	    td.size = size.intValue();
+	} else if (dbType.equals("NCHAR")) {
+	    td.type = TypeDescription.NCHAR;
+	    td.size = size.intValue();
+	} else if (dbType.equals("NVARCHAR2")) {
+	    td.type = TypeDescription.VARNCHAR;
+	    td.size = size.intValue();
+	} else if (dbType.equals("NUMBER")) {
+	    if (size == null) {
+		td.type = TypeDescription.FLOAT;
+		td.size = 38;
+		td.size_in_bits = false;
+		td.min_exp = -130;
+		td.max_exp = 125;
+		td.exp_of_2 = false;
+	    } else {
+		td.type = TypeDescription.FIXED;
+		td.size = size.intValue();
+		td.size_in_bits = false;
+		td.scale = scale == null ? 0 : scale.intValue();
+		td.scale_in_bits = false;
 	    }
-	    if (size == null)
-		return name;
-	    else if (scale == null)
-		return name + "(" + size + ")";
-	    else
-		return name + "(" + size + ", " + scale + ")";
+	} else if (dbType.equals("BINARY FLOAT")) {
+	    td.type = TypeDescription.FLOAT;
+	    td.size = 24;
+	    td.size_in_bits = true;
+	    td.min_exp = -127;
+	    td.max_exp = 127;
+	    td.exp_of_2 = true;
+	} else if (dbType.equals("BINARY DOUBLE")) {
+	    td.type = TypeDescription.FLOAT;
+	    td.size = 54;
+	    td.size_in_bits = true;
+	    td.min_exp = -1023;
+	    td.max_exp = 1023;
+	    td.exp_of_2 = true;
+	} else if (dbType.equals("LONG")) {
+	    td.type = TypeDescription.LONGVARCHAR;
+	} else if (dbType.equals("LONG RAW")) {
+	    td.type = TypeDescription.LONGVARRAW;
+	} else if (dbType.equals("RAW")) {
+	    td.type = TypeDescription.VARRAW;
+	    td.size = size.intValue();
+	} else if (dbType.equals("DATE")) {
+	    td.type = TypeDescription.TIMESTAMP;
+	} else if (dbType.equals("TIME")) {
+	    td.type = TypeDescription.TIME;
+	} else if (dbType.equals("TIME WITH TIME ZONE")) {
+	    td.type = TypeDescription.TIME_TZ;
+	} else if (dbType.equals("TIMESTAMP")) {
+	    td.type = TypeDescription.TIMESTAMP;
+	} else if (dbType.equals("TIMESTAMP WITH TIME ZONE")) {
+	    td.type = TypeDescription.TIMESTAMP_TZ;
+	} else if (dbType.equals("INTERVAL YEAR TO MONTH")) {
+	    td.type = TypeDescription.INTERVAL_YM;
+	} else if (dbType.equals("INTERVAL DAY TO SECOND")) {
+	    td.type = TypeDescription.INTERVAL_DS;
+	} else if (dbType.equals("BLOB")) {
+	    td.type = TypeDescription.LONGVARRAW;
+	} else if (dbType.equals("CLOB")) {
+	    td.type = TypeDescription.LONGVARCHAR;
+	} else if (dbType.equals("NCLOB")) {
+	    td.type = TypeDescription.LONGVARNCHAR;
+	} else {
+	    // BFILE, ROWID, UROWID, or something new.
+	    // Don't know how to handle them so we tag them UNKNOWN,
+	    // which will cause the script generator to pass them on
+	    // uninterpreted and unchanged.
+	    td.type = TypeDescription.UNKNOWN;
+	}
 
-	} else if (driver.equals("PostgreSQL")) {
+	return td;
+    }
 
-	    if (name.equals("biginit")
-		    || name.equals("int8"))
-		return "NUMBER(20)";
-	    else if (name.equals("integer")
-		    || name.equals("int")
-		    || name.equals("int4"))
-		return "NUMBER(10)";
-	    else if (name.equals("smallint")
-		    || name.equals("int2"))
-		return "NUMBER(5)";
-	    else if (name.equals("real")
-		    || name.equals("float4"))
-		return "NUMBER";
-	    else if (name.equals("double precision")
-		    || name.equals("float8"))
-		return "NUMBER";
-	    else if (name.equals("numeric")
-		    || name.equals("decimal")) {
-		if (size.intValue() == 65535 && scale.intValue() == 65531)
-		    return "NUMBER";
-		else if (scale.intValue() == 0)
+    protected String printType(TypeDescription td) {
+	switch (td.type) {
+	    case TypeDescription.UNKNOWN: {
+		return td.native_representation;
+	    }
+	    case TypeDescription.FIXED: {
+		int size;
+		if (td.size_in_bits)
+		    size = (int) Math.ceil(td.size * LOG10_2);
+		else
+		    size = td.size;
+		if (size > 38) {
+		    // TODO - Warning
+		    size = 38;
+		}
+
+		int scale;
+		if (td.scale_in_bits)
+		    scale = (int) Math.ceil(td.scale * LOG10_2);
+		else
+		    scale = td.scale;
+		if (scale < -84) {
+		    // TODO - Warning
+		    scale = -84;
+		} else if (scale > 127) {
+		    // TODO - Warning
+		    scale = 127;
+		}
+
+		if (scale == 0)
 		    return "NUMBER(" + size + ")";
 		else
 		    return "NUMBER(" + size + ", " + scale + ")";
-	    } else if (name.equals("date"))
-		return "DATE";
-	    else if (name.equals("time"))
-		return "DATE";
-	    else if (name.equals("timestamp"))
-		return "DATE";
-	    else if (name.equals("bytea"))
-		return "BLOB";
-	    else if (name.equals("char")
-		    || name.equals("bpchar")
-		    || name.equals("character"))
-		return "CHAR(" + size + ")";
-	    else if (name.equals("varchar")
-		    || name.equals("character varying"))
-		if (size.intValue() == 0)
-		    // Unlimited size text... But we don't want to use CLOB
-		    // or LONG because of the restrictions with those types.
-		    // So, make it a maximum-size VARCHAR2.
-		    // TODO: add a mechanism where we can insert a comment into
-		    // the generated SQL to warn users of what's going on (and
-		    // that they should probably analyze their application data
-		    // model to find a more appropriate column size).
-		    return "VARCHAR2(4000)";
-		else
-		    return "VARCHAR2(" + size + ")";
-	    else if (name.equals("text"))
-		// I'm not sure what the difference is in PostgreSQL between
-		// "varchar" with no size specification, and "text"... But they
-		// are distinct data types. I try to take advantage by taking
-		// "text" to be something we can safely substitute an Oracle
-		// "CLOB" for (unless the column is part of an index or a
-		// primary key, in which case Oracle doesn't allow LOBs).
-		if (columnIsPartOfIndex(table, column))
-		    // TODO -- emit comment containing warning
-		    return "VARCHAR2(4000)";
-		else
-		    return "CLOB";
-	    else {
-		// Unsupported value, such as one of PostgreSQL's geometric
-		// data types... Return what we can and let the user try to
-		// figure it out.
-		if (size == null)
-		    return name;
-		else if (scale == null)
-		    return name + "(" + size + ")";
-		else
-		    return name + "(" + size + ", " + scale + ")";
 	    }
-
-	} else if (driver.equals("SmallSQL")) {
-
-	    if (name.equals("BIT")
-		    || name.equals("BOOLEAN"))
-		return "NUMBER(1)";
-	    else if (name.equals("TINYINT")
-		    || name.equals("BYTE"))
-		return "NUMBER(3)";
-	    else if (name.equals("SMALLINT"))
-		return "NUMBER(5)";
-	    else if (name.equals("INT"))
-		return "NUMBER(10)";
-	    else if (name.equals("BIGINT"))
-		return "NUMBER(19)";
-	    else if (name.equals("REAL")
-		    || name.equals("DOUBLE")
-		    || name.equals("FLOAT"))
+	    case TypeDescription.FLOAT: {
+		if (oracle10types) {
+		    int size;
+		    if (td.size_in_bits)
+			size = td.size;
+		    else
+			size = (int) Math.ceil(td.size / LOG10_2);
+		    int min_exp, max_exp;
+		    if (td.exp_of_2) {
+			min_exp = td.min_exp;
+			max_exp = td.max_exp;
+		    } else {
+			min_exp = (int) -Math.ceil(-td.min_exp / LOG10_2);
+			max_exp = (int) Math.ceil(td.max_exp / LOG10_2);
+		    }
+		    if (size <= 24 && min_exp >= -127 && max_exp <= 127)
+			return "BINARY FLOAT";
+		    else if (size <= 54 && min_exp >= -1023 && max_exp <= 1023)
+			return "BINARY DOUBLE";
+		}
+		// TODO: Check for size/min_exp/max_exp out of Oracle's
+		// allowed range -- meaning, size greater than 38 digits,
+		// min_exp less than 10^(-130), or max_exp greater than 10^125.
+		// If this is the case, emit warning.
 		return "NUMBER";
-	    else if (name.equals("MONEY"))
-		return "NUMBER(19, 4)";
-	    else if (name.equals("SMALLMONEY"))
-		return "NUMBER(10, 4)";
-	    else if (name.equals("NUMERIC")
-		    || name.equals("DECIMAL")
-		    || name.equals("NUMBER")
-		    || name.equals("VARNUM")) {
-		if (scale == null || scale.intValue() == 0)
-		    return "NUMBER(" + size + ")";
-		else
-		    return "NUMBER(" + size + ", " + scale + ")";
-	    } else if (name.equals("CHAR")
-		    || name.equals("CHARACTER"))
-		return "CHAR(" + size + ")";
-	    else if (name.equals("NCHAR"))
-		return "NCHAR(" + size + ")";
-	    else if (name.equals("VARCHAR")
-		    || name.equals("VARCHAR2"))
-		return "VARCHAR2(" + size + ")";
-	    else if (name.equals("NVARCHAR")
-		    || name.equals("NVARCHAR2"))
-		return "NVARCHAR2(" + size + ")";
-	    else if (name.equals("LONGVARCHAR")
-		    || name.equals("TEXT")
-		    || name.equals("LONG")
-		    || name.equals("CLOB")) {
-		if (columnIsPartOfIndex(table, column))
-		    // TODO -- emit comment containing warning
+	    }
+	    case TypeDescription.CHAR: {
+		if (td.size > 2000) {
+		    // TODO - Warning
+		    td.size = 2000;
+		}
+		return "CHAR(" + td.size + ")";
+	    }
+	    case TypeDescription.VARCHAR: {
+		if (td.size > 4000) {
+		    // TODO - Warning
+		    td.size = 4000;
+		}
+		return "VARCHAR2(" + td.size + ")";
+	    }
+	    case TypeDescription.LONGVARCHAR: {
+		if (td.part_of_key || td.part_of_index) {
+		    // TODO - Warning
 		    return "VARCHAR2(4000)";
-		else
+		} else
 		    return "CLOB";
-	    } else if (name.equals("LONGNVARCHAR")
-		    || name.equals("NTEXT")) {
-		if (columnIsPartOfIndex(table, column))
-		    // TODO -- emit comment containing warning
+	    }
+	    case TypeDescription.NCHAR: {
+		if (td.size > 2000) {
+		    // TODO - Warning
+		    td.size = 2000;
+		}
+		return "NCHAR(" + td.size + ")";
+	    }
+	    case TypeDescription.VARNCHAR: {
+		if (td.size > 4000) {
+		    // TODO - Warning
+		    td.size = 4000;
+		}
+		return "NVARCHAR2(" + td.size + ")";
+	    }
+	    case TypeDescription.LONGVARNCHAR: {
+		if (td.part_of_key || td.part_of_index) {
+		    // TODO - Warning
 		    return "NVARCHAR2(4000)";
-		else
+		} else
 		    return "NCLOB";
-	    // The following are types not mentioned in the SmallSQL doc,
-	    // but which do occur in the sample database...
-	    } else if (name.equals("BINARY")
-		    || name.equals("VARBINARY"))
-		return "RAW(" + size + ")";
-	    else if (name.equals("LONGVARBINARY"))
-		return "BLOB";
-	    else if (name.equals("DATETIME")
-		    || name.equals("SMALLDATETIME"))
-		return "DATE";
-	    else {
-		// Unexpected value... Print as is and hope the user can
-		// straighten out the SQL script manually.
-		System.out.println("Unrecognized: \"" + name + "\"");
-		if (size == null)
-		    return name;
-		else if (scale == null)
-		    return name + "(" + size + ")";
-		else
-		    return name + "(" + size + ", " + scale + ")";
 	    }
-
-	} else { // driver = "Generic" or unknown
-
-	    // TODO - this code simply prints generic SQL data type names;
-	    // this yields scripts that Oracle can't digest. Generate
-	    // appropriate Oracle equivalents instead.
-
-	    int sqlType = table.getSqlTypes()[column];
-	    String sqlName = MiscUtils.sqlTypeIntToString(sqlType);
-	    if (size == null)
-		return sqlName;
-	    else if (scale == null)
-		return sqlName + "(" + size + ")";
-	    else
-		return sqlName + "(" + size + ", " + scale + ")";
-	
+	    case TypeDescription.RAW:
+	    case TypeDescription.VARRAW: {
+		if (td.size > 4000) {
+		    // TODO - Warning
+		    td.size = 4000;
+		}
+		return "RAW(" + td.size + ")";
+	    }
+	    case TypeDescription.LONGVARRAW: {
+		if (td.part_of_key || td.part_of_index) {
+		    // TODO - Warning
+		    // TODO -- Actually, is RAW even allowed in a key or
+		    // in an index? Must check.
+		    return "RAW(4000)";
+		} else
+		    return "BLOB";
+	    }
+	    case TypeDescription.DATE: {
+		return "DATE";
+	    }
+	    case TypeDescription.TIME: {
+		if (oracle10types)
+		    return "TIME";
+		else
+		    return "DATE";
+	    }
+	    case TypeDescription.TIME_TZ: {
+		if (oracle10types)
+		    return "TIME WITH TIME ZONE";
+		else
+		    return "DATE";
+	    }
+	    case TypeDescription.TIMESTAMP: {
+		if (oracle10types)
+		    return "TIMESTAMP";
+		else
+		    return "DATE";
+	    }
+	    case TypeDescription.TIMESTAMP_TZ: {
+		if (oracle10types)
+		    return "TIMESTAMP WITH TIME ZONE";
+		else
+		    return "DATE";
+	    }
+	    case TypeDescription.INTERVAL_YM: {
+		if (oracle10types)
+		    return "INTERVAL YEAR TO MONTH";
+		else
+		    // TODO - Warning
+		    return "NUMBER(6)";
+	    }
+	    case TypeDescription.INTERVAL_DS: {
+		if (oracle10types)
+		    return "INTERVAL DAY TO SECOND";
+		else
+		    // TODO - Warning
+		    return "NUMBER(8)";
+	    }
+	    default: {
+		// TODO - Warning (internal error); should never get here
+		return td.native_representation;
+	    }
 	}
     }
 

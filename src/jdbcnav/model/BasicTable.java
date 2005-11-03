@@ -79,6 +79,66 @@ public abstract class BasicTable implements Table, Scriptable {
     public ForeignKey[] getForeignKeys() { return fks; }
     public ForeignKey[] getReferencingKeys() { return rks; }
     public Index[] getIndexes() { return indexes; }
+
+    public TypeDescription getTypeDescription(int column) {
+	// NOTE: This function could be optimized for speed quite a bit,
+	// by memoizing the is_part_of_key and is_part_of_index properties,
+	// but it's not worth the trouble as long as this function is only
+	// used by ScriptGenerator.create2() (to generate data types in
+	// CREATE TABLE statements).
+
+	String name = getDbTypes()[column];
+	Integer size = getColumnSizes()[column];
+	Integer scale = getColumnScales()[column];
+
+	TypeDescription td = getDatabase().getTypeDescription(name,size,scale);
+
+	if (size == null)
+	    td.native_representation = name;
+	else if (scale == null)
+	    td.native_representation = name + "(" + size + ")";
+	else
+	    td.native_representation = name + "(" + size + ", " + scale + ")";
+
+	String colName = getColumnNames()[column];
+
+	PrimaryKey pk = getPrimaryKey();
+	if (pk != null) {
+	    int n = pk.getColumnCount();
+	    for (int i = 0; i < n; i++)
+		if (pk.getColumnName(i).equals(colName)) {
+		    td.part_of_key = td.part_of_index = true;
+		    return td;
+		}
+	}
+
+	ForeignKey[] fks = getForeignKeys();
+	for (int i = 0; i < fks.length; i++) {
+	    ForeignKey fk = fks[i];
+	    int n = fk.getColumnCount();
+	    for (int j = 0; j < n; j++)
+		if (fk.getThisColumnName(j).equals(colName)) {
+		    td.part_of_key = td.part_of_index = true;
+		    return td;
+		}
+	}
+
+	td.part_of_key = false;
+
+	Index[] indexes = getIndexes();
+	for (int i = 0; i < indexes.length; i++) {
+	    Index index = indexes[i];
+	    int n = index.getColumnCount();
+	    for (int j = 0; j < n; j++)
+		if (index.getColumnName(j).equals(colName)) {
+		    td.part_of_index = true;
+		    return td;
+		}
+	}
+
+	td.part_of_index = false;
+	return td;
+    }
     
     public Data getPKValues() throws NavigatorException {
 	if (pk == null)

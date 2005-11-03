@@ -1,3 +1,8 @@
+Oracle INTERVAL type support
+
+Reload Tree does not update table details? Noticed this while using ALTER TABLE
+with PostgreSQL.
+
 Loading large queries can cause OutOfMemoryError. These should be caught and a
 message displayed to the user. (Currently, all that happens is a message being
 printed on standard error by the JVM, where most users will never see it; this
@@ -9,11 +14,4 @@ prevent the AWT event thread from dying.
 Hourglass cursor for slow operations that block the UI. Maybe also use Windows-
 style "hourglass+arrow" cursor for QueryResultFrame while query is in progess.
 
-Oracle INTERVAL type support
-
 Support for additional database products (MySQL, DB2, etc.).
-
-Script generation should use a two-stage process, using an intermediate data
-type specification. This is needed to fix the current situation, where there
-have to be (n+1)^2 script generators; with a flexible intermediate language,
-this can be reduced to 2*(n+1).

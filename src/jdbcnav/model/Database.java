@@ -70,4 +70,8 @@ public interface Database {
     String unquote(String s);
     String makeQualifiedName(String catalog, String schema, String name);
     String[] parseQualifiedName(String qualifiedName);
+
+    // Generic type description; see jdbcnav.model.TypeDescription
+    TypeDescription getTypeDescription(String dbType, Integer size,
+				       Integer scale);
 }

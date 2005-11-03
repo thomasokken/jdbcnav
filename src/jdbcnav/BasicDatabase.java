@@ -950,4 +950,11 @@ public abstract class BasicDatabase implements Database {
 	    }
 	}
     }
+
+    public TypeDescription getTypeDescription(String dbType, Integer size,
+					      Integer scale) {
+	String sourceDb = getInternalDriverName();
+	ScriptGenerator sg = ScriptGenerator.getInstance(sourceDb);
+	return sg.getTypeDescription(dbType, size, scale);
+    }
 }
