@@ -93,12 +93,14 @@ public abstract class BasicTable implements Table, Scriptable {
 
 	TypeDescription td = getDatabase().getTypeDescription(name,size,scale);
 
-	if (size == null)
-	    td.native_representation = name;
-	else if (scale == null)
-	    td.native_representation = name + "(" + size + ")";
-	else
-	    td.native_representation = name + "(" + size + ", " + scale + ")";
+	if (td.native_representation == null) {
+	    if (size == null)
+		td.native_representation = name;
+	    else if (scale == null)
+		td.native_representation = name + "(" + size + ")";
+	    else
+		td.native_representation = name + "(" + size +", "+ scale + ")";
+	}
 
 	String colName = getColumnNames()[column];
 

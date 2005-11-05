@@ -8,8 +8,8 @@ import jdbcnav.model.*;
 import jdbcnav.util.*;
 
 
-public class JDBCDatabase_Oracle extends JDBCDatabase {
-    public JDBCDatabase_Oracle(String name, Connection con) {
+public class JDBCDatabase_Oracle10 extends JDBCDatabase {
+    public JDBCDatabase_Oracle10(String name, Connection con) {
 	super(name, con);
     }
 

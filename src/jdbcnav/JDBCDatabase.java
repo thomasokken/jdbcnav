@@ -23,7 +23,7 @@ public class JDBCDatabase extends BasicDatabase {
      */
     private static Map classDriverMap = new TreeMap();
     static {
-	classDriverMap.put("oracle.jdbc.driver.OracleDriver", "Oracle");
+	classDriverMap.put("oracle.jdbc.driver.OracleDriver", "Oracle10");
 	classDriverMap.put("org.postgresql.Driver", "PostgreSQL");
         classDriverMap.put("smallsql.server.SSDriver", "SmallSQL");
         classDriverMap.put("transbase.jdbc.Driver", "Transbase");

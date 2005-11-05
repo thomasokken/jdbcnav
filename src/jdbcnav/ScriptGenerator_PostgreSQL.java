@@ -5,9 +5,9 @@ import jdbcnav.model.TypeDescription;
 public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
     public TypeDescription getTypeDescription(String dbType, Integer size,
 					      Integer scale) {
-	// NOTE: We don't populate the part_of_key, part_of_index, and
-	// native_representation here; that is left to our caller,
-	// BasicTable.getTypeDescription().
+	// NOTE: We don't populate the part_of_key and part_of_index
+	// that is left to our caller, BasicTable.getTypeDescription().
+	// Populating native_representation is optional.
 
 	TypeDescription td = new TypeDescription();
 	if (dbType.equals("bigint")) {
@@ -120,6 +120,50 @@ public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
 	    // on uninterpreted and unchanged.
 	    td.type = TypeDescription.UNKNOWN;
 	}
+
+	// Populate native_representation for the benefit of the SameAsSource
+	// script generator.
+
+	if (dbType.equals("numeric")
+		|| dbType.equals("decimal")) {
+	    if (size.intValue() == 65535 && scale.intValue() == 65531) {
+		size = null;
+		scale = null;
+	    } else if (scale.intValue() == 0)
+		scale = null;
+	} else if (dbType.equals("bit varying")
+		|| dbType.equals("varbit")
+		|| dbType.equals("bit")
+		|| dbType.equals("character varying")
+		|| dbType.equals("varchar")
+		|| dbType.equals("character")
+		|| dbType.equals("char")
+		|| dbType.equals("bpchar")
+		|| dbType.equals("interval")
+		|| dbType.equals("time")
+		|| dbType.equals("timetz")
+		|| dbType.equals("timestamp")
+		|| dbType.equals("timestamptz")) {
+	    scale = null;
+	} else {
+	    size = null;
+	    scale = null;
+	}
+
+	if ((dbType.equals("varchar")
+		    || dbType.equals("character varying"))
+		&& size.intValue() == 0)
+	    size = null;
+
+	if (dbType.equals("bpchar"))
+	    dbType = "char";
+
+	if (size == null)
+	    td.native_representation = dbType;
+	else if (scale == null)
+	    td.native_representation = dbType + "(" + size + ")";
+	else
+	    td.native_representation = dbType + "(" + size + ", " + scale + ")";
 
 	return td;
     }

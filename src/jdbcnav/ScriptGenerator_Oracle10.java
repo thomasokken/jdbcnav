@@ -6,7 +6,7 @@ import jdbcnav.model.PrimaryKey;
 import jdbcnav.model.Table;
 import jdbcnav.model.TypeDescription;
 
-public class ScriptGenerator_Oracle extends ScriptGenerator {
+public class ScriptGenerator_Oracle10 extends ScriptGenerator {
     private static SimpleDateFormat dateFormat =
 	new SimpleDateFormat("yyyy-MM-dd");
     private static SimpleDateFormat timeFormat =
@@ -38,9 +38,9 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
     }
     public TypeDescription getTypeDescription(String dbType, Integer size,
 					      Integer scale) {
-	// NOTE: We don't populate the part_of_key, part_of_index, and
-	// native_representation here; that is left to our caller,
-	// BasicTable.getTypeDescription().
+	// NOTE: We don't populate the part_of_key and part_of_index
+	// that is left to our caller, BasicTable.getTypeDescription().
+	// Populating native_representation is optional.
 
 	TypeDescription td = new TypeDescription();
 	if (dbType.equals("CHAR")) {
@@ -56,7 +56,7 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	    td.type = TypeDescription.VARNCHAR;
 	    td.size = size.intValue();
 	} else if (dbType.equals("NUMBER")) {
-	    if (size == null) {
+	    if (scale == null) {
 		td.type = TypeDescription.FLOAT;
 		td.size = 38;
 		td.size_in_bits = false;
@@ -67,9 +67,16 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 		td.type = TypeDescription.FIXED;
 		td.size = size.intValue();
 		td.size_in_bits = false;
-		td.scale = scale == null ? 0 : scale.intValue();
+		td.scale = scale.intValue();
 		td.scale_in_bits = false;
 	    }
+	} else if (dbType.equals("FLOAT")) {
+	    td.type = TypeDescription.FLOAT;
+	    td.size = size.intValue();
+	    td.size_in_bits = true;
+	    td.min_exp = -130;
+	    td.max_exp = 125;
+	    td.exp_of_2 = false;
 	} else if (dbType.equals("BINARY FLOAT")) {
 	    td.type = TypeDescription.FLOAT;
 	    td.size = 24;
@@ -119,6 +126,33 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	    td.type = TypeDescription.UNKNOWN;
 	}
 
+	// Populate native_representation for the benefit of the SameAsSource
+	// script generator.
+
+	// TODO: INTERVAL etc.
+
+	if (!dbType.equals("NUMBER")
+		&& !dbType.equals("CHAR")
+		&& !dbType.equals("VARCHAR2")
+		&& !dbType.equals("NCHAR")
+		&& !dbType.equals("NVARCHAR2")
+		&& !dbType.equals("RAW")
+		&& !dbType.equals("FLOAT")) {
+	    size = null;
+	    scale = null;
+	} else if (dbType.equals("NUMBER")) {
+	    if (scale == null)
+		size = null;
+	    else if (scale.intValue() == 0)
+		scale = null;
+	}
+	if (size == null)
+	    td.native_representation = dbType;
+	else if (scale == null)
+	    td.native_representation = dbType + "(" + size + ")";
+	else
+	    td.native_representation = dbType + "(" + size + ", " + scale + ")";
+
 	return td;
     }
 
@@ -157,6 +191,13 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 		    return "NUMBER(" + size + ", " + scale + ")";
 	    }
 	    case TypeDescription.FLOAT: {
+		// TODO: Generate ANSI-type FLOAT(n) as well, where 'n' is the
+		// number of bits in the mantissa. Note that Oracle's
+		// implementation of FLOAT always uses an exponent with the
+		// same properties as NUMBER, that is, an exponent of 10 with
+		// range -130..125; the mantissa appears to be stored in
+		// decimal, with the number of digits presumably being
+		// ceil(n/log10(2)).
 		if (oracle10types) {
 		    int size;
 		    if (td.size_in_bits)

@@ -134,7 +134,7 @@ public abstract class BasicDatabase implements Database {
 	if (sg != null)
 	    sgname = sg.getName();
 	else
-	    sgname = getInternalDriverName();
+	    sgname = "SameAsSource";
 	GenerateScriptDialog gsd = new GenerateScriptDialog(browser, cb, sgname);
 	gsd.showCentered();
     }

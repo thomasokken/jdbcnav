@@ -5,9 +5,9 @@ import jdbcnav.model.TypeDescription;
 public class ScriptGenerator_SmallSQL extends ScriptGenerator {
     public TypeDescription getTypeDescription(String dbType, Integer size,
 					      Integer scale) {
-	// NOTE: We don't populate the part_of_key, part_of_index, and
-	// native_representation here; that is left to our caller,
-	// BasicTable.getTypeDescription().
+	// NOTE: We don't populate the part_of_key and part_of_index
+	// that is left to our caller, BasicTable.getTypeDescription().
+	// Populating native_representation is optional.
 
 	TypeDescription td = new TypeDescription();
 
@@ -124,6 +124,38 @@ public class ScriptGenerator_SmallSQL extends ScriptGenerator {
 	    td.type = TypeDescription.UNKNOWN;
 	}
 
+	// Populate native_representation for the benefit of the SameAsSource
+	// script generator.
+
+	if (dbType.equals("NUMERIC")
+		|| dbType.equals("DECIMAL")
+		|| dbType.equals("NUMBER")
+		|| dbType.equals("VARNUM")) {
+	    // 'scale' is optional, but the SmallSQL driver
+	    // does not distinguish between scale == null and
+	    // scale == 0 (null is handled as 0).
+	} else if (dbType.equals("CHAR")
+		|| dbType.equals("CHARACTER")
+		|| dbType.equals("NCHAR")
+		|| dbType.equals("VARCHAR")
+		|| dbType.equals("NVARCHAR")
+		|| dbType.equals("VARCHAR2")
+		|| dbType.equals("NVARCHAR2")
+		|| dbType.equals("BINARY")
+		|| dbType.equals("VARBINARY")) {
+	    scale = null;
+	} else {
+	    size = null;
+	    scale = null;
+	}
+
+	if (size == null)
+	    td.native_representation = dbType;
+	else if (scale == null)
+	    td.native_representation = dbType + "(" + size + ")";
+	else
+	    td.native_representation = dbType + "(" + size + ", " + scale + ")";
+	
 	return td;
     }
 

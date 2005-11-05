@@ -132,6 +132,9 @@ public class ScriptGenerator {
 		    return "NUMERIC(" + size + ", " + scale + ")";
 	    }
 	    case TypeDescription.FLOAT: {
+		// TODO: Generate ANSI-type FLOAT(n) as well, where
+		// 'n' is the number of bits in the mantissa.
+		// (Not sure if that number includes the sign bit or not.)
 		if (td.size > (td.size_in_bits ? 24 : 7))
 		    return "DOUBLE PRECISION";
 		if (td.exp_of_2) {
@@ -805,7 +808,7 @@ public class ScriptGenerator {
     private static ScriptGenerator genericInstance = new ScriptGenerator();
 
     public static String[] getNames() {
-	return new String[] { "Generic", "Oracle", "Oracle8",
+	return new String[] { "SameAsSource", "Generic", "Oracle10", "Oracle8",
 			      "PostgreSQL", "SmallSQL" };
     }
 
