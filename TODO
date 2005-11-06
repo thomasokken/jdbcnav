@@ -1,6 +1,6 @@
-ScriptGenerator_Oracle does not generate FLOAT(n) yet.
-
 Oracle INTERVAL type support
+
+"Set Password" should make the user type the password twice.
 
 Loading large queries can cause OutOfMemoryError. These should be caught and a
 message displayed to the user. (Currently, all that happens is a message being

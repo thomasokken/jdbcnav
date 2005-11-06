@@ -1,7 +1,7 @@
 6 November 2005:
 *) Fixed handling of Oracle NCHAR and NVARCHAR2 types.
 *) Improved type conversion algorithm for SQL script generation, so that
-generating a script for a different RDBMS product that the originating database
+generating a script for a different RDBMS product than the originating database
 now generates CREATE TABLE statements with more accurate column types. The new
 code is also easier to maintain, so that adding support for additional products
 is now much easier than before.
