@@ -85,7 +85,7 @@ public class JavaScriptPreparedStatement implements Scriptable {
 		    throw new WrappedException(e);
 		}
 	    } else
-		throw new EvaluatorException("CallableStatement.setObject() "
+		throw new EvaluatorException("PreparedStatement.setObject() "
 					   + "requires numbers as its first "
 					   + "and optional fourth parameters, "
 					   + "and a number or a string as its "

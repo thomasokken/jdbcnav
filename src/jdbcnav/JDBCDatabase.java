@@ -31,6 +31,7 @@ public class JDBCDatabase extends BasicDatabase {
 
 
     private String name;
+    private String internalDriverName;
     protected Connection con;
     private ArrayList editedTables = new ArrayList();
 
@@ -39,48 +40,50 @@ public class JDBCDatabase extends BasicDatabase {
 	LoginDialog.activate(opencb);
     }
 
-    public JDBCDatabase(String name, Connection con) {
+    public JDBCDatabase(String name, String driver, Connection con) {
 	this.name = name;
+	this.internalDriverName = driver;
 	this.con = con;
     }
 
-    private static JDBCDatabase create(String internalDriverName, String name,
+    private static JDBCDatabase create(String driver, String name,
 				       Connection con) {
-	if (internalDriverName.equals("Generic"))
-	    return new JDBCDatabase(name, con);
-	else {
-	    String className = "jdbcnav.JDBCDatabase_" + internalDriverName;
-	    try {
-		Class klass = Class.forName(className);
-		Constructor cnstr = klass.getConstructor(
-				new Class[] { String.class, Connection.class });
-		return (JDBCDatabase) cnstr.newInstance(
-				new Object[] { name, con });
-	    } catch (ClassNotFoundException e) {
-		e.printStackTrace();
-		// Should never happen; we're loading a class that is part
-		// of JDBCNavigator itself
-	    } catch (NoSuchMethodException e) {
-		e.printStackTrace();
-		// Should never happen; we're loading a class that is part
-		// of JDBCNavigator itself, and if we've done our homework,
-		// it will have a public constructor that takes a String and
-		// a JDBC Connection
-	    } catch (IllegalAccessException e) {
-		e.printStackTrace();
-		// Yawn. Should never happen. We wrote the class ourselves
-		// and of course we made sure that the constructor is public.
-	    } catch (InstantiationException e) {
-		e.printStackTrace();
-		// Yawn. Should never happen. We wrote the class ourselves
-		// and of course we made sure that the class is not abstract.
-	    } catch (InvocationTargetException e) {
-		e.printStackTrace();
-		// Yawn. Should never happen. We wrote the class ourselves
-		// and of course we made sure that the constructor throws no
-		// Exceptions.
-	    }
+	String internalDriverName =
+	    InternalDriverMap.getDriverName(driver, con);
+	String className =
+	    InternalDriverMap.getDatabaseClassName(internalDriverName);
+
+	try {
+	    Class klass = Class.forName(className);
+	    Constructor cnstr = klass.getConstructor(
+		new Class[] { String.class, String.class, Connection.class });
+	    return (JDBCDatabase) cnstr.newInstance(
+		new Object[] { name, internalDriverName, con });
+	} catch (ClassNotFoundException e) {
+	    e.printStackTrace();
+	    // Should never happen; we're loading a class that is part
+	    // of JDBCNavigator itself
+	} catch (NoSuchMethodException e) {
+	    e.printStackTrace();
+	    // Should never happen; we're loading a class that is part
+	    // of JDBCNavigator itself, and if we've done our homework,
+	    // it will have a public constructor that takes a String and
+	    // a JDBC Connection
+	} catch (IllegalAccessException e) {
+	    e.printStackTrace();
+	    // Yawn. Should never happen. We wrote the class ourselves
+	    // and of course we made sure that the constructor is public.
+	} catch (InstantiationException e) {
+	    e.printStackTrace();
+	    // Yawn. Should never happen. We wrote the class ourselves
+	    // and of course we made sure that the class is not abstract.
+	} catch (InvocationTargetException e) {
+	    e.printStackTrace();
+	    // Yawn. Should never happen. We wrote the class ourselves
+	    // and of course we made sure that the constructor throws no
+	    // Exceptions.
 	}
+
 	// *should* never get here
 	return null;
     }
@@ -96,10 +99,7 @@ public class JDBCDatabase extends BasicDatabase {
     }
 
     public final String getInternalDriverName() {
-	if (getClass() == JDBCDatabase.class)
-	    return "Generic";
-	String fullName = getClass().getName();
-	return fullName.substring(fullName.lastIndexOf("_") + 1);
+	return internalDriverName;
     }
 
     public String about() throws NavigatorException {
@@ -912,7 +912,11 @@ public class JDBCDatabase extends BasicDatabase {
     protected void setObject(PreparedStatement stmt, int index, int
 			     dbtable_col, Object o, Table table)
 							throws SQLException {
-	stmt.setObject(index, o, table.getSqlTypes()[dbtable_col]);
+	int type = table.getSqlTypes()[dbtable_col];
+	if (type == Types.OTHER)
+	    stmt.setObject(index, o);
+	else
+	    stmt.setObject(index, o, table.getSqlTypes()[dbtable_col]);
     }
 
     /**
@@ -1662,10 +1666,6 @@ public class JDBCDatabase extends BasicDatabase {
 		return;
 	    }
 
-	    String internalDriverName = (String) classDriverMap.get(driver);
-	    if (internalDriverName == null)
-		internalDriverName = "Generic";
-
 	    synchronized (this) {
 		connectB.setEnabled(false);
 		saveB.setEnabled(false);
@@ -1675,7 +1675,7 @@ public class JDBCDatabase extends BasicDatabase {
 		// DriverManager.getConnection() can take a long time,
 		// and we don't want to freeze awt during the wait; also,
 		// we want to allow the user to cancel the operation.
-		connectThread = new ConnectThread(name, url, internalDriverName,
+		connectThread = new ConnectThread(name, url, driver,
 						  username, password);
 		new Thread(connectThread).start();
 	    }
@@ -1696,16 +1696,15 @@ public class JDBCDatabase extends BasicDatabase {
 	private class ConnectThread implements Runnable {
 	    private String name;
 	    private String url;
-	    private String internalDriverName;
+	    private String driver;
 	    private String username;
 	    private String password;
 
-	    public ConnectThread(String name, String url,
-				 String internalDriverName,
+	    public ConnectThread(String name, String url, String driver,
 				 String username, String password) {
 		this.name = name;
 		this.url = url;
-		this.internalDriverName = internalDriverName;
+		this.driver = driver;
 		this.username = username;
 		this.password = password;
 	    }
@@ -1752,26 +1751,25 @@ public class JDBCDatabase extends BasicDatabase {
 		// repaint manager to get confused and throw an exception
 		// (which appears to be harmless, but still...).
 		SwingUtilities.invokeLater(
-			    new BrowserOpener(name, con, internalDriverName));
+			    new BrowserOpener(name, con, driver));
 	    }
 	}
 
 	private class BrowserOpener implements Runnable {
 	    private String name;
 	    private Connection con;
-	    private String internalDriverName;
+	    private String driver;
 
 	    public BrowserOpener(String name, Connection con,
-				 String internalDriverName) {
+				 String driver) {
 		this.name = name;
 		this.con = con;
-		this.internalDriverName = internalDriverName;
+		this.driver = driver;
 	    }
 
 	    public void run() {
 		dispose();
-		JDBCDatabase db = JDBCDatabase.create(internalDriverName,
-						      name, con);
+		JDBCDatabase db = JDBCDatabase.create(driver, name, con);
 		opencb.databaseOpened(db);
 	    }
 	}

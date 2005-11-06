@@ -118,7 +118,7 @@ public class GenerateScriptDialog extends MyFrame {
 	c.add(new JLabel("Generate SQL for: "), gbc);
 
 	gbc.gridx++;
-	metadriverCB = new JComboBox(ScriptGenerator.getNames());
+	metadriverCB = new JComboBox(InternalDriverMap.getScriptGeneratorNames());
 	metadriverCB.setSelectedItem(sgname);
 	c.add(metadriverCB, gbc);
 

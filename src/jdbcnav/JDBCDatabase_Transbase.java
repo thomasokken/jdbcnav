@@ -4,8 +4,8 @@ import java.sql.*;
 
 
 public class JDBCDatabase_Transbase extends JDBCDatabase {
-    public JDBCDatabase_Transbase(String name, Connection con) {
-	super(name, con);
+    public JDBCDatabase_Transbase(String name, String driver, Connection con) {
+	super(name, driver, con);
     }
 
     /**

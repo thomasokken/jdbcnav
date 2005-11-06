@@ -4,8 +4,8 @@ import java.sql.*;
 
 
 public class JDBCDatabase_SmallSQL extends JDBCDatabase {
-    public JDBCDatabase_SmallSQL(String name, Connection con) {
-	super(name, con);
+    public JDBCDatabase_SmallSQL(String name, String driver, Connection con) {
+	super(name, driver, con);
     }
 
     /**

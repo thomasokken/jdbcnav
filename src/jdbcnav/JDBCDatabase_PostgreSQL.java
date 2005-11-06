@@ -5,8 +5,8 @@ import jdbcnav.util.NavigatorException;
 
 
 public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
-    public JDBCDatabase_PostgreSQL(String name, Connection con) {
-	super(name, con);
+    public JDBCDatabase_PostgreSQL(String name, String driver, Connection con) {
+	super(name, driver, con);
     }
 
     protected String[] getJavaTypes(String qualifiedName)

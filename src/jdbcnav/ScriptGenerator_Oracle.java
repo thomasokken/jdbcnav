@@ -6,7 +6,7 @@ import jdbcnav.model.PrimaryKey;
 import jdbcnav.model.Table;
 import jdbcnav.model.TypeDescription;
 
-public class ScriptGenerator_Oracle10 extends ScriptGenerator {
+public class ScriptGenerator_Oracle extends ScriptGenerator {
     private static SimpleDateFormat dateFormat =
 	new SimpleDateFormat("yyyy-MM-dd");
     private static SimpleDateFormat timeFormat =

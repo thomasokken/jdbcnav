@@ -19,6 +19,8 @@ public class ScriptGenerator {
 
     protected static final double LOG10_2 = Math.log(2) / Math.log(10);
 
+    private String name;
+
     ////////////////////////
     ///// Overridables /////
     ////////////////////////
@@ -805,39 +807,29 @@ public class ScriptGenerator {
     ////////////////////////////////////////////////////////////
 
     private static WeakHashMap instances = new WeakHashMap();
-    private static ScriptGenerator genericInstance = new ScriptGenerator();
-
-    public static String[] getNames() {
-	return new String[] { "SameAsSource", "Generic", "Oracle10", "Oracle8",
-			      "PostgreSQL", "SmallSQL" };
-    }
 
     public static ScriptGenerator getInstance(String name) {
-	if (name.equals("Generic"))
-	    return genericInstance;
-
 	ScriptGenerator instance = (ScriptGenerator) instances.get(name);
 	if (instance != null)
 	    return instance;
+	String className = null;
 	try {
-	    instance = (ScriptGenerator) Class.forName(
-		    "jdbcnav.ScriptGenerator_"
-		    + name).newInstance();
+	    className = InternalDriverMap.getScriptGeneratorClassName(name);
+	    instance = (ScriptGenerator) Class.forName(className).newInstance();
+	    instance.name = name;
 	    instances.put(name, instance);
 	    return instance;
 	} catch (Exception e) {
+	    // Should never happen -- we can only get called with
+	    // internal driver names that match an existing ScriptGenerator
+	    // class.
 	    MessageBox.show("Could not load ScriptGenerator \"" + name
-			    + "\";\n" + "using \"Generic\" instead.", e);
-	    return genericInstance;
+		    + "\" (class " + className + ").", e);
+	    return null;
 	}
     }
 
     public final String getName() {
-	if (getClass() == ScriptGenerator.class)
-	    return "Generic";
-	else {
-	    String fullName = getClass().getName();
-	    return fullName.substring(fullName.lastIndexOf("_") + 1);
-	}
+	return name;
     }
 }

@@ -1,14 +1,6 @@
-Modifying the data in THOMAS.ANSI_TEST does not work. Why? Presumably because
-of the WHERE clause, which has to include all columns because the table has no
-PK. But that still begs the question *which* column. Suspect the FLOAT columns.
+ScriptGenerator_Oracle does not generate FLOAT(n) yet.
 
 Oracle INTERVAL type support
-
-Reload Tree does not update table details? Noticed this while using ALTER TABLE
-with PostgreSQL. Since the Reload command in the Table Details Frame does
-update the table details, all that appears to be missing is the right logic to
-make the same thing happen on Reload Tree as well (unless the details are
-currently displayed? Then again, why not?).
 
 Loading large queries can cause OutOfMemoryError. These should be caught and a
 message displayed to the user. (Currently, all that happens is a message being
@@ -21,4 +13,4 @@ prevent the AWT event thread from dying.
 Hourglass cursor for slow operations that block the UI. Maybe also use Windows-
 style "hourglass+arrow" cursor for QueryResultFrame while query is in progess.
 
-Support for additional database products (MySQL, DB2, etc.).
+Support for additional database products (Transbase, DB2, MySQL).
