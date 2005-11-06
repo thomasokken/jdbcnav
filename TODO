@@ -1,5 +1,7 @@
 Oracle INTERVAL type support
 
+Check Oracle NCLOB type support
+
 "Set Password" should make the user type the password twice.
 
 Loading large queries can cause OutOfMemoryError. These should be caught and a

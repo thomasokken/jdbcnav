@@ -58,6 +58,8 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	} else if (dbType.equals("NUMBER")) {
 	    if (scale == null) {
 		td.type = TypeDescription.FLOAT;
+		// TODO: Is it really 38 decimal digits,
+		// or is it actually 126 bits?
 		td.size = 38;
 		td.size_in_bits = false;
 		td.min_exp = -130;
@@ -191,19 +193,14 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 		    return "NUMBER(" + size + ", " + scale + ")";
 	    }
 	    case TypeDescription.FLOAT: {
-		// TODO: Generate ANSI-type FLOAT(n) as well, where 'n' is the
-		// number of bits in the mantissa. Note that Oracle's
-		// implementation of FLOAT always uses an exponent with the
-		// same properties as NUMBER, that is, an exponent of 10 with
-		// range -130..125; the mantissa appears to be stored in
-		// decimal, with the number of digits presumably being
-		// ceil(n/log10(2)).
+		int size;
+		if (td.size_in_bits)
+		    size = td.size;
+		else
+		    size = (int) Math.ceil(td.size / LOG10_2);
+
+		// If possible, use binary float/double
 		if (oracle10types) {
-		    int size;
-		    if (td.size_in_bits)
-			size = td.size;
-		    else
-			size = (int) Math.ceil(td.size / LOG10_2);
 		    int min_exp, max_exp;
 		    if (td.exp_of_2) {
 			min_exp = td.min_exp;
@@ -217,11 +214,23 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 		    else if (size <= 54 && min_exp >= -1023 && max_exp <= 1023)
 			return "BINARY DOUBLE";
 		}
-		// TODO: Check for size/min_exp/max_exp out of Oracle's
-		// allowed range -- meaning, size greater than 38 digits,
-		// min_exp less than 10^(-130), or max_exp greater than 10^125.
-		// If this is the case, emit warning.
-		return "NUMBER";
+
+		int min_exp, max_exp;
+		if (td.exp_of_2) {
+		    min_exp = (int) -Math.ceil(-td.min_exp * LOG10_2);
+		    max_exp = (int) Math.ceil(td.max_exp * LOG10_2);
+		} else {
+		    min_exp = td.min_exp;
+		    max_exp = td.max_exp;
+		}
+		if (min_exp < -130 || max_exp > 125)
+		    /* TODO - Warning */;
+
+		if (size <= 126)
+		    return "FLOAT(" + size + ")";
+		else
+		    // TODO - Warning
+		    return "NUMBER";
 	    }
 	    case TypeDescription.CHAR: {
 		if (td.size > 2000) {
@@ -276,8 +285,6 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	    case TypeDescription.LONGVARRAW: {
 		if (td.part_of_key || td.part_of_index) {
 		    // TODO - Warning
-		    // TODO -- Actually, is RAW even allowed in a key or
-		    // in an index? Must check.
 		    return "RAW(4000)";
 		} else
 		    return "BLOB";
