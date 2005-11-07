@@ -79,14 +79,14 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	    td.min_exp = -130;
 	    td.max_exp = 125;
 	    td.exp_of_2 = false;
-	} else if (dbType.equals("BINARY FLOAT")) {
+	} else if (dbType.equals("BINARY_FLOAT")) {
 	    td.type = TypeDescription.FLOAT;
 	    td.size = 24;
 	    td.size_in_bits = true;
 	    td.min_exp = -127;
 	    td.max_exp = 127;
 	    td.exp_of_2 = true;
-	} else if (dbType.equals("BINARY DOUBLE")) {
+	} else if (dbType.equals("BINARY_DOUBLE")) {
 	    td.type = TypeDescription.FLOAT;
 	    td.size = 54;
 	    td.size_in_bits = true;
@@ -220,9 +220,9 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 			max_exp = (int) Math.ceil(td.max_exp / LOG10_2);
 		    }
 		    if (size <= 24 && min_exp >= -127 && max_exp <= 127)
-			return "BINARY FLOAT";
+			return "BINARY_FLOAT";
 		    else if (size <= 54 && min_exp >= -1023 && max_exp <= 1023)
-			return "BINARY DOUBLE";
+			return "BINARY_DOUBLE";
 		}
 
 		int min_exp, max_exp;
