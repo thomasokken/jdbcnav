@@ -106,14 +106,18 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	    td.type = TypeDescription.TIME;
 	} else if (dbType.equals("TIME WITH TIME ZONE")) {
 	    td.type = TypeDescription.TIME_TZ;
-	} else if (dbType.equals("TIMESTAMP")) {
+	} else if (dbType.equals("TIMESTAMP")
+		|| dbType.equals("TIMESTAMP WITH LOCAL TIME ZONE")) {
 	    td.type = TypeDescription.TIMESTAMP;
 	} else if (dbType.equals("TIMESTAMP WITH TIME ZONE")) {
 	    td.type = TypeDescription.TIMESTAMP_TZ;
-	} else if (dbType.equals("INTERVAL YEAR TO MONTH")) {
+	} else if (dbType.startsWith("INTERVAL YEAR")) {
 	    td.type = TypeDescription.INTERVAL_YM;
-	} else if (dbType.equals("INTERVAL DAY TO SECOND")) {
+	    td.size = size.intValue();
+	} else if (dbType.startsWith("INTERVAL DAY")) {
 	    td.type = TypeDescription.INTERVAL_DS;
+	    td.size = size.intValue();
+	    td.scale = scale.intValue();
 	} else if (dbType.equals("BLOB")) {
 	    td.type = TypeDescription.LONGVARRAW;
 	} else if (dbType.equals("CLOB")) {
@@ -131,29 +135,35 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	// Populate native_representation for the benefit of the SameAsSource
 	// script generator.
 
-	// TODO: INTERVAL etc.
-
-	if (!dbType.equals("NUMBER")
-		&& !dbType.equals("CHAR")
-		&& !dbType.equals("VARCHAR2")
-		&& !dbType.equals("NCHAR")
-		&& !dbType.equals("NVARCHAR2")
-		&& !dbType.equals("RAW")
-		&& !dbType.equals("FLOAT")) {
-	    size = null;
-	    scale = null;
-	} else if (dbType.equals("NUMBER")) {
-	    if (scale == null)
+	if (dbType.startsWith("INTERVAL YEAR"))
+	    td.native_representation = "INTERVAL YEAR(" + size + ") TO MONTH";
+	else if (dbType.startsWith("INTERVAL DAY"))
+	    td.native_representation = "INTERVAL DAY(" + size
+		+ ") TO SECOND(" + scale + ")";
+	else {
+	    if (!dbType.equals("NUMBER")
+		    && !dbType.equals("CHAR")
+		    && !dbType.equals("VARCHAR2")
+		    && !dbType.equals("NCHAR")
+		    && !dbType.equals("NVARCHAR2")
+		    && !dbType.equals("RAW")
+		    && !dbType.equals("FLOAT")) {
 		size = null;
-	    else if (scale.intValue() == 0)
 		scale = null;
+	    } else if (dbType.equals("NUMBER")) {
+		if (scale == null)
+		    size = null;
+		else if (scale.intValue() == 0)
+		    scale = null;
+	    }
+	    if (size == null)
+		td.native_representation = dbType;
+	    else if (scale == null)
+		td.native_representation = dbType + "(" + size + ")";
+	    else
+		td.native_representation = dbType + "(" + size + ", "
+							+ scale + ")";
 	}
-	if (size == null)
-	    td.native_representation = dbType;
-	else if (scale == null)
-	    td.native_representation = dbType + "(" + size + ")";
-	else
-	    td.native_representation = dbType + "(" + size + ", " + scale + ")";
 
 	return td;
     }
@@ -318,16 +328,19 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	    }
 	    case TypeDescription.INTERVAL_YM: {
 		if (oracle10types)
-		    return "INTERVAL YEAR TO MONTH";
+		    return "INTERVAL YEAR(" + td.size + ") TO MONTH";
 		else
 		    // TODO - Warning
+		    // TODO - Take 'size' into account
 		    return "NUMBER(6)";
 	    }
 	    case TypeDescription.INTERVAL_DS: {
 		if (oracle10types)
-		    return "INTERVAL DAY TO SECOND";
+		    return "INTERVAL DAY(" + td.size
+				+ ") TO SECOND(" + td.scale + ")";
 		else
 		    // TODO - Warning
+		    // TODO - Take 'size' and 'scale' into account
 		    return "NUMBER(8)";
 	    }
 	    default: {

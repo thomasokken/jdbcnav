@@ -267,10 +267,12 @@ public class ScriptGenerator_SmallSQL extends ScriptGenerator {
 	    }
 	    case TypeDescription.INTERVAL_YM: {
 		// TODO - Warning
+		// TODO - Take 'size' into account
 		return "NUMERIC(6)";
 	    }
 	    case TypeDescription.INTERVAL_DS: {
 		// TODO - Warning
+		// TODO - Take 'size' and 'scale' into account
 		return "NUMERIC(8)";
 	    }
 	    default: {

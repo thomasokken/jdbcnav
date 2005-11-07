@@ -193,10 +193,10 @@ public class ScriptGenerator {
 		return "TIMESTAMP WITH TIME ZONE";
 	    }
 	    case TypeDescription.INTERVAL_YM: {
-		return "INTERVAL YEAR TO MONTH";
+		return "INTERVAL YEAR(" + td.size + ") TO MONTH";
 	    }
 	    case TypeDescription.INTERVAL_DS: {
-		return "INTERVAL DAY TO SECOND";
+		return "INTERVAL DAY(" +td.size+ ") TO SECOND(" +td.scale+ ")";
 	    }
 	    default: {
 		// TODO - Warning (internal error); should never get here

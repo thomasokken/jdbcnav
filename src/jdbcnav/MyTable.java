@@ -54,6 +54,16 @@ public class MyTable extends JTable {
 	setDefaultEditor(java.sql.Timestamp.class,
 			 new DateEditor(java.sql.Timestamp.class));
 
+	try {
+	    Class klass = Class.forName("oracle.sql.INTERVALYM");
+	    setDefaultEditor(klass, new GenericEditor(klass));
+	} catch (ClassNotFoundException e) {}
+	try {
+	    Class klass = Class.forName("oracle.sql.INTERVALDS");
+	    setDefaultEditor(klass, new GenericEditor(klass));
+	} catch (ClassNotFoundException e) {}
+
+
 	if (dm instanceof SortedTableModel) {
 	    getTableHeader().addMouseListener(
 		    new MouseAdapter() {
@@ -490,6 +500,45 @@ public class MyTable extends JTable {
 		    value = java.sql.Timestamp.valueOf(s);
 	    }
 	    catch (IllegalArgumentException e) {
+		((JComponent) getComponent()).setBorder(
+					    new LineBorder(Color.red));
+		return false;
+	    }
+	    return super.stopCellEditing();
+	}
+
+	public Component getTableCellEditorComponent(JTable table, Object value,
+						     boolean isSelected,
+						     int row, int column) {
+	    this.value = null;
+	    ((JComponent) getComponent()).setBorder(
+					    new LineBorder(Color.black));
+	    return super.getTableCellEditorComponent(table, value, isSelected,
+						     row, column);
+	}
+
+	public Object getCellEditorValue() {
+	    return value;
+	}
+    }
+    
+    private static class GenericEditor extends DefaultCellEditor {
+
+	private Object value;
+	private Class klass;
+
+	public GenericEditor(Class klass) {
+	    super(new JTextField());
+	    this.klass = klass;
+	}
+
+	public boolean stopCellEditing() {
+	    String s = (String) super.getCellEditorValue();
+	    try {
+		Constructor cnstr = klass.getConstructor(
+				    new Class[] { String.class });
+		value = cnstr.newInstance(new Object[] { s });
+	    } catch (Exception e) {
 		((JComponent) getComponent()).setBorder(
 					    new LineBorder(Color.red));
 		return false;

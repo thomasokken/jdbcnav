@@ -1,8 +1,10 @@
-Oracle INTERVAL type support
+PostgreSQL INTERVAL type support
 
-Check Oracle NCLOB type support
-
-"Set Password" should make the user type the password twice.
+"Set Password" should make the user type the password twice if it doesn't match
+any of the existing ones (i.e., if it does not successfully decrypt any
+encypted connection configs) -- because that means it's a new password, and
+there's otherwise the danger that the user could accidentally encrypt all his
+connection configs using a mistyped password.
 
 Loading large queries can cause OutOfMemoryError. These should be caught and a
 message displayed to the user. (Currently, all that happens is a message being

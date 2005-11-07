@@ -70,7 +70,9 @@ public class InternalDriverMap {
 	scriptGeneratorClassMap.put("Oracle 10", "jdbcnav.ScriptGenerator_Oracle");
 	scriptGeneratorClassMap.put("PostgreSQL", "jdbcnav.ScriptGenerator_PostgreSQL");
 	scriptGeneratorClassMap.put("SmallSQL", "jdbcnav.ScriptGenerator_SmallSQL");
-	scriptGeneratorClassMap.put("Transbase", "jdbcnav.ScriptGenerator");
+	//Don't show Transbase yet, since its script generator doesn't actually
+	//do anything useful yet.
+	//scriptGeneratorClassMap.put("Transbase", "jdbcnav.ScriptGenerator");
     }
 
     public static String getScriptGeneratorClassName(String driverName) {
