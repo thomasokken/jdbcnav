@@ -14,6 +14,7 @@
     <mkdir dir="classes"/>
     <!-- Our boot loader, including our "sneaky" class loader -->
     <javac source="1.4"
+	   target="1.4"
 	   srcdir="srcboot"
 	   destdir="classes"
 	   debug="on"
@@ -29,6 +30,7 @@
   <target name="compile-main">
     <mkdir dir="classes/foo"/>
     <javac source="1.4"
+	   target="1.4"
 	   srcdir="src"
 	   destdir="classes/foo"
 	   debug="on"
