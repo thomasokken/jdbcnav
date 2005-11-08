@@ -10,6 +10,13 @@ type is java.sql.Timestamp. The latter would make more sense, since Oracle DATE
 does in fact contain time information, not just date; also, I seem to remember
 that Oracle 8i did return Timestamp. Must check.
 
+Oracle TIMESTAMP types not handled in snapshots. The problem is that they don't
+provide a useful implementation for toString(), nor constructors that take
+String arguments -- and that is what the XML reading and writing code relies
+on. Also, SQL script generation does not handle these types yet; need to
+figure out how to generalize printing values so that actually feeding the SQL
+back to a database has some chance of being successful.
+
 "Set Password" should make the user type the password twice if it doesn't match
 any of the existing ones (i.e., if it does not successfully decrypt any
 encypted connection configs) -- because that means it's a new password, and
