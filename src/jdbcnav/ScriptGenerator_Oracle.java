@@ -14,6 +14,7 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
     private static SimpleDateFormat dateTimeFormat =
 	new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    protected boolean oracle9types = true;
     protected boolean oracle10types = true;
 
     protected String getSQLPreamble() {
@@ -102,15 +103,15 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	    td.size = size.intValue();
 	} else if (dbType.equals("DATE")) {
 	    td.type = TypeDescription.TIMESTAMP;
-	} else if (dbType.equals("TIME")) {
-	    td.type = TypeDescription.TIME;
-	} else if (dbType.equals("TIME WITH TIME ZONE")) {
-	    td.type = TypeDescription.TIME_TZ;
-	} else if (dbType.equals("TIMESTAMP")
-		|| dbType.equals("TIMESTAMP WITH LOCAL TIME ZONE")) {
-	    td.type = TypeDescription.TIMESTAMP;
-	} else if (dbType.equals("TIMESTAMP WITH TIME ZONE")) {
-	    td.type = TypeDescription.TIMESTAMP_TZ;
+	    td.size = 0;
+	} else if (dbType.startsWith("TIMESTAMP")) {
+	    if (dbType.endsWith("WITH LOCAL TIME ZONE"))
+		td.type = TypeDescription.TIMESTAMP;
+	    else if (dbType.endsWith("WITH TIME ZONE"))
+		td.type = TypeDescription.TIMESTAMP_TZ;
+	    else
+		td.type = TypeDescription.TIMESTAMP;
+	    td.size = scale.intValue();
 	} else if (dbType.startsWith("INTERVAL YEAR")) {
 	    td.type = TypeDescription.INTERVAL_YM;
 	    td.size = size.intValue();
@@ -140,7 +141,13 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	else if (dbType.startsWith("INTERVAL DAY"))
 	    td.native_representation = "INTERVAL DAY(" + size
 		+ ") TO SECOND(" + scale + ")";
-	else {
+	else if (dbType.startsWith("TIMESTAMP")) {
+	    td.native_representation = "TIMESTAMP(" + scale + ")";
+	    if (dbType.endsWith("WITH LOCAL TIME ZONE"))
+		td.native_representation += " WITH LOCAL TIME ZONE";
+	    else if (dbType.endsWith("WITH TIME ZONE"))
+		td.native_representation += " WITH TIME ZONE";
+	} else {
 	    if (!dbType.equals("NUMBER")
 		    && !dbType.equals("CHAR")
 		    && !dbType.equals("VARCHAR2")
@@ -303,26 +310,28 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 		return "DATE";
 	    }
 	    case TypeDescription.TIME: {
-		if (oracle10types)
-		    return "TIME";
+		// TODO - Warning
+		if (oracle9types)
+		    return "TIMESTAMP(" + td.size + ")";
 		else
 		    return "DATE";
 	    }
 	    case TypeDescription.TIME_TZ: {
-		if (oracle10types)
-		    return "TIME WITH TIME ZONE";
+		// TODO - Warning
+		if (oracle9types)
+		    return "TIMESTAMP(" + td.size + ") WITH TIME ZONE";
 		else
 		    return "DATE";
 	    }
 	    case TypeDescription.TIMESTAMP: {
-		if (oracle10types)
-		    return "TIMESTAMP";
+		if (oracle9types)
+		    return "TIMESTAMP(" + td.size + ")";
 		else
 		    return "DATE";
 	    }
 	    case TypeDescription.TIMESTAMP_TZ: {
-		if (oracle10types)
-		    return "TIMESTAMP WITH TIME ZONE";
+		if (oracle9types)
+		    return "TIMESTAMP(" + td.size + ") WITH TIME ZONE";
 		else
 		    return "DATE";
 	    }

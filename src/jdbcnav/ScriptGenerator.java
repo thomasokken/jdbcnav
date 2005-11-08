@@ -181,16 +181,16 @@ public class ScriptGenerator {
 		return "DATE";
 	    }
 	    case TypeDescription.TIME: {
-		return "TIME";
+		return "TIME(" + td.size + ")";
 	    }
 	    case TypeDescription.TIME_TZ: {
-		return "TIME WITH TIME ZONE";
+		return "TIME(" + td.size + ") WITH TIME ZONE";
 	    }
 	    case TypeDescription.TIMESTAMP: {
-		return "TIMESTAMP";
+		return "TIMESTAMP(" + td.size + ")";
 	    }
 	    case TypeDescription.TIMESTAMP_TZ: {
-		return "TIMESTAMP WITH TIME ZONE";
+		return "TIMESTAMP(" + td.size + ") WITH TIME ZONE";
 	    }
 	    case TypeDescription.INTERVAL_YM: {
 		return "INTERVAL YEAR(" + td.size + ") TO MONTH";

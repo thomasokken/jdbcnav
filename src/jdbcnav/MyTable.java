@@ -30,6 +30,18 @@ public class MyTable extends JTable {
 	setDefaultRenderer(java.sql.Time.class, new FastTableCellRenderer());
 	setDefaultRenderer(java.sql.Date.class, new FastTableCellRenderer());
 	setDefaultRenderer(java.sql.Timestamp.class, new FastTableCellRenderer());
+	try {
+	    Class tsClass = Class.forName("oracle.sql.TIMESTAMP");
+	    setDefaultRenderer(tsClass, new OracleTimestampRenderer());
+	} catch (ClassNotFoundException e) {}
+	try {
+	    Class tsClass = Class.forName("oracle.sql.TIMESTAMPTZ");
+	    setDefaultRenderer(tsClass, new OracleTimestampRenderer());
+	} catch (ClassNotFoundException e) {}
+	try {
+	    Class tsClass = Class.forName("oracle.sql.TIMESTAMPLTZ");
+	    setDefaultRenderer(tsClass, new OracleTimestampRenderer());
+	} catch (ClassNotFoundException e) {}
 
 	setDefaultRenderer(Number.class, new FastTableCellRenderer(false));
 	setDefaultRenderer(Float.class, new FastTableCellRenderer(false));
@@ -55,7 +67,19 @@ public class MyTable extends JTable {
 			 new DateEditor(java.sql.Timestamp.class));
 
 	try {
-	    Class klass = Class.forName("oracle.sql.INTERVALYM");
+	    Class klass = Class.forName("oracle.sql.TIMESTAMP");
+	    setDefaultEditor(klass, new OracleTimestampEditor(klass));
+	} catch (ClassNotFoundException e) {}
+	try {
+	    Class klass = Class.forName("oracle.sql.TIMESTAMPTZ");
+	    setDefaultEditor(klass, new OracleTimestampEditor(klass));
+	} catch (ClassNotFoundException e) {}
+	try {
+	    Class klass = Class.forName("oracle.sql.TIMESTAMPLTZ");
+	    setDefaultEditor(klass, new OracleTimestampEditor(klass));
+	} catch (ClassNotFoundException e) {}
+	try {
+	    Class klass = Class.forName("oracle.sql.INTERVALDS");
 	    setDefaultEditor(klass, new GenericEditor(klass));
 	} catch (ClassNotFoundException e) {}
 	try {
@@ -474,6 +498,57 @@ public class MyTable extends JTable {
 	    }
 	}
     }
+    
+    private static String oracleTimestampToString(Object value) {
+	if (value == null)
+	    return null;
+	Class klass = value.getClass();
+	if (klass.getName().equals("oracle.sql.TIMESTAMP")) {
+	    try {
+		Method m = klass.getMethod("timestampValue", null);
+		java.sql.Timestamp ts = (java.sql.Timestamp)
+		    m.invoke(value, null);
+		return ts.toString();
+	    } catch (Exception e) {
+		return value.toString();
+	    }
+	}
+	try {
+	    Method m = klass.getMethod("getBytes", null);
+	    byte[] b = (byte[]) m.invoke(value, null);
+	    int year = (b[0] < 0 ? b[0] + 256 : b[0]) * 100
+			+ (b[1] < 0 ? b[1] + 256 : b[1])
+			- 10100;
+	    GregorianCalendar cal = new GregorianCalendar(
+		    year, b[2] - 1, b[3], b[4], b[5], b[6]);
+	    java.sql.Timestamp ts = new java.sql.Timestamp(
+		    cal.getTimeInMillis());
+	    int nanos;
+	    if (b.length >= 11)
+		nanos = (b[7] << 24)
+		    + ((b[8] < 0 ? b[8] + 256 : b[8]) << 16)
+		    + ((b[9] < 0 ? b[9] + 256 : b[9]) << 8)
+		    + (b[10] < 0 ? b[10] + 256 : b[10]);
+	    else
+		nanos = 0;
+	    ts.setNanos(nanos);
+	    String s = ts.toString();
+	    if (klass.getName().equals("oracle.sql.TIMESTAMPTZ")) {
+		int id = ((b[11] < 0 ? b[11] + 256 : b[11]) << 8)
+		    + (b[12] < 0 ? b[12] + 256 : b[12]);
+		s += " TZ(" + id + ")";
+	    }
+	    return s;
+	} catch (Exception e) {
+	    return value.toString();
+	}
+    }
+
+    private static class OracleTimestampRenderer extends FastTableCellRenderer {
+	protected String valueToString(Object value) {
+	    return oracleTimestampToString(value);
+	}
+    }
 
     private static class DateEditor extends DefaultCellEditor {
 
@@ -506,22 +581,95 @@ public class MyTable extends JTable {
 	    }
 	    return super.stopCellEditing();
 	}
+    }
+
+    private static class OracleTimestampEditor extends DefaultCellEditor {
+
+	private Object value;
+	private Class klass;
+
+	public OracleTimestampEditor(Class klass) {
+	    super(new JTextField());
+	    this.klass = klass;
+	}
+
+	public boolean stopCellEditing() {
+	    String s = (String) super.getCellEditorValue();
+	    if ("".equals(s))
+		value = null;
+	    else {
+		try {
+		    if (klass.getName().equals("oracle.sql.TIMESTAMP")) {
+			java.sql.Timestamp ts = java.sql.Timestamp.valueOf(s);
+			Constructor cnstr = klass.getConstructor(
+				new Class[] { java.sql.Timestamp.class });
+			value = cnstr.newInstance(new Object[] { ts });
+		    } else {
+			boolean have_tz = klass.getName().equals(
+						    "oracle.sql.TIMESTAMPTZ");
+			byte[] b = new byte[have_tz ? 13 : 11];
+			if (have_tz) {
+			    int tzpos = s.indexOf("TZ(");
+			    if (tzpos == -1)
+				b[11] = b[12] = 0; // Just guessing...
+			    else {
+				String tz = s.substring(tzpos + 3);
+				s = s.substring(0, tzpos);
+				tzpos = tz.indexOf(")");
+				if (tzpos != -1)
+				    tz = tz.substring(0, tzpos);
+				try {
+				    int tznum = Integer.parseInt(tz);
+				    b[11] = (byte) (tznum >> 8);
+				    b[12] = (byte) tznum;
+				} catch (NumberFormatException e) {
+				    b[11] = b[12] = 0;
+				}
+			    }
+			}
+			GregorianCalendar cal = new GregorianCalendar();
+			java.sql.Timestamp ts = java.sql.Timestamp.valueOf(s);
+			cal.setTimeInMillis(ts.getTime());
+			b[0] = (byte) (cal.get(Calendar.YEAR) / 100 + 100);
+			b[1] = (byte) (cal.get(Calendar.YEAR) % 100 + 100);
+			b[2] = (byte) (cal.get(Calendar.MONTH) + 1);
+			b[3] = (byte) cal.get(Calendar.DAY_OF_MONTH);
+			b[4] = (byte) cal.get(Calendar.HOUR_OF_DAY);
+			b[5] = (byte) cal.get(Calendar.MINUTE);
+			b[6] = (byte) cal.get(Calendar.SECOND);
+			int nanos = ts.getNanos();
+			b[7] = (byte) (nanos >> 24);
+			b[8] = (byte) (nanos >> 16);
+			b[9] = (byte) (nanos >> 8);
+			b[10] = (byte) nanos;
+			Constructor cnstr = klass.getConstructor(
+					    new Class[] { b.getClass() });
+			value = cnstr.newInstance(new Object[] { b });
+		    }
+		} catch (Exception e) {
+		    ((JComponent) getComponent()).setBorder(
+						new LineBorder(Color.red));
+		    return false;
+		}
+	    }
+	    return super.stopCellEditing();
+	}
 
 	public Component getTableCellEditorComponent(JTable table, Object value,
 						     boolean isSelected,
 						     int row, int column) {
-	    this.value = null;
+	    this.value = oracleTimestampToString(value);
 	    ((JComponent) getComponent()).setBorder(
 					    new LineBorder(Color.black));
-	    return super.getTableCellEditorComponent(table, value, isSelected,
-						     row, column);
+	    return super.getTableCellEditorComponent(table, this.value,
+						     isSelected, row, column);
 	}
 
 	public Object getCellEditorValue() {
 	    return value;
 	}
     }
-    
+
     private static class GenericEditor extends DefaultCellEditor {
 
 	private Object value;

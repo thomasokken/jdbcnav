@@ -1,5 +1,15 @@
 PostgreSQL INTERVAL type support
 
+Oracle TIMESTAMPTZ and TIMESTAMPLTZ not handled right yet: TIMESTAMPTZ uses an
+opaque 16-bit number to indicate the time zone; need to figure out what it
+means. There may be relevant information at ftp://elsie.nci.nih.gov/pub/.
+TIMESTAMPLTZ causes a weird exception when trying to update it: "connection
+session time zone was not set". Another thing to look at: DATE columns return
+java.sql.Date values, even though the ResultSetMetaData claims that the column
+type is java.sql.Timestamp. The latter would make more sense, since Oracle DATE
+does in fact contain time information, not just date; also, I seem to remember
+that Oracle 8i did return Timestamp. Must check.
+
 "Set Password" should make the user type the password twice if it doesn't match
 any of the existing ones (i.e., if it does not successfully decrypt any
 encypted connection configs) -- because that means it's a new password, and

@@ -1,6 +1,6 @@
-7 November 2005:
+8 November 2005:
 *) Fixed handling of Oracle NCHAR and NVARCHAR2 types.
-*) Added support for Oracle BINARY_FLOAT, BINARY_DOUBLE, TIME, TIMESTAMP, and
+*) Added support for Oracle BINARY_FLOAT, BINARY_DOUBLE, TIMESTAMP, and
 INTERVAL types.
 *) Improved type conversion algorithm for SQL script generation, so that
 generating a script for a different RDBMS product than the originating database

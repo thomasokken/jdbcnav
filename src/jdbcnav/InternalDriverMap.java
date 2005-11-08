@@ -30,6 +30,8 @@ public class InternalDriverMap {
 		int version = dbmd.getDatabaseMajorVersion();
 		if (version >= 10)
 		    return "Oracle 10";
+		else if (version == 9)
+		    return "Oracle 9";
 		else
 		    return "Oracle 8";
 	    } catch (SQLException e) {
@@ -51,6 +53,7 @@ public class InternalDriverMap {
 	databaseClassMap = new TreeMap();
 	databaseClassMap.put("Generic", "jdbcnav.JDBCDatabase");
 	databaseClassMap.put("Oracle 8", "jdbcnav.JDBCDatabase_Oracle");
+	databaseClassMap.put("Oracle 9", "jdbcnav.JDBCDatabase_Oracle");
 	databaseClassMap.put("Oracle 10", "jdbcnav.JDBCDatabase_Oracle");
 	databaseClassMap.put("PostgreSQL", "jdbcnav.JDBCDatabase_PostgreSQL");
 	databaseClassMap.put("SmallSQL", "jdbcnav.JDBCDatabase_SmallSQL");
@@ -67,6 +70,7 @@ public class InternalDriverMap {
 	scriptGeneratorClassMap.put("Generic", "jdbcnav.ScriptGenerator");
 	scriptGeneratorClassMap.put("Same As Source", "jdbcnav.ScriptGenerator_SameAsSource");
 	scriptGeneratorClassMap.put("Oracle 8", "jdbcnav.ScriptGenerator_Oracle8");
+	scriptGeneratorClassMap.put("Oracle 9", "jdbcnav.ScriptGenerator_Oracle9");
 	scriptGeneratorClassMap.put("Oracle 10", "jdbcnav.ScriptGenerator_Oracle");
 	scriptGeneratorClassMap.put("PostgreSQL", "jdbcnav.ScriptGenerator_PostgreSQL");
 	scriptGeneratorClassMap.put("SmallSQL", "jdbcnav.ScriptGenerator_SmallSQL");
