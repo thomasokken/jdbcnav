@@ -1,6 +1,7 @@
 package jdbcnav;
 
 import java.io.*;
+import java.lang.reflect.*;
 import java.sql.*;
 import java.util.*;
 
@@ -11,6 +12,26 @@ import jdbcnav.util.*;
 public class JDBCDatabase_Oracle extends JDBCDatabase {
     public JDBCDatabase_Oracle(String name, String driver, Connection con) {
 	super(name, driver, con);
+	/* The following code won't work because reflection won't let
+	 * me call OracleConnection.setSessionTimeZone(), despite the fact
+	 * that that is a public method. Go figure.
+	 * So, I have to access the class explicitly, which means you
+	 * can no longer compile this code without having the Oracle
+	 * JDBC driver in the classpath. Sigh.
+	try {
+	    Method m = con.getClass().getMethod("setSessionTimeZone",
+			    new Class[] { String.class });
+	    m.invoke(con, new Object[] { TimeZone.getDefault().getID() });
+	} catch (Exception e) {
+	    e.printStackTrace();
+	}
+	*/
+	try {
+	    ((oracle.jdbc.OracleConnection) con).setSessionTimeZone(
+					    TimeZone.getDefault().getID());
+	} catch (SQLException e) {
+	    e.printStackTrace();
+	}
     }
 
     /**
@@ -330,5 +351,119 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 
     protected boolean showTableTypes() {
 	return true;
+    }
+
+    public String objectToString(Object o, String className) {
+	if (o == null)
+	    return super.objectToString(o, className);
+
+	Class klass = o.getClass();
+
+	if (className.equals("oracle.sql.BFILE")) {
+	    try {
+		Class bfileClass = o.getClass();
+		Method getNameMethod = bfileClass.getMethod("getName", null);
+		String name = (String) getNameMethod.invoke(o, null);
+		return "Bfile (name = \"" + name + "\")";
+	    } catch (NoSuchMethodException e) {
+		// From Class.getMethod()
+		// Should not happen
+		return "Not a BFILE";
+	    } catch (IllegalAccessException e) {
+		// From Method.invoke()
+		// Should not happen
+		return "Not a BFILE";
+	    } catch (InvocationTargetException e) {
+		// From Method.invoke()
+		// Should be a SQLException from BFILE.getName()
+		return "Bfile (name = ?)";
+	    }
+	}
+
+	if (className.equals("oracle.sql.TIMESTAMP")) {
+	    try {
+		Method m = klass.getMethod("timestampValue", null);
+		Timestamp ts = (Timestamp) m.invoke(o, null);
+		return ts.toString();
+	    } catch (Exception e) {
+		return o.toString();
+	    }
+	}
+
+	if (className.equals("oracle.sql.TIMESTAMPTZ")) {
+	    try {
+		Method m = klass.getMethod("timestampValue",
+			new Class[] { Connection.class });
+		Timestamp ts = (Timestamp) m.invoke(o, new Object[] { con });
+		return ts.toString();
+	    } catch (Exception e) {
+		return o.toString();
+	    }
+	}
+
+	if (className.equals("oracle.sql.TIMESTAMPLTZ")) {
+	    try {
+		Method m = klass.getMethod("timestampValue",
+			new Class[] { Connection.class, Calendar.class });
+		Timestamp ts = (Timestamp) m.invoke(o,
+			new Object[] { con, Calendar.getInstance() });
+		return ts.toString();
+	    } catch (Exception e) {
+		return o.toString();
+	    }
+	}
+
+	return super.objectToString(o, className);
+    }
+
+    public Object stringToObject(String s, String className) {
+	if (s == null)
+	    return super.stringToObject(s, className);
+
+	if (className.equals("oracle.sql.TIMESTAMP")) {
+	    if (s.equals(""))
+		return null;
+	    try {
+		Timestamp ts = Timestamp.valueOf(s);
+		Class klass = Class.forName(className);
+		Constructor cnstr = klass.getConstructor(
+			new Class[] { Timestamp.class });
+		return cnstr.newInstance(new Object[] { ts });
+	    } catch (Exception e) {
+		throw new IllegalArgumentException(e);
+	    }
+	}
+
+	if (className.equals("oracle.sql.TIMESTAMPTZ")) {
+	    if (s.equals(""))
+		return null;
+	    try {
+		Timestamp ts = Timestamp.valueOf(s);
+		Class klass = Class.forName(className);
+		Constructor cnstr = klass.getConstructor(
+			new Class[] { Connection.class, Timestamp.class });
+		return cnstr.newInstance(new Object[] { con, ts });
+	    } catch (Exception e) {
+		throw new IllegalArgumentException(e);
+	    }
+	}
+
+	if (className.equals("oracle.sql.TIMESTAMPLTZ")) {
+	    if (s.equals(""))
+		return null;
+	    try {
+		Timestamp ts = Timestamp.valueOf(s);
+		Class klass = Class.forName(className);
+		Constructor cnstr = klass.getConstructor(
+			new Class[] { Connection.class, Calendar.class,
+					Timestamp.class });
+		return cnstr.newInstance(
+			new Object[] { con, Calendar.getInstance(), ts });
+	    } catch (Exception e) {
+		throw new IllegalArgumentException(e);
+	    }
+	}
+
+	return super.stringToObject(s, className);
     }
 }

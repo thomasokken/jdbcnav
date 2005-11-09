@@ -957,4 +957,81 @@ public abstract class BasicDatabase implements Database {
 	ScriptGenerator sg = ScriptGenerator.getInstance(sourceDb);
 	return sg.getTypeDescription(dbType, size, scale);
     }
+
+    public String objectToString(Object o, String className) {
+	if (o == null)
+	    return null;
+
+	Class klass = null;
+	try {
+	    klass = Class.forName(className);
+	} catch (ClassNotFoundException e) {
+	    return o.toString();
+	}
+
+	if (java.sql.Date.class.isAssignableFrom(klass)
+		|| java.sql.Time.class.isAssignableFrom(klass)
+		|| java.sql.Timestamp.class.isAssignableFrom(klass))
+	    // These three classes are subclasses of java.util.Date, but
+	    // java.util.Date itself needs to be handled differently,
+	    // hence this special case
+	    return o.toString();
+	if (java.util.Date.class.isAssignableFrom(klass)) {
+	    long time = ((java.util.Date) o).getTime();
+	    return new java.sql.Timestamp(time).toString();
+	}
+
+	if (java.sql.Blob.class.isAssignableFrom(klass)) {
+	    if (o instanceof java.sql.Blob) {
+		java.sql.Blob blob = (java.sql.Blob) o;
+		try {
+		    return "Blob (length = " + blob.length() + ")";
+		} catch (java.sql.SQLException e) {
+		    return "Blob (length = ?)";
+		}
+	    } else {
+		// Assuming byte[]; this can happen with Oracle drivers,
+		// where Blob.setBytes() is not implemented, so Binary-
+		// EditorFrame stores the byte array back into the model
+		klass = new byte[1].getClass();
+	    }
+	}
+
+	if (klass == new byte[1].getClass()) {
+	    byte[] barray = (byte[]) o;
+	    StringBuffer buf = new StringBuffer();
+	    for (int i = 0; i < barray.length; i++) {
+		byte b = barray[i];
+		buf.append("0123456789ABCDEF".charAt(b >> 4));
+		buf.append("0123456789ABCDEF".charAt(b & 15));
+	    }
+	    return buf.toString();
+	}
+
+	return o.toString();
+    }
+
+    public Object stringToObject(String s, String className) {
+	if (s == null)
+	    return null;
+
+	try {
+	    Class klass = Class.forName(className);
+
+	    if (java.sql.Time.class.isAssignableFrom(klass))
+		return java.sql.Time.valueOf(s);
+	    else if (java.sql.Date.class.isAssignableFrom(klass))
+		return java.sql.Date.valueOf(s);
+	    else if (java.sql.Timestamp.class.isAssignableFrom(klass))
+		return java.sql.Timestamp.valueOf(s);
+	    else if (java.util.Date.class.isAssignableFrom(klass))
+		return new java.util.Date(java.sql.Timestamp.valueOf(s).getTime());
+
+	    java.lang.reflect.Constructor cnstr =
+			klass.getConstructor(new Class[] { String.class });
+	    return cnstr.newInstance(new Object[] { s });
+	} catch (Exception e) {
+	    throw new IllegalArgumentException(e);
+	}
+    }
 }

@@ -16,20 +16,6 @@ import jdbcnav.util.*;
 
 public class JDBCDatabase extends BasicDatabase {
 
-    /**
-     * This map determines which JDBCDatabase subclass is used with a given
-     * JDBC driver class. If a match is not found, JDBCDatabase itself, a.k.a.
-     * "Generic", is used (and probably won't work ;-) ).
-     */
-    private static Map classDriverMap = new TreeMap();
-    static {
-	classDriverMap.put("oracle.jdbc.driver.OracleDriver", "Oracle10");
-	classDriverMap.put("org.postgresql.Driver", "PostgreSQL");
-        classDriverMap.put("smallsql.server.SSDriver", "SmallSQL");
-        classDriverMap.put("transbase.jdbc.Driver", "Transbase");
-    }
-
-
     private String name;
     private String internalDriverName;
     protected Connection con;

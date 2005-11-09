@@ -300,6 +300,10 @@ public class QueryResultFrame extends MyFrame
 	super.dispose();
     }
 
+    public BrowserFrame getBrowser() {
+	return browser;
+    }
+
 
     private class DataStateListener implements Data.StateListener {
 	public void stateChanged(int state, int row) {

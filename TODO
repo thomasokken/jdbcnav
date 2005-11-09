@@ -1,21 +1,17 @@
 PostgreSQL INTERVAL type support
 
-Oracle TIMESTAMPTZ and TIMESTAMPLTZ not handled right yet: TIMESTAMPTZ uses an
-opaque 16-bit number to indicate the time zone; need to figure out what it
-means. There may be relevant information at ftp://elsie.nci.nih.gov/pub/.
-TIMESTAMPLTZ causes a weird exception when trying to update it: "connection
-session time zone was not set". Another thing to look at: DATE columns return
-java.sql.Date values, even though the ResultSetMetaData claims that the column
-type is java.sql.Timestamp. The latter would make more sense, since Oracle DATE
-does in fact contain time information, not just date; also, I seem to remember
-that Oracle 8i did return Timestamp. Must check.
+Oracle TIMESTAMPLTZ values act weird. It seems like the timestampValue() method
+and the Timestamp-consuming constructor are not each other's inverses.
 
-Oracle TIMESTAMP types not handled in snapshots. The problem is that they don't
-provide a useful implementation for toString(), nor constructors that take
-String arguments -- and that is what the XML reading and writing code relies
-on. Also, SQL script generation does not handle these types yet; need to
-figure out how to generalize printing values so that actually feeding the SQL
-back to a database has some chance of being successful.
+Oracle 10g DATE columns return java.sql.Date values, even though the
+ResultSetMetaData claims that the column type is java.sql.Timestamp. The latter
+would make more sense, since Oracle DATE does in fact contain time information,
+not just date; also, I seem to remember that Oracle 8i did return Timestamp.
+Must check.
+
+Snapshots and SQL Script generation should use the new database-dependent
+object/string conversion mechanism (Database.objectToString() and
+Database.stringToObject()).
 
 "Set Password" should make the user type the password twice if it doesn't match
 any of the existing ones (i.e., if it does not successfully decrypt any

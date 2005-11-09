@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
 import javax.swing.table.*;
+import jdbcnav.model.Database;
 import jdbcnav.util.MenuLayout;
 
 
@@ -24,69 +25,6 @@ public class MyTable extends JTable {
 	super();
 	setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 	setModel(dm);
-
-	setDefaultRenderer(String.class, new FastTableCellRenderer());
-	setDefaultRenderer(java.util.Date.class, new UtilDateRenderer());
-	setDefaultRenderer(java.sql.Time.class, new FastTableCellRenderer());
-	setDefaultRenderer(java.sql.Date.class, new FastTableCellRenderer());
-	setDefaultRenderer(java.sql.Timestamp.class, new FastTableCellRenderer());
-	try {
-	    Class tsClass = Class.forName("oracle.sql.TIMESTAMP");
-	    setDefaultRenderer(tsClass, new OracleTimestampRenderer());
-	} catch (ClassNotFoundException e) {}
-	try {
-	    Class tsClass = Class.forName("oracle.sql.TIMESTAMPTZ");
-	    setDefaultRenderer(tsClass, new OracleTimestampRenderer());
-	} catch (ClassNotFoundException e) {}
-	try {
-	    Class tsClass = Class.forName("oracle.sql.TIMESTAMPLTZ");
-	    setDefaultRenderer(tsClass, new OracleTimestampRenderer());
-	} catch (ClassNotFoundException e) {}
-
-	setDefaultRenderer(Number.class, new FastTableCellRenderer(false));
-	setDefaultRenderer(Float.class, new FastTableCellRenderer(false));
-	setDefaultRenderer(Double.class, new FastTableCellRenderer(false));
-	setDefaultRenderer(Boolean.class, new FastTableCellRenderer());
-	setDefaultRenderer(Object.class, new FastTableCellRenderer());
-	setDefaultRenderer((new byte[1]).getClass(), new ByteArrayRenderer());
-	setDefaultRenderer(java.sql.Blob.class, new BlobRenderer());
-	setDefaultRenderer(java.sql.Clob.class, new FastTableCellRenderer());
-
-	try {
-	    Class bfileClass = Class.forName("oracle.sql.BFILE");
-	    setDefaultRenderer(bfileClass, new BfileRenderer());
-	} catch (ClassNotFoundException e) {}
-
-	setDefaultEditor(java.util.Date.class,
-			 new DateEditor(java.util.Date.class));
-	setDefaultEditor(java.sql.Time.class,
-			 new DateEditor(java.sql.Time.class));
-	setDefaultEditor(java.sql.Date.class,
-			 new DateEditor(java.sql.Date.class));
-	setDefaultEditor(java.sql.Timestamp.class,
-			 new DateEditor(java.sql.Timestamp.class));
-
-	try {
-	    Class klass = Class.forName("oracle.sql.TIMESTAMP");
-	    setDefaultEditor(klass, new OracleTimestampEditor(klass));
-	} catch (ClassNotFoundException e) {}
-	try {
-	    Class klass = Class.forName("oracle.sql.TIMESTAMPTZ");
-	    setDefaultEditor(klass, new OracleTimestampEditor(klass));
-	} catch (ClassNotFoundException e) {}
-	try {
-	    Class klass = Class.forName("oracle.sql.TIMESTAMPLTZ");
-	    setDefaultEditor(klass, new OracleTimestampEditor(klass));
-	} catch (ClassNotFoundException e) {}
-	try {
-	    Class klass = Class.forName("oracle.sql.INTERVALDS");
-	    setDefaultEditor(klass, new GenericEditor(klass));
-	} catch (ClassNotFoundException e) {}
-	try {
-	    Class klass = Class.forName("oracle.sql.INTERVALDS");
-	    setDefaultEditor(klass, new GenericEditor(klass));
-	} catch (ClassNotFoundException e) {}
-
 
 	if (dm instanceof SortedTableModel) {
 	    getTableHeader().addMouseListener(
@@ -234,17 +172,26 @@ public class MyTable extends JTable {
 
 
     /**
-     * The JTable version of this method looks in defaultRenderersByColumnClass
-     * for the given class; if it is not found, it looks for the superclass,
-     * then the superclass' superclass, etc.
+     * The JTable version of this method looks in
+     * <code>defaultRenderersByColumnClass</code> for the given class; if it is
+     * not found, it looks for the superclass, then the superclass' superclass,
+     * etc.
+     * <br>
      * My version also looks for all of the interfaces implemented by a class,
      * before moving on to the superclass. This allows me to set renderers for
-     * things like java.sql.Blob, which is an interface, and so could not be
-     * used with the original code.
+     * things like <code>java.sql.Blob</code>, which is an interface, and so
+     * could not be used with the original code.
+     * <br>
+     * Also, in the case where <code>columnClass</code> is an interface that
+     * does not match anything in <code>defaultRenderersByColumnClass</code>,
+     * this method will return the renderer for <code>Object.class</code>,
+     * so as long as that renderer exists, this method will never return
+     * <code>null</code>.
      */
     public TableCellRenderer getDefaultRenderer(Class columnClass) {
 	if (columnClass == null) {
-	    return null;
+	    return (TableCellRenderer)
+		defaultRenderersByColumnClass.get(Object.class);
 	} else {
 	    Object renderer = defaultRenderersByColumnClass.get(columnClass);
 	    if (renderer != null) {
@@ -257,6 +204,43 @@ public class MyTable extends JTable {
 			return tcr;
 		}
 		return getDefaultRenderer(columnClass.getSuperclass());
+	    }
+	}
+    }
+
+    /**
+     * The JTable version of this method looks in
+     * <code>defaultEditorsByColumnClass</code> for the given class; if it is
+     * not found, it looks for the superclass, then the superclass' superclass,
+     * etc.
+     * <br>
+     * My version also looks for all of the interfaces implemented by a class,
+     * before moving on to the superclass. This allows me to set editors for
+     * things like <code>java.sql.Blob</code>, which is an interface, and so
+     * could not be used with the original code.
+     * <br>
+     * Also, in the case where <code>columnClass</code> is an interface that
+     * does not match anything in <code>defaultEditorsByColumnClass</code>,
+     * this method will return the editor for <code>Object.class</code>,
+     * so as long as that editor exists, this method will never return
+     * <code>null</code>.
+     */
+    public TableCellEditor getDefaultEditor(Class columnClass) {
+	if (columnClass == null) {
+	    return (TableCellEditor)
+		defaultEditorsByColumnClass.get(Object.class);
+	} else {
+	    Object editor = defaultEditorsByColumnClass.get(columnClass);
+	    if (editor != null) {
+		return (TableCellEditor) editor;
+	    } else {
+		Class[] interfaces = columnClass.getInterfaces();
+		for (int i = 0; i < interfaces.length; i++) {
+		    TableCellEditor tcr = getDefaultEditor(interfaces[i]);
+		    if (tcr != null)
+			return tcr;
+		}
+		return getDefaultEditor(columnClass.getSuperclass());
 	    }
 	}
     }
@@ -295,32 +279,78 @@ public class MyTable extends JTable {
 
     public void addNotify() {
 	super.addNotify();
+
 	JScrollPane scroll = (JScrollPane) SwingUtilities.getAncestorOfClass(
 				JScrollPane.class, this);
-	if (scroll == null)
-	    return;
-	JScrollBar hscroll = scroll.getHorizontalScrollBar();
-	JScrollBar vscroll = scroll.getVerticalScrollBar();
-	if (hscroll != null || vscroll != null) {
-	    MouseListener ml = new MouseAdapter() {
-				    public void mouseReleased(MouseEvent e) {
-					eventInScrollBarHappened();
-				    }
-				};
-	    KeyListener kl = new KeyAdapter() {
-				    public void keyTyped(KeyEvent e) {
-					eventInScrollBarHappened();
-				    }
-				};
-	    if (hscroll != null) {
-		hscroll.addMouseListener(ml);
-		hscroll.addKeyListener(kl);
-	    }
-	    if (vscroll != null) {
-		vscroll.addMouseListener(ml);
-		vscroll.addKeyListener(kl);
+	if (scroll != null) {
+	    JScrollBar hscroll = scroll.getHorizontalScrollBar();
+	    JScrollBar vscroll = scroll.getVerticalScrollBar();
+	    if (hscroll != null || vscroll != null) {
+		MouseListener ml =
+		    new MouseAdapter() {
+			public void mouseReleased(MouseEvent e) {
+			    eventInScrollBarHappened();
+			}
+		    };
+		KeyListener kl =
+		    new KeyAdapter() {
+			public void keyTyped(KeyEvent e) {
+			    eventInScrollBarHappened();
+			}
+		    };
+		if (hscroll != null) {
+		    hscroll.addMouseListener(ml);
+		    hscroll.addKeyListener(kl);
+		}
+		if (vscroll != null) {
+		    vscroll.addMouseListener(ml);
+		    vscroll.addKeyListener(kl);
+		}
 	    }
 	}
+
+	QueryResultFrame qrf = (QueryResultFrame) SwingUtilities
+			    .getAncestorOfClass(QueryResultFrame.class, this);
+	if (qrf == null) {
+	    // We're not in a QueryResultFrame, so we're on our own as far as
+	    // rendering and editing table cells is concerned; this probably
+	    // means we're a table that will not contain huge amounts of data,
+	    // so using FastTableCellRenderer here is not really necessary, but
+	    // I do anyway, for uniformity's sake.
+	    FastTableCellRenderer ljr = new FastTableCellRenderer();
+	    FastTableCellRenderer rjr = new FastTableCellRenderer(false);
+	    setDefaultRenderer(String.class, ljr);
+	    setDefaultRenderer(java.util.Date.class, new UtilDateRenderer());
+	    setDefaultRenderer(java.sql.Time.class, ljr);
+	    setDefaultRenderer(java.sql.Date.class, ljr);
+	    setDefaultRenderer(java.sql.Timestamp.class, ljr);
+	    setDefaultRenderer(Number.class, rjr);
+	    setDefaultRenderer(Float.class, rjr);
+	    setDefaultRenderer(Double.class, rjr);
+	    setDefaultRenderer(Boolean.class, ljr);
+	    setDefaultRenderer(Object.class, ljr);
+	    setDefaultEditor(java.util.Date.class,
+			     new DateEditor(java.util.Date.class));
+	    setDefaultEditor(java.sql.Time.class,
+			     new DateEditor(java.sql.Time.class));
+	    setDefaultEditor(java.sql.Date.class,
+			     new DateEditor(java.sql.Date.class));
+	    setDefaultEditor(java.sql.Timestamp.class,
+			     new DateEditor(java.sql.Timestamp.class));
+	    return;
+	}
+
+	// We're in a QueryResultFrame, which means we're associated with some
+	// Database instance. We rely on the Database for all Object/String
+	// conversions; this means we can make do with one single Renderer
+	// class and one single Editor class.
+	Database db = qrf.getBrowser().getDatabase();
+	setDefaultRenderer(Number.class, null);
+	setDefaultRenderer(Boolean.class, null);
+	setDefaultRenderer(Object.class, new DatabaseObjectRenderer(db));
+	setDefaultEditor(Number.class, null);
+	setDefaultEditor(Boolean.class, null);
+	setDefaultEditor(Object.class, new DatabaseObjectEditor(db));
     }
 
 
@@ -426,127 +456,28 @@ public class MyTable extends JTable {
 	}
     }
 
-    private static class ByteArrayRenderer extends FastTableCellRenderer {
+    private static class DatabaseObjectRenderer extends FastTableCellRenderer {
+	private Database db;
+	private Class klass;
+
+	public DatabaseObjectRenderer(Database db) {
+	    this.db = db;
+	}
+
 	protected String valueToString(Object value) {
-	    if (value == null)
-		return null;
-	    byte[] barray = (byte[]) value;
-	    StringBuffer buf = new StringBuffer();
-	    for (int i = 0; i < barray.length; i++) {
-		byte b = barray[i];
-		buf.append("0123456789ABCDEF".charAt((b >> 4) & 15));
-		buf.append("0123456789ABCDEF".charAt(b & 15));
-	    }
-	    return buf.toString();
+	    return db.objectToString(value, klass.getName());
 	}
-    }
 
-    private static class BlobRenderer extends ByteArrayRenderer {
-	protected String valueToString(Object value) {
-	    if (value instanceof java.sql.Blob) {
-		java.sql.Blob blob = (java.sql.Blob) value;
-		try {
-		    return "Blob (length = " + blob.length() + ")";
-		} catch (java.sql.SQLException e) {
-		    return "Blob (length = ?)";
-		}
-	    } else {
-		// Assuming byte[]; this can happen with Oracle drivers,
-		// where Blob.setBytes() is not implemented, so Binary-
-		// EditorFrame stores the byte array back into the model
-		return super.valueToString(value);
-	    }
-	}
-    }
-
-    private static class BfileRenderer extends FastTableCellRenderer {
-	protected String valueToString(Object value) {
-	    // Can't just cast to oracle.sql.BFILE and call getName(),
-	    // because that would introduce a run-time dependency on
-	    // the Oracle driver (loading the MyTable class could fail).
-	    // I could also fix this by moving BfileRenderer to a
-	    // separate class, of course, but I don't like scattering
-	    // things about. :-)
-
-	    if (value == null)
-		return null;
-
-//	    oracle.sql.BFILE bfile = (oracle.sql.BFILE) value;
-//	    try {
-//		return "Bfile (name = \"" + bfile.getName() + "\")";
-//	    } catch (java.sql.SQLException e) {
-//		return "Bfile (name = ?)";
-//	    }
-
-	    try {
-		Class bfileClass = value.getClass();
-		Method getNameMethod = bfileClass.getMethod("getName", null);
-		String name = (String) getNameMethod.invoke(value, null);
-		return "Bfile (name = \"" + name + "\")";
-	    } catch (NoSuchMethodException e) {
-		// From Class.getMethod()
-		// Should not happen
-		return "Not a BFILE";
-	    } catch (IllegalAccessException e) {
-		// From Method.invoke()
-		// Should not happen
-		return "Not a BFILE";
-	    } catch (InvocationTargetException e) {
-		// From Method.invoke()
-		// Should be a SQLException from BFILE.getName()
-		return "Bfile (name = ?)";
-	    }
-	}
-    }
-    
-    private static String oracleTimestampToString(Object value) {
-	if (value == null)
-	    return null;
-	Class klass = value.getClass();
-	if (klass.getName().equals("oracle.sql.TIMESTAMP")) {
-	    try {
-		Method m = klass.getMethod("timestampValue", null);
-		java.sql.Timestamp ts = (java.sql.Timestamp)
-		    m.invoke(value, null);
-		return ts.toString();
-	    } catch (Exception e) {
-		return value.toString();
-	    }
-	}
-	try {
-	    Method m = klass.getMethod("getBytes", null);
-	    byte[] b = (byte[]) m.invoke(value, null);
-	    int year = (b[0] < 0 ? b[0] + 256 : b[0]) * 100
-			+ (b[1] < 0 ? b[1] + 256 : b[1])
-			- 10100;
-	    GregorianCalendar cal = new GregorianCalendar(
-		    year, b[2] - 1, b[3], b[4], b[5], b[6]);
-	    java.sql.Timestamp ts = new java.sql.Timestamp(
-		    cal.getTimeInMillis());
-	    int nanos;
-	    if (b.length >= 11)
-		nanos = (b[7] << 24)
-		    + ((b[8] < 0 ? b[8] + 256 : b[8]) << 16)
-		    + ((b[9] < 0 ? b[9] + 256 : b[9]) << 8)
-		    + (b[10] < 0 ? b[10] + 256 : b[10]);
-	    else
-		nanos = 0;
-	    ts.setNanos(nanos);
-	    String s = ts.toString();
-	    if (klass.getName().equals("oracle.sql.TIMESTAMPTZ")) {
-		int id = ((b[11] < 0 ? b[11] + 256 : b[11]) << 8)
-		    + (b[12] < 0 ? b[12] + 256 : b[12]);
-		s += " TZ(" + id + ")";
-	    }
-	    return s;
-	} catch (Exception e) {
-	    return value.toString();
-	}
-    }
-
-    private static class OracleTimestampRenderer extends FastTableCellRenderer {
-	protected String valueToString(Object value) {
-	    return oracleTimestampToString(value);
+	public Component getTableCellRendererComponent(JTable table,
+						       Object value,
+						       boolean isSelected,
+						       boolean hasFocus,
+						       int row,
+						       int column) {
+	    int realColumn = table.convertColumnIndexToModel(column);
+	    klass = table.getColumnClass(realColumn);
+	    leftJustified = !Number.class.isAssignableFrom(klass);
+	    return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 	}
     }
 
@@ -583,110 +514,22 @@ public class MyTable extends JTable {
 	}
     }
 
-    private static class OracleTimestampEditor extends DefaultCellEditor {
+    private static class DatabaseObjectEditor extends DefaultCellEditor {
 
+	private Database db;
 	private Object value;
 	private Class klass;
 
-	public OracleTimestampEditor(Class klass) {
+	public DatabaseObjectEditor(Database db) {
 	    super(new JTextField());
-	    this.klass = klass;
-	}
-
-	public boolean stopCellEditing() {
-	    String s = (String) super.getCellEditorValue();
-	    if ("".equals(s))
-		value = null;
-	    else {
-		try {
-		    if (klass.getName().equals("oracle.sql.TIMESTAMP")) {
-			java.sql.Timestamp ts = java.sql.Timestamp.valueOf(s);
-			Constructor cnstr = klass.getConstructor(
-				new Class[] { java.sql.Timestamp.class });
-			value = cnstr.newInstance(new Object[] { ts });
-		    } else {
-			boolean have_tz = klass.getName().equals(
-						    "oracle.sql.TIMESTAMPTZ");
-			byte[] b = new byte[have_tz ? 13 : 11];
-			if (have_tz) {
-			    int tzpos = s.indexOf("TZ(");
-			    if (tzpos == -1)
-				b[11] = b[12] = 0; // Just guessing...
-			    else {
-				String tz = s.substring(tzpos + 3);
-				s = s.substring(0, tzpos);
-				tzpos = tz.indexOf(")");
-				if (tzpos != -1)
-				    tz = tz.substring(0, tzpos);
-				try {
-				    int tznum = Integer.parseInt(tz);
-				    b[11] = (byte) (tznum >> 8);
-				    b[12] = (byte) tznum;
-				} catch (NumberFormatException e) {
-				    b[11] = b[12] = 0;
-				}
-			    }
-			}
-			GregorianCalendar cal = new GregorianCalendar();
-			java.sql.Timestamp ts = java.sql.Timestamp.valueOf(s);
-			cal.setTimeInMillis(ts.getTime());
-			b[0] = (byte) (cal.get(Calendar.YEAR) / 100 + 100);
-			b[1] = (byte) (cal.get(Calendar.YEAR) % 100 + 100);
-			b[2] = (byte) (cal.get(Calendar.MONTH) + 1);
-			b[3] = (byte) cal.get(Calendar.DAY_OF_MONTH);
-			b[4] = (byte) cal.get(Calendar.HOUR_OF_DAY);
-			b[5] = (byte) cal.get(Calendar.MINUTE);
-			b[6] = (byte) cal.get(Calendar.SECOND);
-			int nanos = ts.getNanos();
-			b[7] = (byte) (nanos >> 24);
-			b[8] = (byte) (nanos >> 16);
-			b[9] = (byte) (nanos >> 8);
-			b[10] = (byte) nanos;
-			Constructor cnstr = klass.getConstructor(
-					    new Class[] { b.getClass() });
-			value = cnstr.newInstance(new Object[] { b });
-		    }
-		} catch (Exception e) {
-		    ((JComponent) getComponent()).setBorder(
-						new LineBorder(Color.red));
-		    return false;
-		}
-	    }
-	    return super.stopCellEditing();
-	}
-
-	public Component getTableCellEditorComponent(JTable table, Object value,
-						     boolean isSelected,
-						     int row, int column) {
-	    this.value = oracleTimestampToString(value);
-	    ((JComponent) getComponent()).setBorder(
-					    new LineBorder(Color.black));
-	    return super.getTableCellEditorComponent(table, this.value,
-						     isSelected, row, column);
-	}
-
-	public Object getCellEditorValue() {
-	    return value;
-	}
-    }
-
-    private static class GenericEditor extends DefaultCellEditor {
-
-	private Object value;
-	private Class klass;
-
-	public GenericEditor(Class klass) {
-	    super(new JTextField());
-	    this.klass = klass;
+	    this.db = db;
 	}
 
 	public boolean stopCellEditing() {
 	    String s = (String) super.getCellEditorValue();
 	    try {
-		Constructor cnstr = klass.getConstructor(
-				    new Class[] { String.class });
-		value = cnstr.newInstance(new Object[] { s });
-	    } catch (Exception e) {
+		value = db.stringToObject(s, klass.getName());
+	    } catch (IllegalArgumentException e) {
 		((JComponent) getComponent()).setBorder(
 					    new LineBorder(Color.red));
 		return false;
@@ -697,11 +540,15 @@ public class MyTable extends JTable {
 	public Component getTableCellEditorComponent(JTable table, Object value,
 						     boolean isSelected,
 						     int row, int column) {
-	    this.value = null;
-	    ((JComponent) getComponent()).setBorder(
-					    new LineBorder(Color.black));
-	    return super.getTableCellEditorComponent(table, value, isSelected,
-						     row, column);
+	    int realColumn = table.convertColumnIndexToModel(column);
+	    klass = table.getColumnClass(realColumn);
+	    this.value = db.objectToString(value, klass.getName());
+	    JTextField tf = (JTextField) getComponent();
+	    tf.setBorder(new LineBorder(Color.black));
+	    tf.setHorizontalAlignment(Number.class.isAssignableFrom(klass)
+					? JTextField.RIGHT : JTextField.LEFT);
+	    return super.getTableCellEditorComponent(table, this.value,
+						     isSelected, row, column);
 	}
 
 	public Object getCellEditorValue() {
@@ -768,7 +615,7 @@ public class MyTable extends JTable {
 	private String value;
 	private boolean isSelected;
 	private boolean hasFocus;
-	private boolean leftJustified;
+	protected boolean leftJustified;
 	private int type;
 
 	private static ArrayList typeColorMap = new ArrayList();
