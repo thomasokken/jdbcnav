@@ -3,6 +3,9 @@
  /////            to announce until they're actually done             /////
  //////////////////////////////////////////////////////////////////////////
 
+Abstraction of object<->string conversions: remember ResultSetTableModel, in
+particular setValueAt(), doImport(), and export().
+
 Revisit LOB handling: don't load them when running a query; defer loading until
 the user tries to edit the cell in question. Also, after editing, don't write
 them back to the DB immediately, but store a String or byte[] in the model, and
