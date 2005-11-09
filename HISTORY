@@ -1,4 +1,10 @@
 9 November 2005:
+*) Fixed a few bugs (related to BLOB and RAW types, and Oracle 8 & 9) that I
+introduced with the code changes for the previous two releases. Sorry about
+that, folks -- I hope that kind of thing will become rarer in the future as I
+clean up the code further.
+
+9 November 2005:
 *) Abstacted conversion of database datatypes to/from user-editable strings;
 this is now done through methods in the Database object. Note, however, that at
 the moment this new conversion code is only used in table editing windows and

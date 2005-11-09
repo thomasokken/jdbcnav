@@ -27,13 +27,26 @@ public class InternalDriverMap {
 		return "Oracle 10";
 	    try {
 		DatabaseMetaData dbmd = con.getMetaData();
-		int version = dbmd.getDatabaseMajorVersion();
-		if (version >= 10)
-		    return "Oracle 10";
-		else if (version == 9)
+		String v = dbmd.getDatabaseProductVersion();
+		StringBuffer buf = new StringBuffer();
+		boolean in_num = false;
+		int n = 0;
+		for (int i = 0; i < v.length(); i++) {
+		    char c = v.charAt(i);
+		    if (c >= '0' && c <= '9') {
+			in_num = true;
+			n = n * 10 + c - '0';
+		    } else {
+			if (in_num)
+			    break;
+		    }
+		}
+		if (n <= 8)
+		    return "Oracle 8";
+		else if (n == 9)
 		    return "Oracle 9";
 		else
-		    return "Oracle 8";
+		    return "Oracle 10";
 	    } catch (SQLException e) {
 		return "Oracle 10";
 	    }

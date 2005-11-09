@@ -31,6 +31,9 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 					    TimeZone.getDefault().getID());
 	} catch (SQLException e) {
 	    e.printStackTrace();
+	} catch (NoSuchMethodError e) {
+	    // Older version, which does not support TIMESTAMPLTZ anyway,
+	    // so we don't care.
 	}
     }
 
