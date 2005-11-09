@@ -1,17 +1,25 @@
-9 November 2005:
+9 November 2005: build 2193
+*) The latest Oracle JDBC drivers apparently finally implement
+java.sql.Blob.setBytes(long, byte[]), but it does not work. So, I had to
+disable the code that uses this method, and keep using the old Oracle
+work-around code, which fortunately is still OK.
+The whole thing is rather weird, because according to Oracle's own Javadocs,
+oracle.sql.BLOB does *not* implement setBytes(long, byte[]) at all.
+
+9 November 2005: build 2189
 *) Fixed a few bugs (related to BLOB and RAW types, and Oracle 8 & 9) that I
 introduced with the code changes for the previous two releases. Sorry about
 that, folks -- I hope that kind of thing will become rarer in the future as I
 clean up the code further.
 
-9 November 2005:
+9 November 2005: build 2187
 *) Abstacted conversion of database datatypes to/from user-editable strings;
 this is now done through methods in the Database object. Note, however, that at
 the moment this new conversion code is only used in table editing windows and
 query result windows; it is not yet used for creating snapshots nor for
 generating scripts. This will be added in the near future.
 
-8 November 2005:
+8 November 2005: build 2172
 *) Fixed handling of Oracle NCHAR and NVARCHAR2 types.
 *) Added support for Oracle BINARY_FLOAT, BINARY_DOUBLE, TIMESTAMP, and
 INTERVAL types.
@@ -21,27 +29,27 @@ now generates CREATE TABLE statements with more accurate column types. The new
 code is also easier to maintain, so that adding support for additional products
 is now much easier than before.
 
-25 October 2005:
+25 October 2005: build 2134
 *) Added Transbase driver; this is needed because the Transbase JDBC driver
 does not support ResultSetMetaData.getCatalogName() etc. (no surprises there,
 I guess -- I have not seen *any* JDBC drivers yet that support this). The
 new driver fixes the situation that simple queries in the SQL window do not
 work.
 
-8 September 2005:
+8 September 2005: build 2130
 *) Fixed handling of NULL values in CLOB, BLOB, LONG, and LONG RAW columns.
 *) Fixed NullPointerException that occurred in CLOB columns when the Java type
 returned by ResultSetMetaData.getColumnClassName() was an interface rather than
 a class (affects DB2).
 
-13 June 2005:
+13 June 2005: build 2108
 *) Added custom layout manager to the Windows menu, so it stays usable even
 when very many windows are open.
 *) Added code to window placement code to ensure that new windows are placed
 entirely on-screen, if possible. This means that opening a large table returns
 a window that you don't have to manually reposition before you can use it.
 
-6 June 2005:
+6 June 2005: build 2103
 *) In the column-jumping menu, columns with "not null" constraints are now
 highlighted by showing their names in boldface.
 *) Executing "Reload Tree", after a table had been added to a node that had not
@@ -53,7 +61,7 @@ ConcurrentModificationException when the orphanage was first created; also,
 makeOrphan() generated names that findTableNode() couldn't resolve in some
 cases, having to do with quoting.
 
-4 June 2005:
+4 June 2005: build 2075
 *) MyFrame.dispose(): added work-around for JInternalFrame bug, where the
 behavior of doDefaultCloseAction() (the method invoked when the user clicks
 the close box) does extra work that dispose() does not; the upshot is that
@@ -62,7 +70,7 @@ window when the topmost window is disposed. This is bad, especially if the
 Windows L&F is used, because it relies on window activation to handle
 maximized internal frames properly.
 
-30 May 2005:
+30 May 2005: build 2066
 *) TableFrame now highlights PK and FK columns using special background colors.
 *) TableFrame now supports populating FK columns by selecting available values
 from the referenced table's corresponding PK columns.
@@ -72,7 +80,7 @@ from the referenced table's corresponding PK columns.
 insensitive comparisons, instead of case-sensitive.
 *) In BrowserFrame, added a multi-table rollback command.
 
-22 May 2005:
+22 May 2005: build 1977
 *) Added SmallSQL support (JDBCDatabase and ScriptGenerator subclasses).
 
 2 May 2005:

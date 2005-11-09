@@ -277,20 +277,22 @@ public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
 		if (result == JOptionPane.YES_OPTION) {
 		    if (blob == null)
 			model.setValueAt(datamgr.getData(), row, column);
-		    else {
+		    else if (blob.getClass().getName().startsWith("oracle.")) {
+			// Older versions of Oracle do not implement
+			// Blob.setBytes() and so throw an AbstractMethodError
+			// when we try to call it; newer versions (tried with
+			// 10g) do implement it, but it appears not to work for
+			// some reason. So, I rely on the old mechanism of
+			// saving the data in the data model, from where it
+			// will be saved using the old commit mechanism.
+			model.setValueAt(datamgr.getData(), row, column);
+		    } else {
 			try {
 			    byte[] data = datamgr.getData();
 			    blob.setBytes(0, data);
 			    blob.truncate(data.length);
 			    // Calling setValueAt() to prompt the TableModel
 			    // to repaint the cell
-			    model.setValueAt(datamgr.getData(), row, column);
-			} catch (AbstractMethodError e) {
-			    // Looks like an old Oracle driver (e.g., 8.1.7);
-			    // Fall back on storing the byte array in the
-			    // table model, and hopefully we'll get it written
-			    // during the next commit.
-			    // TODO: try Blob.setBinaryStream() too!
 			    model.setValueAt(datamgr.getData(), row, column);
 			} catch (SQLException e) {
 			    MessageBox.show("Writing Blob value failed!", e);
@@ -376,23 +378,28 @@ public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
 	if (blob == null)
 	    model.setValueAt(datamgr.getData(), row, column);
 	else {
-	    try {
-		byte[] data = datamgr.getData();
-		blob.setBytes(0, data);
-		blob.truncate(data.length);
-		// Calling setValueAt() to prompt the TableModel to repaint
-		// the cell
+	    if (blob == null)
 		model.setValueAt(datamgr.getData(), row, column);
-	    } catch (AbstractMethodError e) {
-		// Looks like an old Oracle driver (e.g., 8.1.7);
-		// Fall back on storing the byte array in the
-		// table model, and hopefully we'll get it written
-		// during the next commit.
-		// TODO: try Blob.setBinaryStream() too!
+	    else if (blob.getClass().getName().startsWith("oracle.")) {
+		// Older versions of Oracle do not implement
+		// Blob.setBytes() and so throw an AbstractMethodError
+		// when we try to call it; newer versions (tried with
+		// 10g) do implement it, but it appears not to work for
+		// some reason. So, I rely on the old mechanism of
+		// saving the data in the data model, from where it
+		// will be saved using the old commit mechanism.
 		model.setValueAt(datamgr.getData(), row, column);
-	    } catch (SQLException e) {
-		MessageBox.show("Writing Blob value failed!", e);
-		return;
+	    } else {
+		try {
+		    byte[] data = datamgr.getData();
+		    blob.setBytes(0, data);
+		    blob.truncate(data.length);
+		    // Calling setValueAt() to prompt the TableModel
+		    // to repaint the cell
+		    model.setValueAt(datamgr.getData(), row, column);
+		} catch (SQLException e) {
+		    MessageBox.show("Writing Blob value failed!", e);
+		}
 	    }
 	}
 	unsaved = false;
