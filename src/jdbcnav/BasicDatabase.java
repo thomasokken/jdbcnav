@@ -1002,7 +1002,7 @@ public abstract class BasicDatabase implements Database {
 	    StringBuffer buf = new StringBuffer();
 	    for (int i = 0; i < barray.length; i++) {
 		byte b = barray[i];
-		buf.append("0123456789ABCDEF".charAt(b >> 4));
+		buf.append("0123456789ABCDEF".charAt((b >> 4) & 15));
 		buf.append("0123456789ABCDEF".charAt(b & 15));
 	    }
 	    return buf.toString();
