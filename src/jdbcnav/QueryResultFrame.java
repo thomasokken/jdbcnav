@@ -268,7 +268,7 @@ public class QueryResultFrame extends MyFrame
 
 	Container c = getContentPane();
 	c.setLayout(new GridLayout(1, 1));
-	table = new MyTable(model);
+	table = new MyTable(model, browser.getDatabase());
 	model.setTable(table);
 	sortAfterLoading = true;
 	
@@ -298,10 +298,6 @@ public class QueryResultFrame extends MyFrame
 	model.setState(Data.FINISHED);
 	model.setTable(null);
 	super.dispose();
-    }
-
-    public BrowserFrame getBrowser() {
-	return browser;
     }
 
 

@@ -1,3 +1,11 @@
+10 November 2005: build 2203
+*) Oracle DATE columns are once again treated as java.sql.Timestamp values; I
+added code to enable the Oracle 8i compatibility mode in the Oracle >= 9
+drivers.
+*) Column widths are once again set properly; this got broken in build 2187
+because the custom column renderers did not get set until after the table was
+starting to be populated.
+
 9 November 2005: build 2193
 *) The latest Oracle JDBC drivers apparently finally implement
 java.sql.Blob.setBytes(long, byte[]), but it does not work. So, I had to

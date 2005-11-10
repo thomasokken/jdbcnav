@@ -1,23 +1,7 @@
 PostgreSQL INTERVAL type support
 
-Updating Blob values no longer works (Oracle 10g). I guess this is because
-Oracle finally implemented java.sql.Blob.setBytes(), which jdbcnav tries to
-call in BinaryEditorFrame.apply() and BinaryEditorFrame.nuke() (lines 381 and
-283, respectively); older versions did not implement this method, and so
-jdbcnav would fall back on storing the byte array into the data model, from
-where it would get written using the usual commit mechanism; 10g does implement
-the method but apparently not very well.
-Maybe I should catch *all* errors from setBytes(), not just AbstractMethodError,
-and use the old fallback in all cases?
-
 Oracle TIMESTAMPLTZ values act weird. It seems like the timestampValue() method
 and the Timestamp-consuming constructor are not each other's inverses.
-
-Oracle 10g DATE columns return java.sql.Date values, even though the
-ResultSetMetaData claims that the column type is java.sql.Timestamp. The latter
-would make more sense, since Oracle DATE does in fact contain time information,
-not just date; also, I seem to remember that Oracle 8i did return Timestamp.
-Must check.
 
 Snapshots and SQL Script generation should use the new database-dependent
 object/string conversion mechanism (Database.objectToString() and

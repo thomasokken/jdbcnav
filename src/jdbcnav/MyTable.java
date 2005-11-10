@@ -22,9 +22,57 @@ public class MyTable extends JTable {
     private ArrayList columnTypeMap;
 
     public MyTable(TableModel dm) {
+	this(dm, null);
+    }
+
+    public MyTable(TableModel dm, Database db) {
 	super();
 	setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 	setModel(dm);
+
+	if (db == null) {
+	    // We're not in a QueryResultFrame, so we're on our own as far as
+	    // rendering and editing table cells is concerned; this probably
+	    // means we're a table that will not contain huge amounts of data,
+	    // so using FastTableCellRenderer here is not really necessary, but
+	    // I do anyway, for uniformity's sake.
+	    FastTableCellRenderer ljr = new FastTableCellRenderer();
+	    FastTableCellRenderer rjr = new FastTableCellRenderer(false);
+	    setDefaultRenderer(String.class, ljr);
+	    setDefaultRenderer(java.util.Date.class, new UtilDateRenderer());
+	    setDefaultRenderer(java.sql.Time.class, ljr);
+	    setDefaultRenderer(java.sql.Date.class, ljr);
+	    setDefaultRenderer(java.sql.Timestamp.class, ljr);
+	    setDefaultRenderer(Number.class, rjr);
+	    setDefaultRenderer(Float.class, rjr);
+	    setDefaultRenderer(Double.class, rjr);
+	    setDefaultRenderer(Boolean.class, ljr);
+	    setDefaultRenderer(Object.class, ljr);
+	    setDefaultEditor(java.util.Date.class,
+			     new DateEditor(java.util.Date.class));
+	    setDefaultEditor(java.sql.Time.class,
+			     new DateEditor(java.sql.Time.class));
+	    setDefaultEditor(java.sql.Date.class,
+			     new DateEditor(java.sql.Date.class));
+	    setDefaultEditor(java.sql.Timestamp.class,
+			     new DateEditor(java.sql.Timestamp.class));
+	} else {
+	    // We're in a QueryResultFrame, which means we're associated with
+	    // some Database instance. We rely on the Database for all
+	    // Object/String conversions; this means we can make do with one
+	    // single Renderer class and one single Editor class.
+	    setDefaultRenderer(Number.class, null);
+	    setDefaultRenderer(Boolean.class, null);
+	    setDefaultRenderer(Float.class, null);
+	    setDefaultRenderer(Double.class, null);
+	    setDefaultRenderer(Date.class, null);
+	    setDefaultRenderer(Icon.class, null);
+	    setDefaultRenderer(ImageIcon.class, null);
+	    setDefaultRenderer(Object.class, new DatabaseObjectRenderer(db));
+	    setDefaultEditor(Number.class, null);
+	    setDefaultEditor(Boolean.class, null);
+	    setDefaultEditor(Object.class, new DatabaseObjectEditor(db));
+	}
 
 	if (dm instanceof SortedTableModel) {
 	    getTableHeader().addMouseListener(
@@ -308,49 +356,6 @@ public class MyTable extends JTable {
 		}
 	    }
 	}
-
-	QueryResultFrame qrf = (QueryResultFrame) SwingUtilities
-			    .getAncestorOfClass(QueryResultFrame.class, this);
-	if (qrf == null) {
-	    // We're not in a QueryResultFrame, so we're on our own as far as
-	    // rendering and editing table cells is concerned; this probably
-	    // means we're a table that will not contain huge amounts of data,
-	    // so using FastTableCellRenderer here is not really necessary, but
-	    // I do anyway, for uniformity's sake.
-	    FastTableCellRenderer ljr = new FastTableCellRenderer();
-	    FastTableCellRenderer rjr = new FastTableCellRenderer(false);
-	    setDefaultRenderer(String.class, ljr);
-	    setDefaultRenderer(java.util.Date.class, new UtilDateRenderer());
-	    setDefaultRenderer(java.sql.Time.class, ljr);
-	    setDefaultRenderer(java.sql.Date.class, ljr);
-	    setDefaultRenderer(java.sql.Timestamp.class, ljr);
-	    setDefaultRenderer(Number.class, rjr);
-	    setDefaultRenderer(Float.class, rjr);
-	    setDefaultRenderer(Double.class, rjr);
-	    setDefaultRenderer(Boolean.class, ljr);
-	    setDefaultRenderer(Object.class, ljr);
-	    setDefaultEditor(java.util.Date.class,
-			     new DateEditor(java.util.Date.class));
-	    setDefaultEditor(java.sql.Time.class,
-			     new DateEditor(java.sql.Time.class));
-	    setDefaultEditor(java.sql.Date.class,
-			     new DateEditor(java.sql.Date.class));
-	    setDefaultEditor(java.sql.Timestamp.class,
-			     new DateEditor(java.sql.Timestamp.class));
-	    return;
-	}
-
-	// We're in a QueryResultFrame, which means we're associated with some
-	// Database instance. We rely on the Database for all Object/String
-	// conversions; this means we can make do with one single Renderer
-	// class and one single Editor class.
-	Database db = qrf.getBrowser().getDatabase();
-	setDefaultRenderer(Number.class, null);
-	setDefaultRenderer(Boolean.class, null);
-	setDefaultRenderer(Object.class, new DatabaseObjectRenderer(db));
-	setDefaultEditor(Number.class, null);
-	setDefaultEditor(Boolean.class, null);
-	setDefaultEditor(Object.class, new DatabaseObjectEditor(db));
     }
 
 
