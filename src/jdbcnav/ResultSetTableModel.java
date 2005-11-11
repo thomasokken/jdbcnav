@@ -11,6 +11,7 @@ import jdbcnav.model.BasicData;
 import jdbcnav.model.Data;
 import jdbcnav.model.PrimaryKey;
 import jdbcnav.model.Table;
+import jdbcnav.model.TypeSpec;
 import jdbcnav.util.ArrayCollection;
 import jdbcnav.util.CSVTokenizer;
 import jdbcnav.util.NavigatorException;
@@ -36,7 +37,6 @@ public class ResultSetTableModel extends AbstractTableModel
     private int datatotallength;
     private MyTable table;
     private String[] headers;
-    private Class[] classes;
     private ArrayList cells = new ArrayList();
     private ArrayList sequence = new ArrayList();
     private int columns;
@@ -60,11 +60,9 @@ public class ResultSetTableModel extends AbstractTableModel
 	columns = data.getColumnCount();
 	colIndex = new int[columns];
 	headers = new String[columns];
-	classes = new Class[columns];
 	for (int i = 0; i < columns; i++) {
 	    colIndex[i] = i + 1;
 	    headers[i] = data.getColumnName(i);
-	    classes[i] = data.getColumnClass(i);
 	}
 	sortPriority = new int[columns];
 	sortAscending = new boolean[columns];
@@ -196,7 +194,10 @@ public class ResultSetTableModel extends AbstractTableModel
     public synchronized Data getOriginalData() {
 	BasicData origdata = new BasicData();
 	origdata.setColumnNames(headers);
-	origdata.setColumnClasses(classes);
+	TypeSpec[] typeSpecs = new TypeSpec[columns];
+	for (int i = 0; i < columns; i++)
+	    typeSpecs[i] = data.getTypeSpec(i);
+	origdata.setTypeSpecs(typeSpecs);
 	origdata.setData(original);
 	return origdata;
     }
@@ -219,75 +220,22 @@ public class ResultSetTableModel extends AbstractTableModel
     }
     
     public synchronized Class getColumnClass(int column) {
-	// The stored class is 'null' if the Database got a ClassNotFound
-	// trying to load the class named in the result set
-	// (ResultSetMetaData.getColumnClassName() returned something bogus,
-	// e.g. the Oracle JDBC driver returns "byte[]" for RAW columns --
-	// reasonable, but of course not a valid class name).
-	// The stored class is 'java.lang.Object' if any other Exception
-	// occurred; e.g. PostgreSQL throws an exception in
-	// RSMD.getColumnClassName().
+	TypeSpec spec;
+	if (dbTable != null)
+	    spec = dbTable.getTypeSpecs()[column];
+	else
+	    spec = data.getTypeSpec(column);
+	if (spec.type == TypeSpec.CLASS)
+	    return spec.jdbcJavaClass;
+	else
+	    return TypeSpec.class;
+    }
 
-	if (classes[column] != Object.class && classes[column] != null)
-	    return classes[column];
-
-	// TODO: This is just a workaround for PostgreSQL, which
-	// throws an exception in ResultSetMetaData.getColumnClassName(),
-	// forcing us to guess the column's class by taking the closest
-	// common superclass of its entries.
-	// The nice thing to do would be to fix the PostgreSQL JDBC driver,
-	// if possible; otherwise, this code could do with some optimization
-	// (caching; invalidate the cache when the model is updated).
-	// Update: this is now also a workaround for Oracle, which returns
-	// "byte[]" for RAW columns -- reasonable, but not a valid class name.
-	// I could detect this in the Database, but using this mechanism does
-	// the job too.
-
-	Class c1 = null;
-	for (Iterator iter = cells.iterator(); iter.hasNext();) {
-	    Object o = ((Object[]) iter.next())[column];
-	    if (o == null)
-		continue;
-	    Class c2 = o.getClass();
-	    if (c1 == c2)
-		continue;
-	    if (c1 == null) {
-		c1 = c2;
-		continue;
-	    }
-
-	    // Find closest common superclass of c1 and c2
-	    ArrayList sc1 = new ArrayList();
-	    Class cc1 = c1;
-	    do {
-		sc1.add(0, cc1);
-		cc1 = cc1.getSuperclass();
-	    } while (cc1 != null);
-	    ArrayList sc2 = new ArrayList();
-	    Class cc2 = c2;
-	    do {
-		sc2.add(0, cc2);
-		cc2 = cc2.getSuperclass();
-	    } while (cc2 != null);
-	    Iterator i1 = sc1.iterator();
-	    Iterator i2 = sc2.iterator();
-	    while (true) {
-		if (!i1.hasNext() || !i2.hasNext())
-		    break;
-		cc1 = (Class) i1.next();
-		cc2 = (Class) i2.next();
-		if (cc1 != cc2)
-		    break;
-		c1 = cc1;
-	    }
-
-	    if (c1 == Object.class)
-		break;
-	}
-
-	if (c1 == null)
-	    c1 = String.class;
-	return c1;
+    public synchronized TypeSpec getTypeSpec(int column) {
+	if (dbTable != null)
+	    return dbTable.getTypeSpecs()[column];
+	else
+	    return data.getTypeSpec(column);
     }
 
     public synchronized boolean isCellEditable(int row, int column) {
@@ -305,79 +253,11 @@ public class ResultSetTableModel extends AbstractTableModel
 	int realRow = ((Integer) sequence.get(row)).intValue();
 	Object[] currRow = (Object[]) cells.get(realRow);
 	Object prev = currRow[column];
-	Class klass = getColumnClass(column);
 
-	if (value == null) {
-	    // Null is just null, no conversion trickery here
-	} else if (klass == String.class) {
-	    // A String column: convert the value to its natural String
-	    // representation
-	    value = value.toString();
-	} else {
-	    if (Number.class.isInstance(value)
-		    && Number.class.isAssignableFrom(klass)
-		    && !klass.isInstance(value)) {
-		// The given value and the column type are both Number types,
-		// but they are not compatible. In this case, we convert the
-		// given value to a String, and then fall through to the
-		// String-to-whatever conversion which follows.
-		// This approach is better than trying to do more direct
-		// conversions. For example, if the given value is a double
-		// representing 0.1, and the column class is BigDecimal, taking
-		// the String route does what you want, while a direct
-		// conversion probably does not. See the javadocs for
-		// java.math.BigDecimal(double) for more information.
-		value = value.toString();
-	    }
-
-	    if (klass != Object.class && (value instanceof String)) {
-		String s = (String) value;
-		try {
-		    if (java.util.Date.class.isAssignableFrom(klass)) {
-			if (klass == java.sql.Time.class)
-			    value = java.sql.Time.valueOf(s);
-			else if (klass == java.sql.Date.class)
-			    value = java.sql.Date.valueOf(s);
-			else if (klass == java.sql.Timestamp.class)
-			    value = java.sql.Timestamp.valueOf(s);
-			else
-			    value = new java.util.Date(
-				    java.sql.Timestamp.valueOf(s).getTime());
-		    } else if (java.sql.Clob.class.isAssignableFrom(klass)) {
-			// Just leave it as it is
-		    } else {
-			Constructor cnstr = klass.getConstructor(STR_ARGLIST);
-			value = cnstr.newInstance(new Object[] { s });
-		    }
-		} catch (Exception e) {
-		    // Could be IllegalArgumentException from the time
-		    // conversions; NoSuchMethodException or SecurityException
-		    // when trying to get a Constructor, or
-		    // InstantiationException, IllegalAccessException,
-		    // IllegalArgumentException, or InvocationTargetException
-		    // when trying to invoke the Constructor.
-		    // We can't really do anything much when any of these
-		    // errors
-		    // occur, so we just do nothing.
-		    MessageBox.show(e);
-		    return;
-		}
-	    }
-	}
-
-	// Note: a bit of trickery here with the handling of Blobs... When
-	// BinaryEditorFrame edits a blob, the blob's contents are updated,
-	// but the blob instance stays the same. BEF calls setValueAt() only
-	// to get the cell repainted; the data was written to the DB using
-	// Blob.setBytes(), and there is no change in the model.
-
-	if (value == null ? prev == null :
-		    !(value instanceof java.sql.Blob) && value.equals(prev))
+	if (value == null ? prev == null : value.equals(prev))
 	    return;
-	if (!(value instanceof java.sql.Blob)) {
-	    currRow[column] = value;
-	    editHappened(new SingleCellEdit(realRow, column, prev, value, why));
-	}
+	currRow[column] = value;
+	editHappened(new SingleCellEdit(realRow, column, prev, value, why));
 	fireTableCellUpdated(row, column);
     }
 
@@ -900,31 +780,6 @@ public class ResultSetTableModel extends AbstractTableModel
 		return;
 	    }
 
-	    Constructor[] cnstr = new Constructor[colIndex.length];
-	    for (int i = 0; i < colIndex.length; i++) {
-		if (colIndex[i] == -1)
-		    // Column in imported file does not exist in table
-		    continue;
-		Class klass = getColumnClass(colIndex[i]);
-		if (java.util.Date.class.isAssignableFrom(klass)
-			|| java.sql.Clob.class.isAssignableFrom(klass)) {
-		    // There are no useful String-valued constructors for
-		    // these; we'll special-case them later on.
-		    cnstr[i] = null;
-		} else {
-		    try {
-			cnstr[i] = klass.getConstructor(STR_ARGLIST);
-		    } catch (Exception e) {
-			// e should be NoSuchMethodException or
-			// SecurityException. Neither should happen, really.
-			MessageBox.show("Can't get a constructor for "
-				+ klass.getName() + "\n(needed for column "
-				+ headers[colIndex[i]] + ").", e);
-			return;
-		    }
-		}
-	    }
-
 	    while ((line = readLines(in)) != null) {
 		Object[] row = new Object[columns];
 		if (importMode == RUDE) {
@@ -940,55 +795,11 @@ public class ResultSetTableModel extends AbstractTableModel
 		int index = -1;
 		while (tok.hasMoreTokens() && ++index < colIndex.length) {
 		    String s = tok.nextToken();
-		    if (s == null)
-			continue;
 		    int i = colIndex[index];
 		    if (i == -1)
 			// Column in imported file does not exist in table
 			continue;
-		    Constructor c = cnstr[index];
-		    if (c == null) {
-			// Handle special cases where we do not have a useful
-			// constructor.
-			Class klass = getColumnClass(i);
-			try {
-			    if (java.sql.Clob.class.isAssignableFrom(klass))
-				// Just leave it as it is
-				row[i] = s;
-			    else if (klass == java.sql.Time.class)
-				row[i] = java.sql.Time.valueOf(s);
-			    else if (klass == java.sql.Date.class)
-				row[i] = java.sql.Date.valueOf(s);
-			    else if (klass == java.sql.Timestamp.class)
-				row[i] = java.sql.Timestamp.valueOf(s);
-			    else
-				row[i] = new java.util.Date(
-				    java.sql.Timestamp.valueOf(s).getTime());
-			} catch (IllegalArgumentException e) {
-			    MessageBox.show("Error importing file "
-				+ file.getName() + " into table "
-				+ dbTable.getName() + ":\nCan't construct a "
-				+ klass.getName() + "from \""
-				+ s + "\"\n(line " + in.getLineNumber()
-				+ ", item " + (index + 1) + ")", e);
-			    return;
-			}
-		    } else {
-			try {
-			    row[i] = c.newInstance(new Object[] { s });
-			} catch (Exception e) {
-			    // e should be InstantiationException,
-			    // IllegalAccessException, IllegalArgumentException,
-			    // or InvocationTargetException
-			    MessageBox.show("Error importing file "
-				+ file.getName() + " into table "
-				+ dbTable.getName() + ":\nCan't construct a "
-				+ c.getDeclaringClass().getName() + "from \""
-				+ s + "\"\n(line " + in.getLineNumber()
-				+ ", item " + (index + 1) + ")", e);
-			    return;
-			}
-		    }
+		    row[i] = data.getTypeSpec(i).stringToObject(s);
 		}
 		imported.add(row);
 	    }

@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.lang.ref.*;
-import java.sql.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -26,7 +25,6 @@ public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
     private File file;
     private UndoManager undoManager = new MyUndoManager();
     private TableModel model;
-    private Blob blob = null;
     private int row, column;
     private boolean isCellEditor;
     JMenuItem undoMI, redoMI, pasteMI;
@@ -42,13 +40,6 @@ public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
     public BinaryEditorFrame(String name, byte[] data, TableModel model,
 			   int row, int column) {
 	this(null, name, data, false, false, model, row, column);
-	isCellEditor = true;
-    }
-
-    public BinaryEditorFrame(String name, Blob blob, TableModel model,
-			   int row, int column) {
-	this(null, name, readBlob(blob), false, false, model, row, column);
-	this.blob = blob;
 	isCellEditor = true;
     }
 
@@ -244,25 +235,6 @@ public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
 	}
     }
     
-    private static byte[] readBlob(Blob blob) {
-	try {
-	    InputStream is = blob.getBinaryStream();
-	    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-	    byte[] buf = new byte[16384];
-	    int bytesRead;
-	    try {
-		while ((bytesRead = is.read(buf)) > 0)
-		    bos.write(buf, 0, bytesRead);
-	    } catch (IOException e) {
-		MessageBox.show("I/O error while reading Blob value!", e);
-	    }
-	    return bos.toByteArray();
-	} catch (SQLException e) {
-	    MessageBox.show("Reading Blob value failed!", e);
-	    return new byte[0];
-	}
-    }
-
     private void nuke() {
 	if (isDirty()) {
 	    Toolkit.getDefaultToolkit().beep();
@@ -274,31 +246,8 @@ public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
 			    JOptionPane.QUESTION_MESSAGE);
 		if (result == JOptionPane.CANCEL_OPTION)
 		    return;
-		if (result == JOptionPane.YES_OPTION) {
-		    if (blob == null)
-			model.setValueAt(datamgr.getData(), row, column);
-		    else if (blob.getClass().getName().startsWith("oracle.")) {
-			// Older versions of Oracle do not implement
-			// Blob.setBytes() and so throw an AbstractMethodError
-			// when we try to call it; newer versions (tried with
-			// 10g) do implement it, but it appears not to work for
-			// some reason. So, I rely on the old mechanism of
-			// saving the data in the data model, from where it
-			// will be saved using the old commit mechanism.
-			model.setValueAt(datamgr.getData(), row, column);
-		    } else {
-			try {
-			    byte[] data = datamgr.getData();
-			    blob.setBytes(0, data);
-			    blob.truncate(data.length);
-			    // Calling setValueAt() to prompt the TableModel
-			    // to repaint the cell
-			    model.setValueAt(datamgr.getData(), row, column);
-			} catch (SQLException e) {
-			    MessageBox.show("Writing Blob value failed!", e);
-			}
-		    }
-		}
+		if (result == JOptionPane.YES_OPTION)
+		    model.setValueAt(datamgr.getData(), row, column);
 		if (file == null) {
 		    dispose();
 		    return;
@@ -375,33 +324,7 @@ public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
     }
 
     private void apply() {
-	if (blob == null)
-	    model.setValueAt(datamgr.getData(), row, column);
-	else {
-	    if (blob == null)
-		model.setValueAt(datamgr.getData(), row, column);
-	    else if (blob.getClass().getName().startsWith("oracle.")) {
-		// Older versions of Oracle do not implement
-		// Blob.setBytes() and so throw an AbstractMethodError
-		// when we try to call it; newer versions (tried with
-		// 10g) do implement it, but it appears not to work for
-		// some reason. So, I rely on the old mechanism of
-		// saving the data in the data model, from where it
-		// will be saved using the old commit mechanism.
-		model.setValueAt(datamgr.getData(), row, column);
-	    } else {
-		try {
-		    byte[] data = datamgr.getData();
-		    blob.setBytes(0, data);
-		    blob.truncate(data.length);
-		    // Calling setValueAt() to prompt the TableModel
-		    // to repaint the cell
-		    model.setValueAt(datamgr.getData(), row, column);
-		} catch (SQLException e) {
-		    MessageBox.show("Writing Blob value failed!", e);
-		}
-	    }
-	}
+	model.setValueAt(datamgr.getData(), row, column);
 	unsaved = false;
 	undoManager.discardAllEdits();
     }

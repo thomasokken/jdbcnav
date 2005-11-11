@@ -2,6 +2,10 @@ package jdbcnav;
 
 import java.io.*;
 import java.util.*;
+import java.lang.reflect.*;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.SQLException;
 import javax.swing.*;
 
 import jdbcnav.model.*;
@@ -951,23 +955,20 @@ public abstract class BasicDatabase implements Database {
 	}
     }
 
-    public TypeDescription getTypeDescription(String dbType, Integer size,
-					      Integer scale) {
-	String sourceDb = getInternalDriverName();
-	ScriptGenerator sg = ScriptGenerator.getInstance(sourceDb);
-	return sg.getTypeDescription(dbType, size, scale);
+    protected final class BasicTypeSpec extends TypeSpec {
+	public String objectToString(Object o) {
+	    return BasicDatabase.this.objectToString(this, o);
+	}
+	public Object stringToObject(String s) {
+	    return BasicDatabase.this.stringToObject(this, s);
+	}
     }
 
-    public String objectToString(Object o, String className) {
+    protected String objectToString(TypeSpec spec, Object o) {
 	if (o == null)
 	    return null;
 
-	Class klass = null;
-	try {
-	    klass = Class.forName(className);
-	} catch (ClassNotFoundException e) {
-	    return o.toString();
-	}
+	Class klass = spec.jdbcJavaClass;
 
 	if (java.sql.Date.class.isAssignableFrom(klass)
 		|| java.sql.Time.class.isAssignableFrom(klass)
@@ -976,23 +977,23 @@ public abstract class BasicDatabase implements Database {
 	    // java.util.Date itself needs to be handled differently,
 	    // hence this special case
 	    return o.toString();
+
 	if (java.util.Date.class.isAssignableFrom(klass)) {
 	    long time = ((java.util.Date) o).getTime();
 	    return new java.sql.Timestamp(time).toString();
 	}
 
-	if (java.sql.Blob.class.isAssignableFrom(klass)) {
-	    if (o instanceof java.sql.Blob) {
-		java.sql.Blob blob = (java.sql.Blob) o;
+	if (Blob.class.isAssignableFrom(klass)) {
+	    if (o instanceof Blob) {
+		Blob blob = (Blob) o;
 		try {
 		    return "Blob (length = " + blob.length() + ")";
-		} catch (java.sql.SQLException e) {
+		} catch (SQLException e) {
 		    return "Blob (length = ?)";
 		}
 	    } else {
-		// Assuming byte[]; this can happen with Oracle drivers,
-		// where Blob.setBytes() is not implemented, so Binary-
-		// EditorFrame stores the byte array back into the model
+		// Assuming byte[]; this can happen when a Blob value has been
+		// edited in QueryResultFrame.
 		klass = new byte[1].getClass();
 	    }
 	}
@@ -1008,16 +1009,26 @@ public abstract class BasicDatabase implements Database {
 	    return buf.toString();
 	}
 
+	if (Clob.class.isAssignableFrom(klass)) {
+	    if (o instanceof Clob) {
+		Clob clob = (Clob) o;
+		try {
+		    return "Clob (length = " + clob.length() + ")";
+		} catch (SQLException e) {
+		    return "Clob (length = ?)";
+		}
+	    }
+	}
+
 	return o.toString();
     }
 
-    public Object stringToObject(String s, String className) {
+    protected Object stringToObject(TypeSpec spec, String s) {
 	if (s == null)
 	    return null;
 
-	try {
-	    Class klass = Class.forName(className);
-
+        try {
+	    Class klass = spec.jdbcJavaClass;
 	    if (java.sql.Time.class.isAssignableFrom(klass))
 		return java.sql.Time.valueOf(s);
 	    else if (java.sql.Date.class.isAssignableFrom(klass))
@@ -1026,7 +1037,6 @@ public abstract class BasicDatabase implements Database {
 		return java.sql.Timestamp.valueOf(s);
 	    else if (java.util.Date.class.isAssignableFrom(klass))
 		return new java.util.Date(java.sql.Timestamp.valueOf(s).getTime());
-
 	    java.lang.reflect.Constructor cnstr =
 			klass.getConstructor(new Class[] { String.class });
 	    return cnstr.newInstance(new Object[] { s });

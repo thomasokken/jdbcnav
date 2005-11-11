@@ -6,21 +6,13 @@
 Abstraction of object<->string conversions: remember ResultSetTableModel, in
 particular setValueAt(), doImport(), and export().
 
-Type conversion code in ResultSetMetaData.setValueAt(), and possibly other
-methods in that class, should be removed; the new DatabaseObjectRenderer and
-DatabaseObjectEditor in MyTable should take care of all the necessary
-conversions, and ResultSetMetaData should just manage the objects as they are.
+Need to resurrect the code that populates TableSpec.part_of_key and
+TableSpec.part_of_index. Should be in BasicDatabase.makeTableSpec(), I guess.
 
-Revisit LOB handling: don't load them when running a query; defer loading until
-the user tries to edit the cell in question. Also, after editing, don't write
-them back to the DB immediately, but store a String or byte[] in the model, and
-rely on the (already existing) JDBCDatabase.setObject() magic to make sure they
-get written properly on commit().
-While we're at it... Do I handle *creating* LOBs (i.e. inserting new rows into
-tables with LOB columns) correctly?
-Note: instead of cleaning up LOB handling, I could also simply try to document
-the current behavior. After all, it's not as if it's broken at the moment; it's
-just confusing as to what gets read and written when.
+Make Clob/Blob columns non-editable?
+
+Regression test all the FileDatabase (snapshot) stuff, CSV import/export,
+and SQL script generation.
 
 Make "Reload Tree", "Clear Cache", and "Remove Orphans" scriptable, so that
 you can mix the SQL embedding and the JDBCNav functionality in one script --

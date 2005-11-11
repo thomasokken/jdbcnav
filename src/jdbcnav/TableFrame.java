@@ -11,6 +11,7 @@ import jdbcnav.model.Database;
 import jdbcnav.model.ForeignKey;
 import jdbcnav.model.PrimaryKey;
 import jdbcnav.model.Table;
+import jdbcnav.model.TypeSpec;
 import jdbcnav.util.MiscUtils;
 import jdbcnav.util.NavigatorException;
 
@@ -514,8 +515,8 @@ public class TableFrame extends QueryResultFrame {
 	public String getColumnName(int col) {
 	    return colNames[col];
 	}
-	public Class getColumnClass(int col) {
-	    return data.getColumnClass(colIndexes[col]);
+	public TypeSpec getTypeSpec(int col) {
+	    return data.getTypeSpec(colIndexes[col]);
 	}
 	public Object getValueAt(int row, int col) {
 	    if (allowNull)

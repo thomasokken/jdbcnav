@@ -5,7 +5,7 @@ import java.util.*;
 
 public class BasicData implements Data {
     private String[] columnNames;
-    private Class[] columnClasses;
+    private TypeSpec[] typeSpecs;
     private ArrayList data;
 
     public BasicData() {
@@ -16,16 +16,16 @@ public class BasicData implements Data {
 	int rows = src.getRowCount();
 	int cols = src.getColumnCount();
 	columnNames = new String[cols];
-	columnClasses = new Class[cols];
+	typeSpecs = new TypeSpec[cols];
 	for (int i = 0; i < cols; i++) {
 	    columnNames[i] = src.getColumnName(i);
-	    columnClasses[i] = src.getColumnClass(i);
+	    typeSpecs[i] = src.getTypeSpec(i);
 	}
 	data = new ArrayList();
 	for (int i = 0; i < rows; i++) {
 	    Object[] row = new Object[cols];
 	    // TODO: handle objects that need to be cloned (mutable objects;
-	    // e.g. java.sql.Blob).
+	    // e.g. java.sql.Blob, java.sql.Clob).
 	    for (int j = 0; j < cols; j++)
 		row[j] = src.getValueAt(i, j);
 	    data.add(row);
@@ -36,8 +36,8 @@ public class BasicData implements Data {
 	this.columnNames = columnNames;
     }
 
-    public void setColumnClasses(Class[] columnClasses) {
-	this.columnClasses = columnClasses;
+    public void setTypeSpecs(TypeSpec[] typeSpecs) {
+	this.typeSpecs = typeSpecs;
     }
 
     public void setData(ArrayList data) {
@@ -51,7 +51,7 @@ public class BasicData implements Data {
     public Object clone() {
 	BasicData that = new BasicData();
 	that.columnNames = (String[]) columnNames.clone();
-	that.columnClasses = (Class[]) columnClasses.clone();
+	that.typeSpecs = (TypeSpec[]) typeSpecs.clone();
 	that.data = (ArrayList) data.clone();
 	return that;
     }
@@ -72,8 +72,8 @@ public class BasicData implements Data {
 	return columnNames[col];
     }
 
-    public Class getColumnClass(int col) {
-	return columnClasses[col];
+    public TypeSpec getTypeSpec(int col) {
+	return typeSpecs[col];
     }
 
     public Object getValueAt(int row, int col) {

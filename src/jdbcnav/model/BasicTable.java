@@ -20,12 +20,8 @@ public abstract class BasicTable implements Table, Scriptable {
     protected String remarks;
     protected String qualifiedName;
     protected String[] columnNames;
-    protected String[] dbTypes;
-    protected Integer[] columnSizes;
-    protected Integer[] columnScales;
+    protected TypeSpec[] typeSpecs;
     protected String[] isNullable;
-    protected int[] sqlTypes;
-    protected String[] javaTypes;
     protected PrimaryKey pk;
     protected ForeignKey[] fks;
     protected ForeignKey[] rks;
@@ -48,12 +44,8 @@ public abstract class BasicTable implements Table, Scriptable {
 	remarks = original.getRemarks();
 	qualifiedName = original.getQualifiedName();
 	columnNames = original.getColumnNames();
-	dbTypes = original.getDbTypes();
-	columnSizes = original.getColumnSizes();
-	columnScales = original.getColumnScales();
+	typeSpecs = original.getTypeSpecs();
 	isNullable = original.getIsNullable();
-	sqlTypes = original.getSqlTypes();
-	javaTypes = original.getJavaTypes();
 	pk = original.getPrimaryKey();
 	fks = original.getForeignKeys();
 	rks = original.getReferencingKeys();
@@ -69,79 +61,13 @@ public abstract class BasicTable implements Table, Scriptable {
     public String getQuotedName() { return getDatabase().quote(name); }
     public int getColumnCount() { return columnNames.length; }
     public String[] getColumnNames() { return columnNames; }
-    public String[] getDbTypes() { return dbTypes; }
-    public Integer[] getColumnSizes() { return columnSizes; }
-    public Integer[] getColumnScales() { return columnScales; }
+    public TypeSpec[] getTypeSpecs() { return typeSpecs; }
     public String[] getIsNullable() { return isNullable; }
-    public int[] getSqlTypes() { return sqlTypes; }
-    public String[] getJavaTypes() { return javaTypes; }
     public PrimaryKey getPrimaryKey() { return pk; }
     public ForeignKey[] getForeignKeys() { return fks; }
     public ForeignKey[] getReferencingKeys() { return rks; }
     public Index[] getIndexes() { return indexes; }
 
-    public TypeDescription getTypeDescription(int column) {
-	// NOTE: This function could be optimized for speed quite a bit,
-	// by memoizing the is_part_of_key and is_part_of_index properties,
-	// but it's not worth the trouble as long as this function is only
-	// used by ScriptGenerator.create2() (to generate data types in
-	// CREATE TABLE statements).
-
-	String name = getDbTypes()[column];
-	Integer size = getColumnSizes()[column];
-	Integer scale = getColumnScales()[column];
-
-	TypeDescription td = getDatabase().getTypeDescription(name,size,scale);
-
-	if (td.native_representation == null) {
-	    if (size == null)
-		td.native_representation = name;
-	    else if (scale == null)
-		td.native_representation = name + "(" + size + ")";
-	    else
-		td.native_representation = name + "(" + size +", "+ scale + ")";
-	}
-
-	String colName = getColumnNames()[column];
-
-	PrimaryKey pk = getPrimaryKey();
-	if (pk != null) {
-	    int n = pk.getColumnCount();
-	    for (int i = 0; i < n; i++)
-		if (pk.getColumnName(i).equals(colName)) {
-		    td.part_of_key = td.part_of_index = true;
-		    return td;
-		}
-	}
-
-	ForeignKey[] fks = getForeignKeys();
-	for (int i = 0; i < fks.length; i++) {
-	    ForeignKey fk = fks[i];
-	    int n = fk.getColumnCount();
-	    for (int j = 0; j < n; j++)
-		if (fk.getThisColumnName(j).equals(colName)) {
-		    td.part_of_key = td.part_of_index = true;
-		    return td;
-		}
-	}
-
-	td.part_of_key = false;
-
-	Index[] indexes = getIndexes();
-	for (int i = 0; i < indexes.length; i++) {
-	    Index index = indexes[i];
-	    int n = index.getColumnCount();
-	    for (int j = 0; j < n; j++)
-		if (index.getColumnName(j).equals(colName)) {
-		    td.part_of_index = true;
-		    return td;
-		}
-	}
-
-	td.part_of_index = false;
-	return td;
-    }
-    
     public Data getPKValues() throws NavigatorException {
 	if (pk == null)
 	    return null;
@@ -163,10 +89,10 @@ public abstract class BasicTable implements Table, Scriptable {
 		int[] col = getPKColumns();
 		int ncols = col.length;
 		String[] names = new String[ncols];
-		Class[] classes = new Class[ncols];
+		TypeSpec[] typeSpecs = new TypeSpec[ncols];
 		for (int i = 0; i < ncols; i++) {
 		    names[i] = columnNames[col[i]];
-		    classes[i] = model.getColumnClass(col[i]);
+		    typeSpecs[i] = model.getTypeSpec(col[i]);
 		}
 		ArrayList data = new ArrayList();
 		for (int i = 0; i < nrows; i++) {
@@ -177,7 +103,7 @@ public abstract class BasicTable implements Table, Scriptable {
 		}
 		BasicData bd = new BasicData();
 		bd.setColumnNames(names);
-		bd.setColumnClasses(classes);
+		bd.setTypeSpecs(typeSpecs);
 		bd.setData(data);
 		pkValues = bd;
 		pkValuesFromModel = nrows;

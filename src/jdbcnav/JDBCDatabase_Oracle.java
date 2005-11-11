@@ -297,7 +297,7 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 		// This code also executes for LONG and LONG RAW columns, which
 		// is just as well, since the code below does not handle NULL
 		// anyway.
-		String dbType = table.getDbTypes()[dbtable_col];
+		String dbType = table.getTypeSpecs()[dbtable_col].jdbcDbType;
 		if ("CLOB".equals(dbType) || "LONG".equals(dbType))
 		    stmt.setString(index, null);
 		else
@@ -356,11 +356,175 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	return true;
     }
 
-    public String objectToString(Object o, String className) {
+    protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,
+				    int sqlType, String javaType) {
+	if (javaType == null) {
+	    if (dbType == null) {
+		// UROWID, from ResultSetMetaData
+		dbType = "UROWID";
+		sqlType = Types.OTHER;
+		javaType = "oracle.sql.ROWID";
+	    } else if (dbType.equals("BINARY_FLOAT")) {
+		sqlType = Types.OTHER;
+		javaType = "java.lang.Float";
+	    } else if (dbType.equals("BINARY_DOUBLE")) {
+		sqlType = Types.OTHER;
+		javaType = "java.lang.Double";
+	    } else {
+		// UROWID (?)
+		sqlType = Types.OTHER;
+		javaType = "oracle.sql.ROWID";
+	    }
+	}
+
+	TypeSpec spec = super.makeTypeSpec(dbType, size, scale, sqlType,
+								javaType);
+	if (dbType.equals("CHAR")) {
+	    spec.type = TypeSpec.CHAR;
+	    spec.size = size.intValue();
+	} else if (dbType.equals("VARCHAR2")) {
+	    spec.type = TypeSpec.VARCHAR;
+	    spec.size = size.intValue();
+	} else if (dbType.equals("NCHAR")) {
+	    spec.type = TypeSpec.NCHAR;
+	    spec.size = size.intValue();
+	} else if (dbType.equals("NVARCHAR2")) {
+	    spec.type = TypeSpec.VARNCHAR;
+	    spec.size = size.intValue();
+	} else if (dbType.equals("NUMBER")) {
+	    if (scale == null
+		    || scale.intValue() == -127 && size.intValue() == 0) {
+		spec.type = TypeSpec.FLOAT;
+		// TODO: Is it really 38 decimal digits,
+		// or is it actually 126 bits?
+		spec.size = 38;
+		spec.size_in_bits = false;
+		spec.min_exp = -130;
+		spec.max_exp = 125;
+		spec.exp_of_2 = false;
+	    } else if (scale.intValue() == -127) {
+		// FLOAT and NUMBER as returned by ResultSetMetaData
+		spec.type = TypeSpec.FLOAT;
+		spec.size = size.intValue();
+		spec.size_in_bits = true;
+		spec.min_exp = -130;
+		spec.max_exp = 125;
+		spec.exp_of_2 = false;
+	    } else {
+		spec.type = TypeSpec.FIXED;
+		spec.size = size.intValue();
+		spec.size_in_bits = false;
+		spec.scale = scale.intValue();
+		spec.scale_in_bits = false;
+	    }
+	} else if (dbType.equals("FLOAT")) {
+	    spec.type = TypeSpec.FLOAT;
+	    spec.size = size.intValue();
+	    spec.size_in_bits = true;
+	    spec.min_exp = -130;
+	    spec.max_exp = 125;
+	    spec.exp_of_2 = false;
+	} else if (dbType.equals("BINARY_FLOAT")) {
+	    spec.type = TypeSpec.FLOAT;
+	    spec.size = 24;
+	    spec.size_in_bits = true;
+	    spec.min_exp = -127;
+	    spec.max_exp = 127;
+	    spec.exp_of_2 = true;
+	} else if (dbType.equals("BINARY_DOUBLE")) {
+	    spec.type = TypeSpec.FLOAT;
+	    spec.size = 54;
+	    spec.size_in_bits = true;
+	    spec.min_exp = -1023;
+	    spec.max_exp = 1023;
+	    spec.exp_of_2 = true;
+	} else if (dbType.equals("LONG")) {
+	    spec.type = TypeSpec.LONGVARCHAR;
+	} else if (dbType.equals("LONG RAW")) {
+	    spec.type = TypeSpec.LONGVARRAW;
+	} else if (dbType.equals("RAW")) {
+	    spec.type = TypeSpec.VARRAW;
+	    spec.size = size.intValue();
+	} else if (dbType.equals("DATE")) {
+	    spec.type = TypeSpec.TIMESTAMP;
+	    spec.size = 0;
+	} else if (dbType.startsWith("TIMESTAMP")) {
+	    if (dbType.endsWith("WITH LOCAL TIME ZONE"))
+		spec.type = TypeSpec.TIMESTAMP;
+	    else if (dbType.endsWith("WITH TIME ZONE"))
+		spec.type = TypeSpec.TIMESTAMP_TZ;
+	    else
+		spec.type = TypeSpec.TIMESTAMP;
+	    spec.size = scale.intValue();
+	} else if (dbType.startsWith("INTERVAL YEAR")) {
+	    spec.type = TypeSpec.INTERVAL_YM;
+	    spec.size = size.intValue();
+	} else if (dbType.startsWith("INTERVAL DAY")) {
+	    spec.type = TypeSpec.INTERVAL_DS;
+	    spec.size = size.intValue();
+	    spec.scale = scale.intValue();
+	} else if (dbType.equals("BLOB")) {
+	    spec.type = TypeSpec.LONGVARRAW;
+	} else if (dbType.equals("CLOB")) {
+	    spec.type = TypeSpec.LONGVARCHAR;
+	} else if (dbType.equals("NCLOB")) {
+	    spec.type = TypeSpec.LONGVARNCHAR;
+	} else {
+	    // BFILE, ROWID, UROWID, or something new.
+	    // Don't know how to handle them so we tag them UNKNOWN,
+	    // which will cause the script generator to pass them on
+	    // uninterpreted and unchanged.
+	    spec.type = TypeSpec.UNKNOWN;
+	}
+
+	// Populate native_representation for the benefit of the SameAsSource
+	// script generator.
+
+	if (dbType.startsWith("INTERVAL YEAR"))
+	    spec.native_representation = "INTERVAL YEAR(" + size + ") TO MONTH";
+	else if (dbType.startsWith("INTERVAL DAY"))
+	    spec.native_representation = "INTERVAL DAY(" + size
+		+ ") TO SECOND(" + scale + ")";
+	else if (dbType.startsWith("TIMESTAMP")) {
+	    spec.native_representation = "TIMESTAMP(" + scale + ")";
+	    if (dbType.endsWith("WITH LOCAL TIME ZONE"))
+		spec.native_representation += " WITH LOCAL TIME ZONE";
+	    else if (dbType.endsWith("WITH TIME ZONE"))
+		spec.native_representation += " WITH TIME ZONE";
+	} else {
+	    if (!dbType.equals("NUMBER")
+		    && !dbType.equals("CHAR")
+		    && !dbType.equals("VARCHAR2")
+		    && !dbType.equals("NCHAR")
+		    && !dbType.equals("NVARCHAR2")
+		    && !dbType.equals("RAW")
+		    && !dbType.equals("FLOAT")) {
+		size = null;
+		scale = null;
+	    } else if (dbType.equals("NUMBER")) {
+		if (scale == null)
+		    size = null;
+		else if (scale.intValue() == 0)
+		    scale = null;
+	    }
+	    if (size == null)
+		spec.native_representation = dbType;
+	    else if (scale == null)
+		spec.native_representation = dbType + "(" + size + ")";
+	    else
+		spec.native_representation = dbType + "(" + size + ", "
+							  + scale + ")";
+	}
+
+	return spec;
+    }
+
+    protected String objectToString(TypeSpec spec, Object o) {
 	if (o == null)
-	    return super.objectToString(o, className);
+	    return super.objectToString(spec, o);
 
 	Class klass = o.getClass();
+	String className = spec.jdbcJavaType;
 
 	if (className.equals("oracle.sql.BFILE")) {
 	    try {
@@ -416,12 +580,14 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	    }
 	}
 
-	return super.objectToString(o, className);
+	return super.objectToString(spec, o);
     }
 
-    public Object stringToObject(String s, String className) {
+    protected Object stringToObject(TypeSpec spec, String s) {
 	if (s == null)
-	    return super.stringToObject(s, className);
+	    return super.stringToObject(spec, s);
+
+	String className = spec.jdbcJavaType;
 
 	if (className.equals("oracle.sql.TIMESTAMP")) {
 	    if (s.equals(""))
@@ -467,6 +633,6 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	    }
 	}
 
-	return super.stringToObject(s, className);
+	return super.stringToObject(spec, s);
     }
 }

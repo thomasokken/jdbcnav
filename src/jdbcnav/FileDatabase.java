@@ -215,12 +215,8 @@ public class FileDatabase extends BasicDatabase {
 	public void setRemarks(String remarks) { this.remarks = remarks; }
 	public void setQualifiedName(String qualifiedName) { this.qualifiedName = qualifiedName; }
 	public void setColumnNames(String[] columnNames) { this.columnNames = columnNames; }
-	public void setDbTypes(String[] dbTypes) { this.dbTypes = dbTypes; }
-	public void setColumnSizes(Integer[] columnSizes) { this.columnSizes = columnSizes; }
-	public void setColumnScales(Integer[] columnScales) { this.columnScales = columnScales; }
+	public void setTypeSpecs(TypeSpec[] typeSpecs) { this.typeSpecs = typeSpecs; }
 	public void setIsNullable(String[] isNullable) { this.isNullable = isNullable; }
-	public void setSqlTypes(int[] sqlTypes) { this.sqlTypes = sqlTypes; }
-	public void setJavaTypes(String[] javaTypes) { this.javaTypes = javaTypes; }
 	public void setPrimaryKey(PrimaryKey pk) { this.pk = pk; }
 	public void setForeignKeys(ForeignKey[] fks) { this.fks = fks; }
 	public void setReferencingKeys(ForeignKey[] rks) { this.rks = rks; }
@@ -253,9 +249,7 @@ public class FileDatabase extends BasicDatabase {
 						    throws NavigatorException {
 	xml.openTag("table");
 	dumpTable(xml, ft);
-	xml.openTag("data");
 	dumpData(xml, ft.getData(false));
-	xml.closeTag();
 	xml.closeTag();
     }
 
@@ -272,32 +266,14 @@ public class FileDatabase extends BasicDatabase {
 	for (int i = 0; i < t.getColumnNames().length; i++)
 	    xml.wholeTag("_" + i, t.getColumnNames()[i]);
 	xml.closeTag();
-	xml.openTag("db_types");
-	for (int i = 0; i < t.getDbTypes().length; i++)
-	    xml.wholeTag("_" + i, t.getDbTypes()[i]);
-	xml.closeTag();
-	xml.openTag("column_sizes");
-	for (int i = 0; i < t.getColumnSizes().length; i++)
-	    if (t.getColumnSizes()[i] != null)
-		xml.wholeTag("_" + i, t.getColumnSizes()[i].toString());
-	xml.closeTag();
-	xml.openTag("column_scales");
-	for (int i = 0; i < t.getColumnScales().length; i++)
-	    if (t.getColumnScales()[i] != null)
-		xml.wholeTag("_" + i, t.getColumnScales()[i].toString());
+	xml.openTag("type_specs");
+	TypeSpec[] typeSpecs = t.getTypeSpecs();
+	for (int i = 0; i < typeSpecs.length; i++)
+	    dumpTypeSpec(xml, typeSpecs[i]);
 	xml.closeTag();
 	xml.openTag("is_nullable");
 	for (int i = 0; i < t.getIsNullable().length; i++)
 	    xml.wholeTag("_" + i, t.getIsNullable()[i]);
-	xml.closeTag();
-	xml.openTag("sql_types");
-	for (int i = 0; i < t.getSqlTypes().length; i++)
-	    xml.wholeTag("_" + i, MiscUtils.sqlTypeIntToString(
-						    t.getSqlTypes()[i]));
-	xml.closeTag();
-	xml.openTag("java_types");
-	for (int i = 0; i < t.getJavaTypes().length; i++)
-	    xml.wholeTag("_" + i, t.getJavaTypes()[i]);
 	xml.closeTag();
 	PrimaryKey pk = t.getPrimaryKey();
 	if (pk != null)
@@ -313,6 +289,39 @@ public class FileDatabase extends BasicDatabase {
 	    dumpIndex(xml, indexes[i]);
     }
     
+    private static void dumpTypeSpec(XMLWriter xml, TypeSpec spec) {
+	xml.openTag("type_spec");
+	xml.wholeTag("type", Integer.toString(spec.type));
+	if (spec.type != TypeSpec.UNKNOWN
+		&& spec.type != TypeSpec.LONGVARCHAR
+		&& spec.type != TypeSpec.LONGVARNCHAR
+		&& spec.type != TypeSpec.LONGVARRAW) {
+	    xml.wholeTag("size", Integer.toString(spec.size));
+	    if (spec.type == TypeSpec.FIXED || spec.type == TypeSpec.FLOAT)
+		xml.wholeTag("size_in_bits", spec.size_in_bits ? "true" : "false");
+	}
+	if (spec.type == TypeSpec.FIXED) {
+	    xml.wholeTag("scale", Integer.toString(spec.scale));
+	    xml.wholeTag("scale_in_bits", spec.scale_in_bits ? "true" : "false");
+	}
+	if (spec.type == TypeSpec.FLOAT) {
+	    xml.wholeTag("min_exp", Integer.toString(spec.min_exp));
+	    xml.wholeTag("max_exp", Integer.toString(spec.max_exp));
+	    xml.wholeTag("exp_of_2", spec.exp_of_2 ? "true" : "false");
+	}
+	xml.wholeTag("part_of_key", spec.part_of_key ? "true" : "false");
+	xml.wholeTag("part_of_index", spec.part_of_index ? "true" : "false");
+	xml.wholeTag("native_representation", spec.native_representation);
+	xml.wholeTag("jdbc_db_type", spec.jdbcDbType);
+	if (spec.jdbcSize != null)
+	    xml.wholeTag("jdbc_size", spec.jdbcSize.toString());
+	if (spec.jdbcScale != null)
+	    xml.wholeTag("jdbc_scale", spec.jdbcScale.toString());
+	xml.wholeTag("jdbc_sql_type", Integer.toString(spec.jdbcSqlType));
+	xml.wholeTag("jdbc_java_type", spec.jdbcJavaType);
+	xml.closeTag();
+    }
+
     private static void dumpPrimaryKey(XMLWriter xml, PrimaryKey pk) {
 	xml.openTag("primary_key");
 	xml.wholeTag("key_name", pk.getName());
@@ -362,15 +371,7 @@ public class FileDatabase extends BasicDatabase {
     }
 
     private static void dumpData(XMLWriter xml, Data data) {
-	xml.openTag("names");
-	for (int i = 0; i < data.getColumnCount(); i++)
-	    xml.wholeTag("_" + i, data.getColumnName(i));
-	xml.closeTag();
-	xml.openTag("classes");
-	for (int i = 0; i < data.getColumnCount(); i++)
-	    if (data.getColumnClass(i) != null)
-		xml.wholeTag("_" + i, data.getColumnClass(i).getName());
-	xml.closeTag();
+	xml.openTag("rows");
 	for (int i = 0; i < data.getRowCount(); i++) {
 	    xml.openTag("row");
 	    for (int j = 0; j < data.getColumnCount(); j++) {
@@ -385,6 +386,7 @@ public class FileDatabase extends BasicDatabase {
 	    }
 	    xml.closeTag();
 	}
+	xml.closeTag();
     }
 
     private class FileDatabaseReader extends DefaultHandler {
@@ -393,9 +395,11 @@ public class FileDatabase extends BasicDatabase {
 
 	private FileTable table;
 	private int columnCount;
+	private TypeSpec spec;
 	private BasicPrimaryKey pk;
 	private BasicForeignKey fk;
 	private BasicIndex index;
+	private ArrayList typeSpecs = new ArrayList();
 	private ArrayList fks = new ArrayList();
 	private ArrayList rks = new ArrayList();
 	private ArrayList indexes = new ArrayList();
@@ -404,6 +408,7 @@ public class FileDatabase extends BasicDatabase {
 	private StringBuffer elementData = new StringBuffer();
 	private ArrayList arrayBuffer = new ArrayList();
 	private boolean inPrimaryKey;
+	private boolean inTypeSpec;
 
 	public FileDatabaseReader() {
 	    //
@@ -451,21 +456,20 @@ public class FileDatabase extends BasicDatabase {
 		    || name.equals("key_columns")
 		    || name.equals("index_columns")
 		    || name.equals("column_names")
-		    || name.equals("db_types")
-		    || name.equals("column_sizes")
-		    || name.equals("column_scales")
+		    || name.equals("type_specs")
 		    || name.equals("is_nullable")
-		    || name.equals("sql_types")
-		    || name.equals("java_types")
-		    || name.equals("names")
-		    || name.equals("classes")
 		    || name.equals("row"))
 		arrayBuffer.clear();
 	    else if (name.equals("table")) {
 		table = new FileTable();
+		typeSpecs.clear();
 		fks.clear();
 		rks.clear();
 		indexes.clear();
+		inTypeSpec = false;
+	    } else if (name.equals("type_spec")) {
+		spec = new BasicTypeSpec();
+		inTypeSpec = true;
 	    } else if (name.equals("primary_key")) {
 		pk = new BasicPrimaryKey();
 		inPrimaryKey = true;
@@ -477,6 +481,8 @@ public class FileDatabase extends BasicDatabase {
 		index = new BasicIndex();
 	    } else if (name.equals("data")) {
 		tr = new BasicData();
+		tr.setColumnNames(table.getColumnNames());
+		tr.setTypeSpecs(table.getTypeSpecs());
 		tr.setData(new ArrayList());
 	    }
 	}
@@ -507,9 +513,17 @@ public class FileDatabase extends BasicDatabase {
 		table.setSchema(data);
 	    else if (name.equals("name"))
 		table.setName(data);
-	    else if (name.equals("type"))
-		table.setType(data);
-	    else if (name.equals("remarks"))
+	    else if (name.equals("type")) {
+		if (inTypeSpec)
+		    try {
+			spec.type = Integer.parseInt(data);
+		    } catch (NumberFormatException e) {
+			throw new SAXException("type value \"" + data
+					    + "\" is not an integer.");
+		    }
+		else
+		    table.setType(data);
+	    } else if (name.equals("remarks"))
 		table.setRemarks(data);
 	    else if (name.equals("qualified_name"))
 		table.setQualifiedName(data);
@@ -565,142 +579,99 @@ public class FileDatabase extends BasicDatabase {
 	    else if (name.equals("index_columns"))
 		index.setColumns((String[]) arrayBuffer.toArray(STRARRAY));
 	    else if (name.equals("unique"))
-		index.setUnique(Boolean.getBoolean(data));
+		index.setUnique(Boolean.parseBoolean(data));
 	    else if (name.equals("data"))
 		table.setData(tr);
-	    else if (name.equals("names")) {
-		String[] s = (String[]) arrayBuffer.toArray(
-						    new String[columnCount]);
-		tr.setColumnNames(s);
-	    } else if (name.equals("classes")) {
-		String[] classNames = (String[]) arrayBuffer.toArray(
-						    new String[columnCount]);
-		int n = classNames.length;
-		Class[] columnClasses = new Class[n];
-		for (int i = 0; i < n; i++) {
-		    try {
-			columnClasses[i] = Class.forName(classNames[i]);
-		    } catch (ClassNotFoundException e) {
-			throw new SAXException("Can't load column class "
-						+ classNames[i]);
-		    }
-		}
-		tr.setColumnClasses(columnClasses);
-	    } else if (name.equals("row")) {
+	    else if (name.equals("row")) {
 		int n = tr.getColumnCount();
 		String[] sa = (String[]) arrayBuffer.toArray(new String[n]);
 		Object[] oa = new Object[n];
 		for (int i = 0; i < n; i++) {
-		    Class c = tr.getColumnClass(i);
-		    String value = sa[i];
-		    if (value == null || c == null || c == String.class
-						|| c == Object.class)
-			oa[i] = value;
-		    else if (c == java.sql.Time.class) {
-			try {
-			    oa[i] = java.sql.Time.valueOf(value);
-			} catch (IllegalArgumentException e) {
-			    throw new SAXException("Non-Time value "
-				    + value + " in java.sql.Time column.");
-			}
-		    } else if (c == java.sql.Date.class) {
-			try {
-			    oa[i] = java.sql.Date.valueOf(value);
-			} catch (IllegalArgumentException e) {
-			    throw new SAXException("Non-Date value "
-				    + value + " in java.sql.Date column.");
-			}
-		    } else if (c == java.sql.Timestamp.class) {
-			try {
-			    oa[i] = java.sql.Timestamp.valueOf(value);
-			} catch (IllegalArgumentException e) {
-			    throw new SAXException("Non-Timestamp value "
-				    + value + " in java.sql.Timestamp column.");
-			}
-		    } else if (c == java.util.Date.class) {
-			try {
-			    oa[i] = new java.util.Date(
-				java.sql.Timestamp.valueOf(value).getTime());
-			} catch (IllegalArgumentException e) {
-			    throw new SAXException("Non-Date value "
-				    + value + " in java.util.Date column.");
-			}
-		    } else if (c.getName().equals("oracle.sql.CLOB")) {
-			// Note how I'm not doing c == oracle.sql.CLOB.class;
-			// that would require having the Oracle JDBC driver in
-			// the classpath, which is annoying if you are not an
-			// Oracle user...
-			oa[i] = value;
-		    } else {
-			try {
-			    Constructor cnstr = c.getConstructor(STR_ARGLIST);
-			    oa[i] = cnstr.newInstance(new Object[] { value });
-			} catch (Exception e) {
-			    // Could be NoSuchMethodException or
-			    // SecurityException while trying to get the
-			    // constructor, or InstantiationException,
-			    // IllegalAccessException, IllegalArgumentException,
-			    // or InvocationTargetException while invoking the
-			    // constructor.
-			    throw new SAXException("Can't construct " +
-				c.getName() + " object from \"" + value + "\"");
-			}
+		    TypeSpec spec = tr.getTypeSpec(i);
+		    try {
+			oa[i] = spec.objectToString(sa[i]);
+		    } catch (IllegalArgumentException e) {
+			throw new SAXException("Bad value " + sa[i]
+				+ " in column " + i + " ("
+				+ table.getColumnNames()[i] + ") of table "
+				+ table.getQualifiedName());
 		    }
 		}
 		tr.addRow(oa);
 	    } else if (name.equals("column_names")) {
 		table.setColumnNames((String[]) arrayBuffer.toArray(
 						    new String[columnCount]));
-	    } else if (name.equals("db_types")) {
-		table.setDbTypes((String[]) arrayBuffer.toArray(
-						    new String[columnCount]));
-	    } else if (name.equals("column_sizes")) {
-		String[] sa = (String[]) arrayBuffer.toArray(
-						    new String[columnCount]);
-		int n = sa.length;
-		Integer[] columnSizes = new Integer[n];
-		for (int i = 0; i < n; i++)
-		    if (sa[i] != null)
-			try {
-			    columnSizes[i] = new Integer(sa[i]);
-			} catch (NumberFormatException e) {
-			    throw new SAXException("column_sizes value "
-				    + sa[i] + " is not an integer.");
-			}
-		table.setColumnSizes(columnSizes);
-	    } else if (name.equals("column_scales")) {
-		String[] sa = (String[]) arrayBuffer.toArray(
-						    new String[columnCount]);
-		int n = sa.length;
-		Integer[] columnScales = new Integer[n];
-		for (int i = 0; i < n; i++)
-		    if (sa[i] != null)
-			try {
-			    columnScales[i] = new Integer(sa[i]);
-			} catch (NumberFormatException e) {
-			    throw new SAXException("column_scales value "
-				    + sa[i] + " is not an integer.");
-			}
-		table.setColumnScales(columnScales);
+	    } else if (name.equals("size")) {
+		try {
+		    spec.size = Integer.parseInt(data);
+		} catch (NumberFormatException e) {
+		    throw new SAXException("size value \"" + data
+					   + "\" is not an integer.");
+		}
+	    } else if (name.equals("size_in_bits")) {
+		spec.size_in_bits = Boolean.parseBoolean(data);
+	    } else if (name.equals("scale")) {
+		try {
+		    spec.scale = Integer.parseInt(data);
+		} catch (NumberFormatException e) {
+		    throw new SAXException("scale value \"" + data
+					   + "\" is not an integer.");
+		}
+	    } else if (name.equals("scale_in_bits")) {
+		spec.scale_in_bits = Boolean.parseBoolean(data);
+	    } else if (name.equals("min_exp")) {
+		try {
+		    spec.min_exp = Integer.parseInt(data);
+		} catch (NumberFormatException e) {
+		    throw new SAXException("min_exp value \"" + data
+					   + "\" is not an integer.");
+		}
+	    } else if (name.equals("max_exp")) {
+		try {
+		    spec.max_exp = Integer.parseInt(data);
+		} catch (NumberFormatException e) {
+		    throw new SAXException("max_exp value \"" + data
+					   + "\" is not an integer.");
+		}
+	    } else if (name.equals("exp_of_2")) {
+		spec.exp_of_2 = Boolean.parseBoolean(data);
+	    } else if (name.equals("jdbc_db_type")) {
+		spec.jdbcDbType = data;
+	    } else if (name.equals("jdbc_size")) {
+		try {
+		    spec.jdbcSize = new Integer(data);
+		} catch (NumberFormatException e) {
+		    throw new SAXException("jdbc_size value \"" + data
+					   + "\" is not an integer.");
+		}
+	    } else if (name.equals("jdbc_scale")) {
+		try {
+		    spec.jdbcScale = new Integer(data);
+		} catch (NumberFormatException e) {
+		    throw new SAXException("jdbc_scale value \"" + data
+					   + "\" is not an integer.");
+		}
+	    } else if (name.equals("jdbc_sql_type")) {
+		try {
+		    spec.jdbcSqlType = Integer.parseInt(data);
+		} catch (NumberFormatException e) {
+		    throw new SAXException("jdbc_sql_type value \"" + data
+					   + "\" is not an integer.");
+		}
+	    } else if (name.equals("jdbc_java_type")) {
+		spec.jdbcJavaType = data;
+		try {
+		    spec.jdbcJavaClass = Class.forName(data);
+		} catch (ClassNotFoundException e) {
+		    spec.jdbcJavaClass = Object.class;
+		}
+	    } else if (name.equals("type_spec")) {
+		arrayBuffer.add(spec);
+	    } else if (name.equals("type_specs")) {
+		table.setTypeSpecs((TypeSpec[]) arrayBuffer.toArray(
+						    new TypeSpec[columnCount]));
 	    } else if (name.equals("is_nullable")) {
 		table.setIsNullable((String[]) arrayBuffer.toArray(
-						    new String[columnCount]));
-	    } else if (name.equals("sql_types")) {
-		String[] sa = (String[]) arrayBuffer.toArray(
-						    new String[columnCount]);
-		int n = sa.length;
-		int[] sqlTypes = new int[n];
-		for (int i = 0; i < n; i++)
-		    if (sa[i] != null)
-			try {
-			    sqlTypes[i] = MiscUtils.sqlTypeStringToInt(sa[i]);
-			} catch (IllegalArgumentException e) {
-			    throw new SAXException("Unknown sql_types value "
-				    + sa[i] + ".");
-			}
-		table.setSqlTypes(sqlTypes);
-	    } else if (name.equals("java_types")) {
-		table.setJavaTypes((String[]) arrayBuffer.toArray(
 						    new String[columnCount]));
 	    } else if (name.startsWith("_")) {
 		int n;

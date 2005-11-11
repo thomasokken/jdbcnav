@@ -10,7 +10,7 @@ import jdbcnav.model.ForeignKey;
 import jdbcnav.model.Index;
 import jdbcnav.model.PrimaryKey;
 import jdbcnav.model.Table;
-import jdbcnav.model.TypeDescription;
+import jdbcnav.model.TypeSpec;
 import jdbcnav.util.MiscUtils;
 import jdbcnav.util.NavigatorException;
 
@@ -35,13 +35,6 @@ public class ScriptGenerator {
     }
 
     /**
-     * Oracle has its own, nonstandard ideas of how dates should look...
-     */
-    protected String dateToString(java.util.Date date) {
-	return date.toString();
-    }
-
-    /**
      * Oracle does not allow "on update" clauses
      */
     protected String onUpdateString(String upd) {
@@ -56,57 +49,18 @@ public class ScriptGenerator {
     }
 
     /**
-     * Generate a vendor-neutral column data type description.
-     * <br>
-     * When a CREATE script is generated for a different RDBMS product than
-     * the source, data types must be translated, since each product has its
-     * own idiosyncrasies. The translation is performed in two steps: first,
-     * this method is called to convert the data type to a generic form;
-     * second, printType() is called to convert the generic form to a form
-     * appropriate for the destination RDBMS product. The getTypeDescription()
-     * call should be performed on a ScriptGenerator object that matches the
-     * source DB (in the case of FileDatabase, use the internalDriverName
-     * property to determine the source DB that the snapshot was originally
-     * taken from); the printType() call is performed on the ScriptGenerator
-     * instance that is actually generating the script.
-     * <br>
-     * The generic version of this method claims ignorance about all data types
-     * and simply returns the type as described by the JDBC driver; subclasses
-     * should override this method and return accurate descriptions for all the
-     * source RDBMS' native types.
-     */
-    public TypeDescription getTypeDescription(String dbType, Integer size,
-					      Integer scale) {
-	// TODO: Optionally use sqlType instead of dbType, and try to take
-	// a reasonable stab at describing the exact data types.
-
-	TypeDescription td = new TypeDescription();
-	td.type = TypeDescription.UNKNOWN;
-
-	// The 'size', 'scale', and 'national_char' fields only have meaning
-	// when 'type' is set to something that requires them; their meaning
-	// depends on 'type' (for example, 'size' can refer to a number of
-	// characters, digits, or bits, etc.). They are *not* equivalent to the
-	// 'size' and 'scale' fields in jdbcnav.model.Table.
-
-	// The 'part_of_key', 'part_of_index', and 'native_representation'
-	// fields are filled in in BasicTable.getTypeDescription().
-	return td;
-    }
-
-    /**
      * Every database has its own needs when it comes to representing its
      * data types in SQL scripts... printType() should take a table's
      * originating driver (table.getDatabase().getIntenalDriverName()) into
      * account when trying to find the best way to represent the originating
      * data type in terms of the target's SQL dialect.
      */
-    protected String printType(TypeDescription td) {
+    protected String printType(TypeSpec td) {
 	switch (td.type) {
-	    case TypeDescription.UNKNOWN: {
+	    case TypeSpec.UNKNOWN: {
 		return td.native_representation;
 	    }
-	    case TypeDescription.FIXED: {
+	    case TypeSpec.FIXED: {
 		if (td.size_in_bits && td.scale == 0) {
 		    if (td.size <= 16)
 			return "SMALLINT";
@@ -133,7 +87,7 @@ public class ScriptGenerator {
 		else
 		    return "NUMERIC(" + size + ", " + scale + ")";
 	    }
-	    case TypeDescription.FLOAT: {
+	    case TypeSpec.FLOAT: {
 		// TODO: Generate ANSI-type FLOAT(n) as well, where
 		// 'n' is the number of bits in the mantissa.
 		// (Not sure if that number includes the sign bit or not.)
@@ -148,54 +102,54 @@ public class ScriptGenerator {
 		}
 		return "REAL";
 	    }
-	    case TypeDescription.CHAR: {
+	    case TypeSpec.CHAR: {
 		return "CHAR(" + td.size + ")";
 	    }
-	    case TypeDescription.VARCHAR: {
+	    case TypeSpec.VARCHAR: {
 		return "CHAR VARYING(" + td.size + ")";
 	    }
-	    case TypeDescription.LONGVARCHAR: {
+	    case TypeSpec.LONGVARCHAR: {
 		// TODO: is this SQL92?
 		return "CLOB";
 	    }
-	    case TypeDescription.NCHAR: {
+	    case TypeSpec.NCHAR: {
 		return "NCHAR(" + td.size + ")";
 	    }
-	    case TypeDescription.VARNCHAR: {
+	    case TypeSpec.VARNCHAR: {
 		return "NCHAR VARYING(" + td.size + ")";
 	    }
-	    case TypeDescription.LONGVARNCHAR: {
+	    case TypeSpec.LONGVARNCHAR: {
 		// TODO: is this SQL92?
 		return "NCLOB";
 	    }
-	    case TypeDescription.RAW:
-	    case TypeDescription.VARRAW: {
+	    case TypeSpec.RAW:
+	    case TypeSpec.VARRAW: {
 		// TODO: is this SQL92?
 		return "RAW(" + td.size + ")";
 	    }
-	    case TypeDescription.LONGVARRAW: {
+	    case TypeSpec.LONGVARRAW: {
 		// TODO: is this SQL92?
 		return "BLOB";
 	    }
-	    case TypeDescription.DATE: {
+	    case TypeSpec.DATE: {
 		return "DATE";
 	    }
-	    case TypeDescription.TIME: {
+	    case TypeSpec.TIME: {
 		return "TIME(" + td.size + ")";
 	    }
-	    case TypeDescription.TIME_TZ: {
+	    case TypeSpec.TIME_TZ: {
 		return "TIME(" + td.size + ") WITH TIME ZONE";
 	    }
-	    case TypeDescription.TIMESTAMP: {
+	    case TypeSpec.TIMESTAMP: {
 		return "TIMESTAMP(" + td.size + ")";
 	    }
-	    case TypeDescription.TIMESTAMP_TZ: {
+	    case TypeSpec.TIMESTAMP_TZ: {
 		return "TIMESTAMP(" + td.size + ") WITH TIME ZONE";
 	    }
-	    case TypeDescription.INTERVAL_YM: {
+	    case TypeSpec.INTERVAL_YM: {
 		return "INTERVAL YEAR(" + td.size + ") TO MONTH";
 	    }
-	    case TypeDescription.INTERVAL_DS: {
+	    case TypeSpec.INTERVAL_DS: {
 		return "INTERVAL DAY(" +td.size+ ") TO SECOND(" +td.scale+ ")";
 	    }
 	    default: {
@@ -311,7 +265,7 @@ public class ScriptGenerator {
 	    buf.append("\n    ");
 	    buf.append(table.getColumnNames()[i]);
 	    buf.append(" ");
-	    buf.append(printType(table.getTypeDescription(i)));
+	    buf.append(printType(table.getTypeSpecs()[i]));
 	    if (!"YES".equals(table.getIsNullable()[i]))
 		buf.append(" not null");
 	}
@@ -521,10 +475,7 @@ public class ScriptGenerator {
 	    for (int i = 0; i < row.length; i++) {
 		if (i > 0)
 		    buf.append(", ");
-		if (row[i] == null)
-		    buf.append("null");
-		else
-		    buf.append(toSqlString(row[i]));
+		buf.append(toSqlString(table.getTypeSpecs()[i], row[i]));
 	    }
 	    buf.append(");\n");
 	    if (postmortem)
@@ -547,13 +498,15 @@ public class ScriptGenerator {
 		if (i > 0)
 		    buf.append(" and");
 		buf.append(" ");
-		buf.append(headers[pkColumns[i]]);
+		int col = pkColumns[i];
+		buf.append(headers[col]);
 		// null is possible if this is a surrogate primary key
-		if (key[i] == null)
+		String s = toSqlString(table.getTypeSpecs()[col], key[i]);
+		if (s.equals("null"))
 		    buf.append(" is null");
 		else {
 		    buf.append(" = ");
-		    buf.append(toSqlString(key[i]));
+		    buf.append(s);
 		}
 	    }
 	    buf.append(";\n");
@@ -583,22 +536,20 @@ public class ScriptGenerator {
 		    buf.append(" ");
 		    buf.append(headers[i]);
 		    buf.append(" = ");
-		    if (newRow[i] == null)
-			buf.append("null");
-		    else
-			buf.append(toSqlString(newRow[i]));
+		    buf.append(toSqlString(table.getTypeSpecs()[i], newRow[i]));
 		}
 	    buf.append(" where");
 	    int[] pkColumns = table.getPKColumns();
 	    for (int i = 0; i < pkColumns.length; i++) {
 		if (i > 0)
 		    buf.append(" and");
+		int col = pkColumns[i];
 		buf.append(" ");
-		buf.append(headers[pkColumns[i]]);
+		buf.append(headers[col]);
 		// No need to deal with null since we never perform updates
 		// on tables with surrogate primary keys
 		buf.append(" = ");
-		buf.append(toSqlString(oldRow[pkColumns[i]]));
+		buf.append(toSqlString(table.getTypeSpecs()[col], oldRow[col]));
 	    }
 	    buf.append(";\n");
 	    if (postmortem)
@@ -646,13 +597,19 @@ public class ScriptGenerator {
     ///// Private utility stuff /////
     /////////////////////////////////
 
-    private String toSqlString(Object obj) {
-	if (obj instanceof Number)
-	    return obj.toString();
-	if (obj instanceof java.util.Date)
-	    return dateToString((java.util.Date) obj);
-	StringTokenizer tok = new StringTokenizer(obj.toString(),
-						  "'\t\n\r", true);
+    protected String toSqlString(TypeSpec spec, Object obj) {
+	if (obj == null)
+	    return "null";
+	else if (spec.type == TypeSpec.FIXED || spec.type == TypeSpec.FLOAT)
+	    return spec.objectToString(obj);
+	else
+	    return quote(spec.objectToString(obj));
+    }
+
+    protected String quote(String s) {
+	if (s == null)
+	    return "null";
+	StringTokenizer tok = new StringTokenizer(s, "'\t\n\r", true);
 	StringBuffer buf = new StringBuffer();
 	boolean inLiteral = false;
 	while (tok.hasMoreTokens()) {

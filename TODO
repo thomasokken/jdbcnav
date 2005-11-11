@@ -1,11 +1,9 @@
 PostgreSQL INTERVAL type support
 
+ResultSetTableModel.doImport() does not use the new type conversion code yet.
+
 Oracle TIMESTAMPLTZ values act weird. It seems like the timestampValue() method
 and the Timestamp-consuming constructor are not each other's inverses.
-
-Snapshots and SQL Script generation should use the new database-dependent
-object/string conversion mechanism (Database.objectToString() and
-Database.stringToObject()).
 
 "Set Password" should make the user type the password twice if it doesn't match
 any of the existing ones (i.e., if it does not successfully decrypt any

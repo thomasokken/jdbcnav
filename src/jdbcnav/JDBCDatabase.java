@@ -279,12 +279,8 @@ public class JDBCDatabase extends BasicDatabase {
 		reverseColumnMap[i] = -1;
 
 	    columnNames = new String[columns];
-	    dbTypes = new String[columns];
-	    columnSizes = new Integer[columns];
-	    columnScales = new Integer[columns];
+	    typeSpecs = new TypeSpec[columns];
 	    isNullable = new String[columns];
-	    sqlTypes = new int[columns];
-	    javaTypes = new String[columns];
 
 	    for (int i = 0; i < columns; i++) {
 		String colname = data.getColumnName(i);
@@ -294,12 +290,8 @@ public class JDBCDatabase extends BasicDatabase {
 			columnMap[i] = j;
 			reverseColumnMap[j] = i;
 			columnNames[i] = t.getColumnNames()[j];
-			dbTypes[i] = t.getDbTypes()[j];
-			columnSizes[i] = t.getColumnSizes()[j];
-			columnScales[i] = t.getColumnScales()[j];
+			typeSpecs[i] = t.getTypeSpecs()[j];
 			isNullable[i] = t.getIsNullable()[j];
-			sqlTypes[i] = t.getSqlTypes()[j];
-			javaTypes[i] = t.getJavaTypes()[j];
 		    }
 		}
 	    }
@@ -898,11 +890,11 @@ public class JDBCDatabase extends BasicDatabase {
     protected void setObject(PreparedStatement stmt, int index, int
 			     dbtable_col, Object o, Table table)
 							throws SQLException {
-	int type = table.getSqlTypes()[dbtable_col];
+	int type = table.getTypeSpecs()[dbtable_col].jdbcSqlType;
 	if (type == Types.OTHER)
 	    stmt.setObject(index, o);
 	else
-	    stmt.setObject(index, o, table.getSqlTypes()[dbtable_col]);
+	    stmt.setObject(index, o, type);
     }
 
     /**
@@ -923,6 +915,33 @@ public class JDBCDatabase extends BasicDatabase {
     protected PartialTable newPartialTable(String q, Table t, Data d)
 						    throws NavigatorException {
 	return new PartialTable(q, t, d);
+    }
+
+    /**
+     * This method returns a TypeSpec object for a given column description.
+     * Subclasses should override it to provide database-specific type details.
+     */
+    protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,
+				    int sqlType, String javaType) {
+	TypeSpec spec = new BasicTypeSpec();
+	spec.type = TypeSpec.UNKNOWN;
+	if (size == null)
+	    spec.native_representation = name;
+	else if (scale == null)
+	    spec.native_representation = name + "(" + size + ")";
+	else
+	    spec.native_representation = name + "(" + size + ", " + scale + ")";
+	spec.jdbcDbType = dbType;
+	spec.jdbcSize = size;
+	spec.jdbcScale = scale;
+	spec.jdbcSqlType = sqlType;
+	spec.jdbcJavaType = javaType;
+	try {
+	    spec.jdbcJavaClass = Class.forName(javaType);
+	} catch (ClassNotFoundException e) {
+	    spec.jdbcJavaClass = Object.class;
+	}
+	return spec;
     }
 
     public Object runQuery(String query, boolean asynchronous,
@@ -1049,8 +1068,7 @@ public class JDBCDatabase extends BasicDatabase {
 	    ResultSetMetaData rsmd = rs.getMetaData();
 	    int columns = rsmd.getColumnCount();
 	    String[] columnNames = new String[columns];
-	    Class[] columnClasses = new Class[columns];
-	    boolean isClob[] = new boolean[columns];
+	    TypeSpec[] typeSpecs = new TypeSpec[columns];
 
 	    String catalog = null;
 	    String schema = null;
@@ -1058,17 +1076,15 @@ public class JDBCDatabase extends BasicDatabase {
 
 	    for (int i = 0; i < columns; i++) {
 		columnNames[i] = rsmd.getColumnName(i + 1);
-		try {
-		    Class c = Class.forName(rsmd.getColumnClassName(i + 1));
-		    columnClasses[i] = c;
-		    isClob[i] = Clob.class.isAssignableFrom(c);
-		} catch (ClassNotFoundException e) {
-		    columnClasses[i] = null;
-		} catch (Exception e) {
-		    // TODO: This is just a workaround for PostgreSQL, which
-		    // throws an exception in this method.
-		    columnClasses[i] = Object.class;
-		}
+
+		String dbType = rsmd.getColumnTypeName(i + 1);
+		int size = rsmd.getPrecision(i + 1);
+		int scale = rsmd.getScale(i + 1);
+		int sqlType = rsmd.getColumnType(i + 1);
+		String javaType = rsmd.getColumnClassName(i + 1);
+		typeSpecs[i] = makeTypeSpec(dbType, new Integer(size),
+					new Integer(scale), sqlType, javaType);
+
 		if (allowTable) {
 		    String catalog2 = rsmd.getCatalogName(i + 1);
 		    String schema2 = rsmd.getSchemaName(i + 1);
@@ -1131,9 +1147,8 @@ public class JDBCDatabase extends BasicDatabase {
 
 	    if (asynchronous) {
 		BackgroundLoadData bld = new BackgroundLoadData(columnNames,
-								columnClasses);
-		Thread ldr = new Thread(
-			    new BackgroundLoader(bld, isClob, s, rs));
+								typeSpecs);
+		Thread ldr = new Thread(new BackgroundLoader(bld, s, rs));
 		ldr.setPriority(Thread.MIN_PRIORITY);
 		ldr.setDaemon(true);
 		ldr.start();
@@ -1149,38 +1164,14 @@ public class JDBCDatabase extends BasicDatabase {
 
 	    BasicData bd = new BasicData();
 	    bd.setColumnNames(columnNames);
-	    bd.setColumnClasses(columnClasses);
+	    bd.setTypeSpecs(typeSpecs);
 
 	    ArrayList data = new ArrayList();
 	    char[] cbuf = new char[4096];
 	    while (rs.next()) {
 		Object[] row = new Object[columns];
-		for (int i = 0; i < columns; i++) {
-		    Object o = rs.getObject(i + 1);
-		    if (isClob[i]) {
-			// TODO -- why special case handling for Clobs?
-			// Why not treat them exactly like Blobs, i.e.,
-			// put the Clob object in the Data object, and
-			// leave it to the table cell editor to load the
-			// value?
-			Clob clob = (Clob) o;
-			Reader r = clob.getCharacterStream();
-			int n;
-			StringBuffer sbuf = new StringBuffer();
-			try {
-			    while ((n = r.read(cbuf)) != -1)
-				sbuf.append(cbuf, 0, n);
-			} catch (IOException e) {
-			    throw new NavigatorException(e);
-			} finally {
-			    try {
-				r.close();
-			    } catch (IOException e) {}
-			}
-			row[i] = sbuf.toString();
-		    } else
-			row[i] = o;
-		}
+		for (int i = 0; i < columns; i++)
+		    row[i] = rs.getObject(i + 1);
 		data.add(row);
 	    }
 
@@ -1314,12 +1305,8 @@ public class JDBCDatabase extends BasicDatabase {
 	    String oldType = type;
 	    String oldRemarks = remarks;
 	    String[] oldColumnNames = columnNames;
-	    String[] oldDbTypes = dbTypes;
-	    Integer[] oldColumnSizes = columnSizes;
-	    Integer[] oldColumnScales = columnScales;
-	    int[] oldSqlTypes = sqlTypes;
+	    TypeSpec[] oldTypeSpecs = typeSpecs;
 	    String[] oldIsNullable = isNullable;
-	    String[] oldJavaTypes = javaTypes;
 	    PrimaryKey oldPk = pk;
 	    ForeignKey[] oldFks = fks;
 	    ForeignKey[] oldRks = rks;
@@ -1368,6 +1355,7 @@ public class JDBCDatabase extends BasicDatabase {
 		}
 
 		rs = null;
+		int cols = 0;
 		try {
 		    rs = dbmd.getColumns(catalog, schema, name, null);
 		    while (rs.next()) {
@@ -1385,6 +1373,7 @@ public class JDBCDatabase extends BasicDatabase {
 			    columnScalesList.add(new Integer(scale));
 			sqlTypesList.add(new Integer(rs.getInt("DATA_TYPE")));
 			isNullableList.add(rs.getString("IS_NULLABLE"));
+			cols++;
 		    }
 		} catch (SQLException e) {
 		    throw new NavigatorException(e);
@@ -1395,19 +1384,20 @@ public class JDBCDatabase extends BasicDatabase {
 			} catch (SQLException e) {}
 		}
 
-		String[] sa = new String[0];
-		Integer[] ia = new Integer[0];
-		columnNames = (String[]) columnNamesList.toArray(sa);
-		dbTypes = (String[]) dbTypesList.toArray(sa);
-		columnSizes = (Integer[]) columnSizesList.toArray(ia);
-		columnScales = (Integer[]) columnScalesList.toArray(ia);
-		int cols = columnNames.length;
-		sqlTypes = new int[cols];
-		for (int i = 0; i < cols; i++)
-		    sqlTypes[i] = ((Integer) sqlTypesList.get(i)).intValue();
-		isNullable = (String[]) isNullableList.toArray(sa);
+		columnNames = (String[]) columnNamesList.toArray(new String[cols]);
 
-		javaTypes = JDBCDatabase.this.getJavaTypes(qualifiedName);
+		typeSpecs = new TypeSpec[cols];
+		String[] javaTypes = JDBCDatabase.this.getJavaTypes(qualifiedName);
+		for (int i = 0; i < cols; i++) {
+		    String dbType = (String) dbTypesList.get(i);
+		    Integer size = (Integer) columnSizesList.get(i);
+		    Integer scale = (Integer) columnScalesList.get(i);
+		    int sqlType = ((Integer) sqlTypesList.get(i)).intValue();
+		    typeSpecs[i] = makeTypeSpec(dbType, size, scale, sqlType, javaTypes[i]);
+		}
+
+		isNullable = (String[]) isNullableList.toArray(new String[cols]);
+
 		pk = JDBCDatabase.this.getPrimaryKey(qualifiedName);
 		fks = JDBCDatabase.this.getFK(qualifiedName, true);
 		rks = JDBCDatabase.this.getFK(qualifiedName, false);
@@ -1425,12 +1415,8 @@ public class JDBCDatabase extends BasicDatabase {
 		    type = oldType;
 		    remarks = oldRemarks;
 		    columnNames = oldColumnNames;
-		    dbTypes = oldDbTypes;
-		    columnSizes = oldColumnSizes;
-		    columnScales = oldColumnScales;
-		    sqlTypes = oldSqlTypes;
+		    typeSpecs = oldTypeSpecs;
 		    isNullable = oldIsNullable;
-		    javaTypes = oldJavaTypes;
 		    pk = oldPk;
 		    fks = oldFks;
 		    rks = oldRks;
@@ -1932,15 +1918,13 @@ public class JDBCDatabase extends BasicDatabase {
     private static class BackgroundLoader implements Runnable,
 					    Data.StateListener {
 	private BackgroundLoadData data;
-	private boolean[] isClob;
 	private Statement stmt;
 	private ResultSet rs;
 	private int state;
 
-	public BackgroundLoader(BackgroundLoadData data, boolean[] isClob,
+	public BackgroundLoader(BackgroundLoadData data,
 				Statement stmt, ResultSet rs) {
 	    this.data = data;
-	    this.isClob = isClob;
 	    this.stmt = stmt;
 	    this.rs = rs;
 	    state = Data.LOADING;
@@ -1961,36 +1945,11 @@ public class JDBCDatabase extends BasicDatabase {
 			    break;
 		    }
 		    Object[] row = new Object[columns];
-		    for (int i = 0; i < columns; i++) {
-			Object o = rs.getObject(i + 1);
-			if (isClob[i] && o != null) {
-			    // TODO -- why special case handling for Clobs?
-			    // Why not treat them exactly like Blobs, i.e.,
-			    // put the Clob object in the Data object, and
-			    // leave it to the table cell editor to load the
-			    // value?
-			    Clob clob = (Clob) o;
-			    Reader r = clob.getCharacterStream();
-			    int n;
-			    StringBuffer sbuf = new StringBuffer();
-			    try {
-				while ((n = r.read(cbuf)) != -1)
-				    sbuf.append(cbuf, 0, n);
-			    } finally {
-				try {
-				    r.close();
-				} catch (IOException e) {}
-			    }
-			    row[i] = sbuf.toString();
-			} else
-			    row[i] = o;
-		    }
+		    for (int i = 0; i < columns; i++)
+			row[i] = rs.getObject(i + 1);
 		    data.addRow(row);
 		}
 	    } catch (SQLException e) {
-		MessageBox.show("An exception occurred while "
-				+ "loading a query result:", e);
-	    } catch (IOException e) {
 		MessageBox.show("An exception occurred while "
 				+ "loading a query result:", e);
 	    }

@@ -16,12 +16,8 @@ public interface Table extends Comparable {
     String getQuotedName();
     int getColumnCount();
     String[] getColumnNames();
-    String[] getDbTypes();
-    Integer[] getColumnSizes();
-    Integer[] getColumnScales();
+    TypeSpec[] getTypeSpecs();
     String[] getIsNullable();
-    int[] getSqlTypes();
-    String[] getJavaTypes();
     PrimaryKey getPrimaryKey();
     ForeignKey[] getForeignKeys();
     ForeignKey[] getReferencingKeys();
@@ -29,7 +25,6 @@ public interface Table extends Comparable {
     Data getData(boolean async) throws NavigatorException;
     Data getPKValues() throws NavigatorException;
 
-    TypeDescription getTypeDescription(int column);
 
     void updateDetails() throws NavigatorException;
     void makeOrphan();

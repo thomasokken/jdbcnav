@@ -4,7 +4,7 @@ import java.text.*;
 import jdbcnav.model.Index;
 import jdbcnav.model.PrimaryKey;
 import jdbcnav.model.Table;
-import jdbcnav.model.TypeDescription;
+import jdbcnav.model.TypeSpec;
 
 public class ScriptGenerator_Oracle extends ScriptGenerator {
     private static SimpleDateFormat dateFormat =
@@ -20,167 +20,18 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
     protected String getSQLPreamble() {
 	return "set scan off;\n";
     }
-    protected String dateToString(java.util.Date date) {
-	if (date.getClass() == java.sql.Date.class)
-	    return "to_date('" + dateFormat.format(date)
-			       + "', 'YYYY-MM-DD')";
-	else if (date.getClass() == java.sql.Time.class)
-	    return "to_date('" + timeFormat.format(date)
-			       + "', 'HH24:MI:SS')";
-	else
-	    return "to_date('" + dateTimeFormat.format(date)
-			       + "', 'YYYY-MM-DD HH24:MI:SS')";
-    }
     protected String onUpdateString(String upd) {
 	return null;
     }
     protected String onDeleteString(String del) {
 	return del.equals("cascade") ? del : null;
     }
-    public TypeDescription getTypeDescription(String dbType, Integer size,
-					      Integer scale) {
-	// NOTE: We don't populate the part_of_key and part_of_index
-	// that is left to our caller, BasicTable.getTypeDescription().
-	// Populating native_representation is optional.
-
-	TypeDescription td = new TypeDescription();
-	if (dbType.equals("CHAR")) {
-	    td.type = TypeDescription.CHAR;
-	    td.size = size.intValue();
-	} else if (dbType.equals("VARCHAR2")) {
-	    td.type = TypeDescription.VARCHAR;
-	    td.size = size.intValue();
-	} else if (dbType.equals("NCHAR")) {
-	    td.type = TypeDescription.NCHAR;
-	    td.size = size.intValue();
-	} else if (dbType.equals("NVARCHAR2")) {
-	    td.type = TypeDescription.VARNCHAR;
-	    td.size = size.intValue();
-	} else if (dbType.equals("NUMBER")) {
-	    if (scale == null) {
-		td.type = TypeDescription.FLOAT;
-		// TODO: Is it really 38 decimal digits,
-		// or is it actually 126 bits?
-		td.size = 38;
-		td.size_in_bits = false;
-		td.min_exp = -130;
-		td.max_exp = 125;
-		td.exp_of_2 = false;
-	    } else {
-		td.type = TypeDescription.FIXED;
-		td.size = size.intValue();
-		td.size_in_bits = false;
-		td.scale = scale.intValue();
-		td.scale_in_bits = false;
-	    }
-	} else if (dbType.equals("FLOAT")) {
-	    td.type = TypeDescription.FLOAT;
-	    td.size = size.intValue();
-	    td.size_in_bits = true;
-	    td.min_exp = -130;
-	    td.max_exp = 125;
-	    td.exp_of_2 = false;
-	} else if (dbType.equals("BINARY_FLOAT")) {
-	    td.type = TypeDescription.FLOAT;
-	    td.size = 24;
-	    td.size_in_bits = true;
-	    td.min_exp = -127;
-	    td.max_exp = 127;
-	    td.exp_of_2 = true;
-	} else if (dbType.equals("BINARY_DOUBLE")) {
-	    td.type = TypeDescription.FLOAT;
-	    td.size = 54;
-	    td.size_in_bits = true;
-	    td.min_exp = -1023;
-	    td.max_exp = 1023;
-	    td.exp_of_2 = true;
-	} else if (dbType.equals("LONG")) {
-	    td.type = TypeDescription.LONGVARCHAR;
-	} else if (dbType.equals("LONG RAW")) {
-	    td.type = TypeDescription.LONGVARRAW;
-	} else if (dbType.equals("RAW")) {
-	    td.type = TypeDescription.VARRAW;
-	    td.size = size.intValue();
-	} else if (dbType.equals("DATE")) {
-	    td.type = TypeDescription.TIMESTAMP;
-	    td.size = 0;
-	} else if (dbType.startsWith("TIMESTAMP")) {
-	    if (dbType.endsWith("WITH LOCAL TIME ZONE"))
-		td.type = TypeDescription.TIMESTAMP;
-	    else if (dbType.endsWith("WITH TIME ZONE"))
-		td.type = TypeDescription.TIMESTAMP_TZ;
-	    else
-		td.type = TypeDescription.TIMESTAMP;
-	    td.size = scale.intValue();
-	} else if (dbType.startsWith("INTERVAL YEAR")) {
-	    td.type = TypeDescription.INTERVAL_YM;
-	    td.size = size.intValue();
-	} else if (dbType.startsWith("INTERVAL DAY")) {
-	    td.type = TypeDescription.INTERVAL_DS;
-	    td.size = size.intValue();
-	    td.scale = scale.intValue();
-	} else if (dbType.equals("BLOB")) {
-	    td.type = TypeDescription.LONGVARRAW;
-	} else if (dbType.equals("CLOB")) {
-	    td.type = TypeDescription.LONGVARCHAR;
-	} else if (dbType.equals("NCLOB")) {
-	    td.type = TypeDescription.LONGVARNCHAR;
-	} else {
-	    // BFILE, ROWID, UROWID, or something new.
-	    // Don't know how to handle them so we tag them UNKNOWN,
-	    // which will cause the script generator to pass them on
-	    // uninterpreted and unchanged.
-	    td.type = TypeDescription.UNKNOWN;
-	}
-
-	// Populate native_representation for the benefit of the SameAsSource
-	// script generator.
-
-	if (dbType.startsWith("INTERVAL YEAR"))
-	    td.native_representation = "INTERVAL YEAR(" + size + ") TO MONTH";
-	else if (dbType.startsWith("INTERVAL DAY"))
-	    td.native_representation = "INTERVAL DAY(" + size
-		+ ") TO SECOND(" + scale + ")";
-	else if (dbType.startsWith("TIMESTAMP")) {
-	    td.native_representation = "TIMESTAMP(" + scale + ")";
-	    if (dbType.endsWith("WITH LOCAL TIME ZONE"))
-		td.native_representation += " WITH LOCAL TIME ZONE";
-	    else if (dbType.endsWith("WITH TIME ZONE"))
-		td.native_representation += " WITH TIME ZONE";
-	} else {
-	    if (!dbType.equals("NUMBER")
-		    && !dbType.equals("CHAR")
-		    && !dbType.equals("VARCHAR2")
-		    && !dbType.equals("NCHAR")
-		    && !dbType.equals("NVARCHAR2")
-		    && !dbType.equals("RAW")
-		    && !dbType.equals("FLOAT")) {
-		size = null;
-		scale = null;
-	    } else if (dbType.equals("NUMBER")) {
-		if (scale == null)
-		    size = null;
-		else if (scale.intValue() == 0)
-		    scale = null;
-	    }
-	    if (size == null)
-		td.native_representation = dbType;
-	    else if (scale == null)
-		td.native_representation = dbType + "(" + size + ")";
-	    else
-		td.native_representation = dbType + "(" + size + ", "
-							+ scale + ")";
-	}
-
-	return td;
-    }
-
-    protected String printType(TypeDescription td) {
+    protected String printType(TypeSpec td) {
 	switch (td.type) {
-	    case TypeDescription.UNKNOWN: {
+	    case TypeSpec.UNKNOWN: {
 		return td.native_representation;
 	    }
-	    case TypeDescription.FIXED: {
+	    case TypeSpec.FIXED: {
 		int size;
 		if (td.size_in_bits)
 		    size = (int) Math.ceil(td.size * LOG10_2);
@@ -209,7 +60,7 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 		else
 		    return "NUMBER(" + size + ", " + scale + ")";
 	    }
-	    case TypeDescription.FLOAT: {
+	    case TypeSpec.FLOAT: {
 		int size;
 		if (td.size_in_bits)
 		    size = td.size;
@@ -249,93 +100,93 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 		    // TODO - Warning
 		    return "NUMBER";
 	    }
-	    case TypeDescription.CHAR: {
+	    case TypeSpec.CHAR: {
 		if (td.size > 2000) {
 		    // TODO - Warning
 		    td.size = 2000;
 		}
 		return "CHAR(" + td.size + ")";
 	    }
-	    case TypeDescription.VARCHAR: {
+	    case TypeSpec.VARCHAR: {
 		if (td.size > 4000) {
 		    // TODO - Warning
 		    td.size = 4000;
 		}
 		return "VARCHAR2(" + td.size + ")";
 	    }
-	    case TypeDescription.LONGVARCHAR: {
+	    case TypeSpec.LONGVARCHAR: {
 		if (td.part_of_key || td.part_of_index) {
 		    // TODO - Warning
 		    return "VARCHAR2(4000)";
 		} else
 		    return "CLOB";
 	    }
-	    case TypeDescription.NCHAR: {
+	    case TypeSpec.NCHAR: {
 		if (td.size > 2000) {
 		    // TODO - Warning
 		    td.size = 2000;
 		}
 		return "NCHAR(" + td.size + ")";
 	    }
-	    case TypeDescription.VARNCHAR: {
+	    case TypeSpec.VARNCHAR: {
 		if (td.size > 4000) {
 		    // TODO - Warning
 		    td.size = 4000;
 		}
 		return "NVARCHAR2(" + td.size + ")";
 	    }
-	    case TypeDescription.LONGVARNCHAR: {
+	    case TypeSpec.LONGVARNCHAR: {
 		if (td.part_of_key || td.part_of_index) {
 		    // TODO - Warning
 		    return "NVARCHAR2(4000)";
 		} else
 		    return "NCLOB";
 	    }
-	    case TypeDescription.RAW:
-	    case TypeDescription.VARRAW: {
+	    case TypeSpec.RAW:
+	    case TypeSpec.VARRAW: {
 		if (td.size > 4000) {
 		    // TODO - Warning
 		    td.size = 4000;
 		}
 		return "RAW(" + td.size + ")";
 	    }
-	    case TypeDescription.LONGVARRAW: {
+	    case TypeSpec.LONGVARRAW: {
 		if (td.part_of_key || td.part_of_index) {
 		    // TODO - Warning
 		    return "RAW(4000)";
 		} else
 		    return "BLOB";
 	    }
-	    case TypeDescription.DATE: {
+	    case TypeSpec.DATE: {
 		return "DATE";
 	    }
-	    case TypeDescription.TIME: {
+	    case TypeSpec.TIME: {
 		// TODO - Warning
 		if (oracle9types)
 		    return "TIMESTAMP(" + td.size + ")";
 		else
 		    return "DATE";
 	    }
-	    case TypeDescription.TIME_TZ: {
+	    case TypeSpec.TIME_TZ: {
 		// TODO - Warning
 		if (oracle9types)
 		    return "TIMESTAMP(" + td.size + ") WITH TIME ZONE";
 		else
 		    return "DATE";
 	    }
-	    case TypeDescription.TIMESTAMP: {
+	    case TypeSpec.TIMESTAMP: {
 		if (oracle9types)
 		    return "TIMESTAMP(" + td.size + ")";
 		else
 		    return "DATE";
 	    }
-	    case TypeDescription.TIMESTAMP_TZ: {
+	    case TypeSpec.TIMESTAMP_TZ: {
 		if (oracle9types)
 		    return "TIMESTAMP(" + td.size + ") WITH TIME ZONE";
 		else
 		    return "DATE";
 	    }
-	    case TypeDescription.INTERVAL_YM: {
+	    case TypeSpec.INTERVAL_YM: {
 		if (oracle10types)
 		    return "INTERVAL YEAR(" + td.size + ") TO MONTH";
 		else
@@ -343,7 +194,7 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 		    // TODO - Take 'size' into account
 		    return "NUMBER(6)";
 	    }
-	    case TypeDescription.INTERVAL_DS: {
+	    case TypeSpec.INTERVAL_DS: {
 		if (oracle10types)
 		    return "INTERVAL DAY(" + td.size
 				+ ") TO SECOND(" + td.scale + ")";
@@ -358,21 +209,19 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	    }
 	}
     }
-
-    private boolean columnIsPartOfIndex(Table table, int column) {
-	String name = table.getColumnNames()[column];
-	PrimaryKey pk = table.getPrimaryKey();
-	if (pk != null)
-	    for (int i = 0; i < pk.getColumnCount(); i++)
-		if (name.equalsIgnoreCase(pk.getColumnName(i)))
-		    return true;
-	Index[] indexes = table.getIndexes();
-	for (int i = 0; i < indexes.length; i++) {
-	    Index index = indexes[i];
-	    for (int j = 0; j < index.getColumnCount(); j++)
-		if (name.equalsIgnoreCase(index.getColumnName(j)))
-		    return true;
-	}
-	return false;
+    protected String toSqlString(TypeSpec spec, Object obj) {
+	if (obj == null)
+	    return "null";
+	else if (obj instanceof java.sql.Time)
+	    return "to_date('" + timeFormat.format((java.util.Date) obj)
+			       + "', 'HH24:MI:SS')";
+	else if (obj instanceof java.sql.Timestamp)
+	    return "to_date('" + dateTimeFormat.format((java.util.Date) obj)
+			       + "', 'YYYY-MM-DD HH24:MI:SS')";
+	else if (obj instanceof java.util.Date)
+	    return "to_date('" + dateFormat.format((java.util.Date) obj)
+			       + "', 'YYYY-MM-DD')";
+	else
+	    return super.toSqlString(spec, obj);
     }
 }

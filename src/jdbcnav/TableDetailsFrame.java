@@ -150,14 +150,15 @@ public class TableDetailsFrame extends MyFrame {
 	int columns = dbTable.getColumnCount();
 	Object[][] data = new Object[columns][8];
 	for (int i = 0; i < columns; i++) {
+	    TypeSpec spec = dbTable.getTypeSpecs()[i];
 	    data[i][0] = new Integer(i + 1);
 	    data[i][1] = dbTable.getColumnNames()[i];
-	    data[i][2] = dbTable.getDbTypes()[i];
-	    data[i][3] = dbTable.getColumnSizes()[i];
-	    data[i][4] = dbTable.getColumnScales()[i];
+	    data[i][2] = spec.jdbcDbType;
+	    data[i][3] = spec.jdbcSize;
+	    data[i][4] = spec.jdbcScale;
 	    data[i][5] = dbTable.getIsNullable()[i];
-	    data[i][6] = MiscUtils.sqlTypeIntToString(dbTable.getSqlTypes()[i]);
-	    data[i][7] = dbTable.getJavaTypes()[i];
+	    data[i][6] = MiscUtils.sqlTypeIntToString(spec.jdbcSqlType);
+	    data[i][7] = spec.jdbcJavaType;
 	}
 	return new ArrayTableModel(names, classes, data);
     }

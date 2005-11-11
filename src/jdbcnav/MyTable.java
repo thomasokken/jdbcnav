@@ -8,7 +8,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.event.*;
 import javax.swing.table.*;
-import jdbcnav.model.Database;
+import jdbcnav.model.TypeSpec;
 import jdbcnav.util.MenuLayout;
 
 
@@ -22,57 +22,32 @@ public class MyTable extends JTable {
     private ArrayList columnTypeMap;
 
     public MyTable(TableModel dm) {
-	this(dm, null);
-    }
-
-    public MyTable(TableModel dm, Database db) {
 	super();
 	setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 	setModel(dm);
 
-	if (db == null) {
-	    // We're not in a QueryResultFrame, so we're on our own as far as
-	    // rendering and editing table cells is concerned; this probably
-	    // means we're a table that will not contain huge amounts of data,
-	    // so using FastTableCellRenderer here is not really necessary, but
-	    // I do anyway, for uniformity's sake.
-	    FastTableCellRenderer ljr = new FastTableCellRenderer();
-	    FastTableCellRenderer rjr = new FastTableCellRenderer(false);
-	    setDefaultRenderer(String.class, ljr);
-	    setDefaultRenderer(java.util.Date.class, new UtilDateRenderer());
-	    setDefaultRenderer(java.sql.Time.class, ljr);
-	    setDefaultRenderer(java.sql.Date.class, ljr);
-	    setDefaultRenderer(java.sql.Timestamp.class, ljr);
-	    setDefaultRenderer(Number.class, rjr);
-	    setDefaultRenderer(Float.class, rjr);
-	    setDefaultRenderer(Double.class, rjr);
-	    setDefaultRenderer(Boolean.class, ljr);
-	    setDefaultRenderer(Object.class, ljr);
-	    setDefaultEditor(java.util.Date.class,
-			     new DateEditor(java.util.Date.class));
-	    setDefaultEditor(java.sql.Time.class,
-			     new DateEditor(java.sql.Time.class));
-	    setDefaultEditor(java.sql.Date.class,
-			     new DateEditor(java.sql.Date.class));
-	    setDefaultEditor(java.sql.Timestamp.class,
-			     new DateEditor(java.sql.Timestamp.class));
-	} else {
-	    // We're in a QueryResultFrame, which means we're associated with
-	    // some Database instance. We rely on the Database for all
-	    // Object/String conversions; this means we can make do with one
-	    // single Renderer class and one single Editor class.
-	    setDefaultRenderer(Number.class, null);
-	    setDefaultRenderer(Boolean.class, null);
-	    setDefaultRenderer(Float.class, null);
-	    setDefaultRenderer(Double.class, null);
-	    setDefaultRenderer(Date.class, null);
-	    setDefaultRenderer(Icon.class, null);
-	    setDefaultRenderer(ImageIcon.class, null);
-	    setDefaultRenderer(Object.class, new DatabaseObjectRenderer(db));
-	    setDefaultEditor(Number.class, null);
-	    setDefaultEditor(Boolean.class, null);
-	    setDefaultEditor(Object.class, new DatabaseObjectEditor(db));
-	}
+	FastTableCellRenderer ljr = new FastTableCellRenderer();
+	FastTableCellRenderer rjr = new FastTableCellRenderer(false);
+	setDefaultRenderer(String.class, ljr);
+	setDefaultRenderer(java.util.Date.class, new UtilDateRenderer());
+	setDefaultRenderer(java.sql.Time.class, ljr);
+	setDefaultRenderer(java.sql.Date.class, ljr);
+	setDefaultRenderer(java.sql.Timestamp.class, ljr);
+	setDefaultRenderer(Number.class, rjr);
+	setDefaultRenderer(Float.class, rjr);
+	setDefaultRenderer(Double.class, rjr);
+	setDefaultRenderer(Boolean.class, ljr);
+	setDefaultRenderer(Object.class, ljr);
+	setDefaultRenderer(TypeSpec.class, new DatabaseObjectRenderer());
+	setDefaultEditor(java.util.Date.class,
+			    new DateEditor(java.util.Date.class));
+	setDefaultEditor(java.sql.Time.class,
+			    new DateEditor(java.sql.Time.class));
+	setDefaultEditor(java.sql.Date.class,
+			    new DateEditor(java.sql.Date.class));
+	setDefaultEditor(java.sql.Timestamp.class,
+			    new DateEditor(java.sql.Timestamp.class));
+	setDefaultEditor(TypeSpec.class, new DatabaseObjectEditor());
 
 	if (dm instanceof SortedTableModel) {
 	    getTableHeader().addMouseListener(
@@ -462,15 +437,10 @@ public class MyTable extends JTable {
     }
 
     private static class DatabaseObjectRenderer extends FastTableCellRenderer {
-	private Database db;
-	private Class klass;
-
-	public DatabaseObjectRenderer(Database db) {
-	    this.db = db;
-	}
+	private TypeSpec spec;
 
 	protected String valueToString(Object value) {
-	    return db.objectToString(value, klass.getName());
+	    return spec.objectToString(value);
 	}
 
 	public Component getTableCellRendererComponent(JTable table,
@@ -479,9 +449,9 @@ public class MyTable extends JTable {
 						       boolean hasFocus,
 						       int row,
 						       int column) {
-	    int realColumn = table.convertColumnIndexToModel(column);
-	    klass = table.getColumnClass(realColumn);
-	    leftJustified = !Number.class.isAssignableFrom(klass);
+	    ResultSetTableModel m = (ResultSetTableModel) table.getModel();
+	    spec = m.getTypeSpec(column);
+	    leftJustified = !Number.class.isAssignableFrom(spec.jdbcJavaClass);
 	    return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 	}
     }
@@ -521,19 +491,17 @@ public class MyTable extends JTable {
 
     private static class DatabaseObjectEditor extends DefaultCellEditor {
 
-	private Database db;
+	private TypeSpec spec;
 	private Object value;
-	private Class klass;
 
-	public DatabaseObjectEditor(Database db) {
+	public DatabaseObjectEditor() {
 	    super(new JTextField());
-	    this.db = db;
 	}
 
 	public boolean stopCellEditing() {
 	    String s = (String) super.getCellEditorValue();
 	    try {
-		value = db.stringToObject(s, klass.getName());
+		value = spec.stringToObject(s);
 	    } catch (IllegalArgumentException e) {
 		((JComponent) getComponent()).setBorder(
 					    new LineBorder(Color.red));
@@ -545,12 +513,12 @@ public class MyTable extends JTable {
 	public Component getTableCellEditorComponent(JTable table, Object value,
 						     boolean isSelected,
 						     int row, int column) {
-	    int realColumn = table.convertColumnIndexToModel(column);
-	    klass = table.getColumnClass(realColumn);
-	    this.value = db.objectToString(value, klass.getName());
+	    ResultSetTableModel m = (ResultSetTableModel) table.getModel();
+	    spec = m.getTypeSpec(column);
+	    this.value = spec.objectToString(value);
 	    JTextField tf = (JTextField) getComponent();
 	    tf.setBorder(new LineBorder(Color.black));
-	    tf.setHorizontalAlignment(Number.class.isAssignableFrom(klass)
+	    tf.setHorizontalAlignment(Number.class.isAssignableFrom(spec.jdbcJavaClass)
 					? JTextField.RIGHT : JTextField.LEFT);
 	    return super.getTableCellEditorComponent(table, this.value,
 						     isSelected, row, column);

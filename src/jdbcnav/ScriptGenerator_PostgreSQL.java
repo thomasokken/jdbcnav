@@ -1,179 +1,14 @@
 package jdbcnav;
 
-import jdbcnav.model.TypeDescription;
+import jdbcnav.model.TypeSpec;
 
 public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
-    public TypeDescription getTypeDescription(String dbType, Integer size,
-					      Integer scale) {
-	// NOTE: We don't populate the part_of_key and part_of_index
-	// that is left to our caller, BasicTable.getTypeDescription().
-	// Populating native_representation is optional.
-
-	TypeDescription td = new TypeDescription();
-	if (dbType.equals("bigint")) {
-	    td.type = TypeDescription.FIXED;
-	    td.size = 64;
-	    td.size_in_bits = true;
-	    td.scale = 0;
-	    td.scale_in_bits = true;
-	} else if (dbType.equals("integer")
-		|| dbType.equals("int")
-		|| dbType.equals("int4")) {
-	    td.type = TypeDescription.FIXED;
-	    td.size = 32;
-	    td.size_in_bits = true;
-	    td.scale = 0;
-	    td.scale_in_bits = true;
-	} else if (dbType.equals("smallint")
-		|| dbType.equals("int2")) {
-	    td.type = TypeDescription.FIXED;
-	    td.size = 16;
-	    td.size_in_bits = true;
-	    td.scale = 0;
-	    td.scale_in_bits = true;
-	} else if (dbType.equals("real")
-		|| dbType.equals("float4")) {
-	    td.type = TypeDescription.FLOAT;
-	    td.size = 24;
-	    td.size_in_bits = true;
-	    td.min_exp = -127;
-	    td.max_exp = 127;
-	    td.exp_of_2 = true;
-	} else if (dbType.equals("double precision")
-		|| dbType.equals("float8")) {
-	    td.type = TypeDescription.FLOAT;
-	    td.size = 54;
-	    td.size_in_bits = true;
-	    td.min_exp = -1023;
-	    td.max_exp = 1023;
-	    td.exp_of_2 = true;
-	} else if (dbType.equals("numeric")
-		|| dbType.equals("decimal")) {
-	    if (size.intValue() == 65535 && scale.intValue() == 65531) {
-		// TODO: This type does not fit in the current TypeDescription
-		// model. It is an arbitrary-precision (up to 1000 digits)
-		// number without scale coercion, or, to put it differently,
-		// a high-precision floating-point number.
-		// I choose double-precision since it's the best match in
-		// terms of allowing the original type's dynamic range, if not
-		// its precision.
-		// TODO - Warning
-		td.type = TypeDescription.FLOAT;
-		td.size = 54;
-		td.size_in_bits = true;
-		td.min_exp = -1023;
-		td.max_exp = 1023;
-		td.exp_of_2 = true;
-	    } else {
-		td.type = TypeDescription.FIXED;
-		td.size = size.intValue();
-		td.size_in_bits = false;
-		td.scale = scale.intValue();
-		td.scale_in_bits = false;
-	    }
-	} else if (dbType.equals("money")) {
-	    // Deprecated type, so although we recognize it, printType() will
-	    // never generate it.
-	    td.type = TypeDescription.FIXED;
-	    td.size = 32;
-	    td.size_in_bits = true;
-	    td.scale = 2;
-	    td.scale_in_bits = false;
-	} else if (dbType.equals("date")) {
-	    td.type = TypeDescription.DATE;
-	} else if (dbType.equals("time")) {
-	    td.type = TypeDescription.TIME;
-	} else if (dbType.equals("time with time zone")) {
-	    td.type = TypeDescription.TIME_TZ;
-	} else if (dbType.equals("timestamp")) {
-	    td.type = TypeDescription.TIMESTAMP;
-	} else if (dbType.equals("timestamp with time zone")) {
-	    td.type = TypeDescription.TIMESTAMP_TZ;
-	} else if (dbType.equals("interval")) {
-	    // Yuck; PostgreSQL does not distinguish between
-	    // INTERVAL YEAR TO MONTH and INTERVAL DAY TO SECOND; it has one
-	    // type that is basically INTERVAL YEAR TO SECOND. I convert this
-	    // to INTERVAL DAY TO SECOND, because I don't want to lose the
-	    // resolution.
-	    td.type = TypeDescription.INTERVAL_DS;
-	} else if (dbType.equals("bytea")) {
-	    td.type = TypeDescription.LONGVARRAW;
-	} else if (dbType.equals("char")
-		|| dbType.equals("bpchar")
-		|| dbType.equals("character")) {
-	    td.type = TypeDescription.CHAR;
-	    td.size = size.intValue();
-	} else if (dbType.equals("varchar")
-		|| dbType.equals("character varying")) {
-	    if (size.intValue() == 0)
-		td.type = TypeDescription.LONGVARCHAR;
-	    else {
-		td.type = TypeDescription.VARCHAR;
-		td.size = size.intValue();
-	    }
-	} else if (dbType.equals("text")) {
-	    td.type = TypeDescription.LONGVARCHAR;
-	} else {
-	    // Unsupported value, such as one of PostgreSQL's geometric data
-	    // types or bit strings. Don't know how to handle them so we tag
-	    // them UNKNOWN, which will cause the script generator to pass them
-	    // on uninterpreted and unchanged.
-	    td.type = TypeDescription.UNKNOWN;
-	}
-
-	// Populate native_representation for the benefit of the SameAsSource
-	// script generator.
-
-	if (dbType.equals("numeric")
-		|| dbType.equals("decimal")) {
-	    if (size.intValue() == 65535 && scale.intValue() == 65531) {
-		size = null;
-		scale = null;
-	    } else if (scale.intValue() == 0)
-		scale = null;
-	} else if (dbType.equals("bit varying")
-		|| dbType.equals("varbit")
-		|| dbType.equals("bit")
-		|| dbType.equals("character varying")
-		|| dbType.equals("varchar")
-		|| dbType.equals("character")
-		|| dbType.equals("char")
-		|| dbType.equals("bpchar")
-		|| dbType.equals("interval")
-		|| dbType.equals("time")
-		|| dbType.equals("timetz")
-		|| dbType.equals("timestamp")
-		|| dbType.equals("timestamptz")) {
-	    scale = null;
-	} else {
-	    size = null;
-	    scale = null;
-	}
-
-	if ((dbType.equals("varchar")
-		    || dbType.equals("character varying"))
-		&& size.intValue() == 0)
-	    size = null;
-
-	if (dbType.equals("bpchar"))
-	    dbType = "char";
-
-	if (size == null)
-	    td.native_representation = dbType;
-	else if (scale == null)
-	    td.native_representation = dbType + "(" + size + ")";
-	else
-	    td.native_representation = dbType + "(" + size + ", " + scale + ")";
-
-	return td;
-    }
-
-    protected String printType(TypeDescription td) {
+    protected String printType(TypeSpec td) {
 	switch (td.type) {
-	    case TypeDescription.UNKNOWN: {
+	    case TypeSpec.UNKNOWN: {
 		return td.native_representation;
 	    }
-	    case TypeDescription.FIXED: {
+	    case TypeSpec.FIXED: {
 		if (td.size_in_bits && td.scale == 0) {
 		    if (td.size <= 16)
 			return "smallint";
@@ -208,7 +43,7 @@ public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
 		else
 		    return "numeric(" + size + ", " + scale + ")";
 	    }
-	    case TypeDescription.FLOAT: {
+	    case TypeSpec.FLOAT: {
 		int size;
 		if (td.size_in_bits)
 		    size = td.size;
@@ -231,41 +66,41 @@ public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
 		else
 		    return "numeric";
 	    }
-	    case TypeDescription.CHAR:
-	    case TypeDescription.NCHAR: {
+	    case TypeSpec.CHAR:
+	    case TypeSpec.NCHAR: {
 		return "char(" + td.size + ")";
 	    }
-	    case TypeDescription.VARCHAR:
-	    case TypeDescription.VARNCHAR: {
+	    case TypeSpec.VARCHAR:
+	    case TypeSpec.VARNCHAR: {
 		return "varchar(" + td.size + ")";
 	    }
-	    case TypeDescription.LONGVARCHAR:
-	    case TypeDescription.LONGVARNCHAR: {
+	    case TypeSpec.LONGVARCHAR:
+	    case TypeSpec.LONGVARNCHAR: {
 		// TODO -- What's the difference between varchar(0) and text?
 		return "text";
 	    }
-	    case TypeDescription.RAW:
-	    case TypeDescription.VARRAW:
-	    case TypeDescription.LONGVARRAW: {
+	    case TypeSpec.RAW:
+	    case TypeSpec.VARRAW:
+	    case TypeSpec.LONGVARRAW: {
 		return "bytea";
 	    }
-	    case TypeDescription.DATE: {
+	    case TypeSpec.DATE: {
 		return "date";
 	    }
-	    case TypeDescription.TIME: {
+	    case TypeSpec.TIME: {
 		return "time";
 	    }
-	    case TypeDescription.TIME_TZ: {
+	    case TypeSpec.TIME_TZ: {
 		return "time with time zone";
 	    }
-	    case TypeDescription.TIMESTAMP: {
+	    case TypeSpec.TIMESTAMP: {
 		return "timestamp";
 	    }
-	    case TypeDescription.TIMESTAMP_TZ: {
+	    case TypeSpec.TIMESTAMP_TZ: {
 		return "timestamp with time zone";
 	    }
-	    case TypeDescription.INTERVAL_YM:
-	    case TypeDescription.INTERVAL_DS: {
+	    case TypeSpec.INTERVAL_YM:
+	    case TypeSpec.INTERVAL_DS: {
 		return "interval";
 	    }
 	    default: {

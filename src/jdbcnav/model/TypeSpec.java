@@ -5,17 +5,18 @@ package jdbcnav.model;
  * It is used in preference to SQL in order to avoid any ambiguities; this
  * class captures all the information needed to accurately replicate a
  * data type without information loss. The ScriptGenerator class, when
- * generating CREATE TABLE statements, calls Table.getTypeDescription() to get
- * an accurate description of column types; it then calls
+ * generating CREATE TABLE statements, calls Table.getTypeSpec() to get an
+ * accurate description of column types; it then calls
  * ScriptGenerator.printType() to find the appropriate DB-specific type.
  */
-public class TypeDescription {
+public abstract class TypeSpec {
     // For the FIXED_x_y and FLOAT_x_y types, 'x' is the representation of the
     // number or mantissa (and 'size' is the number of bits or digits); 'y' is
     // the number that is raised to the scale (or exponent) to scale the
     // number. The scale (FIXED) or exponent range (FLOAT) is given in 'scale'
     // or 'min_exp'..'max_exp', respectively.
 
+    public static final int CLASS = -1;
     public static final int UNKNOWN = 0;
     public static final int FIXED = 1;
     public static final int FLOAT = 2;
@@ -47,4 +48,14 @@ public class TypeDescription {
     public boolean part_of_key;
     public boolean part_of_index;
     public String native_representation;
+
+    public String jdbcDbType;
+    public Integer jdbcSize;
+    public Integer jdbcScale;
+    public int jdbcSqlType;
+    public String jdbcJavaType;
+    public Class jdbcJavaClass;
+
+    public abstract String objectToString(Object o);
+    public abstract Object stringToObject(String s);
 }

@@ -1,170 +1,14 @@
 package jdbcnav;
 
-import jdbcnav.model.TypeDescription;
+import jdbcnav.model.TypeSpec;
 
 public class ScriptGenerator_SmallSQL extends ScriptGenerator {
-    public TypeDescription getTypeDescription(String dbType, Integer size,
-					      Integer scale) {
-	// NOTE: We don't populate the part_of_key and part_of_index
-	// that is left to our caller, BasicTable.getTypeDescription().
-	// Populating native_representation is optional.
-
-	TypeDescription td = new TypeDescription();
-
-	if (dbType.equals("BIT")
-		|| dbType.equals("BOOLEAN")) {
-	    td.type = TypeDescription.FIXED;
-	    td.size = 1;
-	    td.size_in_bits = true;
-	    td.scale = 0;
-	    td.scale_in_bits = true;
-	} else if (dbType.equals("TINYINT")
-		|| dbType.equals("BYTE")) {
-	    td.type = TypeDescription.FIXED;
-	    td.size = 8;
-	    td.size_in_bits = true;
-	    td.scale = 0;
-	    td.scale_in_bits = true;
-	} else if (dbType.equals("SMALLINT")) {
-	    td.type = TypeDescription.FIXED;
-	    td.size = 16;
-	    td.size_in_bits = true;
-	    td.scale = 0;
-	    td.scale_in_bits = true;
-	} else if (dbType.equals("INT")) {
-	    td.type = TypeDescription.FIXED;
-	    td.size = 32;
-	    td.size_in_bits = true;
-	    td.scale = 0;
-	    td.scale_in_bits = true;
-	} else if (dbType.equals("BIGINT")) {
-	    td.type = TypeDescription.FIXED;
-	    td.size = 64;
-	    td.size_in_bits = true;
-	    td.scale = 0;
-	    td.scale_in_bits = true;
-	} else if (dbType.equals("REAL")) {
-	    td.type = TypeDescription.FLOAT;
-	    td.size = 24;
-	    td.size_in_bits = true;
-	    td.min_exp = -127;
-	    td.max_exp = 127;
-	    td.exp_of_2 = true;
-	} else if (dbType.equals("DOUBLE")
-		|| dbType.equals("FLOAT")) {
-	    td.type = TypeDescription.FLOAT;
-	    td.size = 54;
-	    td.size_in_bits = true;
-	    td.min_exp = -1023;
-	    td.max_exp = 1023;
-	    td.exp_of_2 = true;
-	} else if (dbType.equals("MONEY")) {
-	    // TODO - verify
-	    td.type = TypeDescription.FIXED;
-	    td.size = 64;
-	    td.size_in_bits = true;
-	    td.scale = 4;
-	    td.scale_in_bits = false;
-	} else if (dbType.equals("SMALLMONEY")) {
-	    // TODO - verify
-	    td.type = TypeDescription.FIXED;
-	    td.size = 32;
-	    td.size_in_bits = true;
-	    td.scale = 4;
-	    td.scale_in_bits = false;
-	} else if (dbType.equals("NUMERIC")
-		|| dbType.equals("DECIMAL")
-		|| dbType.equals("NUMBER")
-		|| dbType.equals("VARNUM")) {
-	    td.type = TypeDescription.FIXED;
-	    td.size = size.intValue();
-	    td.size_in_bits = false;
-	    td.scale = scale.intValue();
-	    td.scale_in_bits = false;
-	} else if (dbType.equals("CHAR")
-		|| dbType.equals("CHARACTER")) {
-	    td.type = TypeDescription.CHAR;
-	    td.size = size.intValue();
-	} else if (dbType.equals("NCHAR")) {
-	    td.type = TypeDescription.NCHAR;
-	    td.size = size.intValue();
-	} else if (dbType.equals("VARCHAR")
-		|| dbType.equals("VARCHAR2")) {
-	    td.type = TypeDescription.VARCHAR;
-	    td.size = size.intValue();
-	} else if (dbType.equals("NVARCHAR")
-		|| dbType.equals("NVARCHAR2")) {
-	    td.type = TypeDescription.VARNCHAR;
-	    td.size = size.intValue();
-	} else if (dbType.equals("LONGVARCHAR")
-		|| dbType.equals("TEXT")
-		|| dbType.equals("LONG")
-		|| dbType.equals("CLOB")) {
-	    td.type = TypeDescription.LONGVARCHAR;
-	} else if (dbType.equals("LONGNVARCHAR")
-		|| dbType.equals("NTEXT")) {
-	    td.type = TypeDescription.LONGVARNCHAR;
-	// The following are types not mentioned in the SmallSQL doc,
-	// but which do occur in the sample database...
-	} else if (dbType.equals("BINARY")) {
-	    td.type = TypeDescription.VARRAW;
-	    td.size = size.intValue();
-	} else if (dbType.equals("VARBINARY")) {
-	    td.type = TypeDescription.VARRAW;
-	    td.size = size.intValue();
-	} else if (dbType.equals("LONGVARBINARY")) {
-	    td.type = TypeDescription.LONGVARRAW;
-	} else if (dbType.equals("DATETIME")
-		|| dbType.equals("SMALLDATETIME"))
-	    td.type = TypeDescription.TIMESTAMP;
-	else {
-	    // Unexpected/unsupported value. Don't know how to handle it so
-	    // we tag it UNKNOWN, which will cause the script generator to pass
-	    // it on uninterpreted and unchanged.
-	    td.type = TypeDescription.UNKNOWN;
-	}
-
-	// Populate native_representation for the benefit of the SameAsSource
-	// script generator.
-
-	if (dbType.equals("NUMERIC")
-		|| dbType.equals("DECIMAL")
-		|| dbType.equals("NUMBER")
-		|| dbType.equals("VARNUM")) {
-	    // 'scale' is optional, but the SmallSQL driver
-	    // does not distinguish between scale == null and
-	    // scale == 0 (null is handled as 0).
-	} else if (dbType.equals("CHAR")
-		|| dbType.equals("CHARACTER")
-		|| dbType.equals("NCHAR")
-		|| dbType.equals("VARCHAR")
-		|| dbType.equals("NVARCHAR")
-		|| dbType.equals("VARCHAR2")
-		|| dbType.equals("NVARCHAR2")
-		|| dbType.equals("BINARY")
-		|| dbType.equals("VARBINARY")) {
-	    scale = null;
-	} else {
-	    size = null;
-	    scale = null;
-	}
-
-	if (size == null)
-	    td.native_representation = dbType;
-	else if (scale == null)
-	    td.native_representation = dbType + "(" + size + ")";
-	else
-	    td.native_representation = dbType + "(" + size + ", " + scale + ")";
-	
-	return td;
-    }
-
-    protected String printType(TypeDescription td) {
+    protected String printType(TypeSpec td) {
 	switch (td.type) {
-	    case TypeDescription.UNKNOWN: {
+	    case TypeSpec.UNKNOWN: {
 		return td.native_representation;
 	    }
-	    case TypeDescription.FIXED: {
+	    case TypeSpec.FIXED: {
 		if (td.size_in_bits) {
 		    // Look for best match within SmallSQL's binary types.
 		    if (td.scale == 0) {
@@ -205,7 +49,7 @@ public class ScriptGenerator_SmallSQL extends ScriptGenerator {
 		else
 		    return "NUMERIC(" + size + ", " + scale + ")";
 	    }
-	    case TypeDescription.FLOAT: {
+	    case TypeSpec.FLOAT: {
 		int size;
 		if (td.size_in_bits)
 		    size = td.size;
@@ -227,50 +71,50 @@ public class ScriptGenerator_SmallSQL extends ScriptGenerator {
 		    /* TODO - Warning */;
 		return "DOUBLE";
 	    }
-	    case TypeDescription.CHAR: {
+	    case TypeSpec.CHAR: {
 		return "CHAR(" + td.size + ")";
 	    }
-	    case TypeDescription.NCHAR: {
+	    case TypeSpec.NCHAR: {
 		return "NCHAR(" + td.size + ")";
 	    }
-	    case TypeDescription.VARCHAR: {
+	    case TypeSpec.VARCHAR: {
 		return "VARCHAR(" + td.size + ")";
 	    }
-	    case TypeDescription.VARNCHAR: {
+	    case TypeSpec.VARNCHAR: {
 		return "NVARCHAR(" + td.size + ")";
 	    }
-	    case TypeDescription.LONGVARCHAR: {
+	    case TypeSpec.LONGVARCHAR: {
 		return "LONGVARCHAR";
 	    }
-	    case TypeDescription.LONGVARNCHAR: {
+	    case TypeSpec.LONGVARNCHAR: {
 		return "LONGNVARCHAR";
 	    }
-	    case TypeDescription.RAW: {
+	    case TypeSpec.RAW: {
 		return "BINARY(" + td.size + ")";
 	    }
-	    case TypeDescription.VARRAW: {
+	    case TypeSpec.VARRAW: {
 		return "VARBINARY(" + td.size + ")";
 	    }
-	    case TypeDescription.LONGVARRAW: {
+	    case TypeSpec.LONGVARRAW: {
 		return "LONGVARBINARY";
 	    }
-	    case TypeDescription.DATE: {
+	    case TypeSpec.DATE: {
 		return "DATE";
 	    }
-	    case TypeDescription.TIME:
-	    case TypeDescription.TIME_TZ: {
+	    case TypeSpec.TIME:
+	    case TypeSpec.TIME_TZ: {
 		return "TIME";
 	    }
-	    case TypeDescription.TIMESTAMP:
-	    case TypeDescription.TIMESTAMP_TZ: {
+	    case TypeSpec.TIMESTAMP:
+	    case TypeSpec.TIMESTAMP_TZ: {
 		return "TIMESTAMP";
 	    }
-	    case TypeDescription.INTERVAL_YM: {
+	    case TypeSpec.INTERVAL_YM: {
 		// TODO - Warning
 		// TODO - Take 'size' into account
 		return "NUMERIC(6)";
 	    }
-	    case TypeDescription.INTERVAL_DS: {
+	    case TypeSpec.INTERVAL_DS: {
 		// TODO - Warning
 		// TODO - Take 'size' and 'scale' into account
 		return "NUMERIC(8)";

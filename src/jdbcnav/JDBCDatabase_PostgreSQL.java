@@ -1,6 +1,7 @@
 package jdbcnav;
 
 import java.sql.*;
+import jdbcnav.model.TypeSpec;
 import jdbcnav.util.NavigatorException;
 
 
@@ -76,5 +77,167 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 
     protected boolean showTableTypes() {
 	return true;
+    }
+
+    protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,
+				    int sqlType, String javaType) {
+	TypeSpec spec = super.makeTypeSpec(dbType, size, scale, sqlType,
+								javaType);
+	if (dbType.equals("bigint")) {
+	    spec.type = TypeSpec.FIXED;
+	    spec.size = 64;
+	    spec.size_in_bits = true;
+	    spec.scale = 0;
+	    spec.scale_in_bits = true;
+	} else if (dbType.equals("integer")
+		|| dbType.equals("int")
+		|| dbType.equals("int4")) {
+	    spec.type = TypeSpec.FIXED;
+	    spec.size = 32;
+	    spec.size_in_bits = true;
+	    spec.scale = 0;
+	    spec.scale_in_bits = true;
+	} else if (dbType.equals("smallint")
+		|| dbType.equals("int2")) {
+	    spec.type = TypeSpec.FIXED;
+	    spec.size = 16;
+	    spec.size_in_bits = true;
+	    spec.scale = 0;
+	    spec.scale_in_bits = true;
+	} else if (dbType.equals("real")
+		|| dbType.equals("float4")) {
+	    spec.type = TypeSpec.FLOAT;
+	    spec.size = 24;
+	    spec.size_in_bits = true;
+	    spec.min_exp = -127;
+	    spec.max_exp = 127;
+	    spec.exp_of_2 = true;
+	} else if (dbType.equals("double precision")
+		|| dbType.equals("float8")) {
+	    spec.type = TypeSpec.FLOAT;
+	    spec.size = 54;
+	    spec.size_in_bits = true;
+	    spec.min_exp = -1023;
+	    spec.max_exp = 1023;
+	    spec.exp_of_2 = true;
+	} else if (dbType.equals("numeric")
+		|| dbType.equals("decimal")) {
+	    if (size.intValue() == 65535 && scale.intValue() == 65531) {
+		// TODO: This type does not fit in the current TypeSpec
+		// model. It is an arbitrary-precision (up to 1000 digits)
+		// number without scale coercion, or, to put it differently,
+		// a high-precision floating-point number.
+		// I choose double-precision since it's the best match in
+		// terms of allowing the original type's dynamic range, if not
+		// its precision.
+		// TODO - Warning
+		spec.type = TypeSpec.FLOAT;
+		spec.size = 54;
+		spec.size_in_bits = true;
+		spec.min_exp = -1023;
+		spec.max_exp = 1023;
+		spec.exp_of_2 = true;
+	    } else {
+		spec.type = TypeSpec.FIXED;
+		spec.size = size.intValue();
+		spec.size_in_bits = false;
+		spec.scale = scale.intValue();
+		spec.scale_in_bits = false;
+	    }
+	} else if (dbType.equals("money")) {
+	    // Deprecated type, so although we recognize it, printType() will
+	    // never generate it.
+	    spec.type = TypeSpec.FIXED;
+	    spec.size = 32;
+	    spec.size_in_bits = true;
+	    spec.scale = 2;
+	    spec.scale_in_bits = false;
+	} else if (dbType.equals("date")) {
+	    spec.type = TypeSpec.DATE;
+	} else if (dbType.equals("time")) {
+	    spec.type = TypeSpec.TIME;
+	} else if (dbType.equals("time with time zone")) {
+	    spec.type = TypeSpec.TIME_TZ;
+	} else if (dbType.equals("timestamp")) {
+	    spec.type = TypeSpec.TIMESTAMP;
+	} else if (dbType.equals("timestamp with time zone")) {
+	    spec.type = TypeSpec.TIMESTAMP_TZ;
+	} else if (dbType.equals("interval")) {
+	    // Yuck; PostgreSQL does not distinguish between
+	    // INTERVAL YEAR TO MONTH and INTERVAL DAY TO SECOND; it has one
+	    // type that is basically INTERVAL YEAR TO SECOND. I convert this
+	    // to INTERVAL DAY TO SECOND, because I don't want to lose the
+	    // resolution.
+	    spec.type = TypeSpec.INTERVAL_DS;
+	} else if (dbType.equals("bytea")) {
+	    spec.type = TypeSpec.LONGVARRAW;
+	} else if (dbType.equals("char")
+		|| dbType.equals("bpchar")
+		|| dbType.equals("character")) {
+	    spec.type = TypeSpec.CHAR;
+	    spec.size = size.intValue();
+	} else if (dbType.equals("varchar")
+		|| dbType.equals("character varying")) {
+	    if (size.intValue() == 0)
+		spec.type = TypeSpec.LONGVARCHAR;
+	    else {
+		spec.type = TypeSpec.VARCHAR;
+		spec.size = size.intValue();
+	    }
+	} else if (dbType.equals("text")) {
+	    spec.type = TypeSpec.LONGVARCHAR;
+	} else {
+	    // Unsupported value, such as one of PostgreSQL's geometric data
+	    // types or bit strings. Don't know how to handle them so we tag
+	    // them UNKNOWN, which will cause the script generator to pass them
+	    // on uninterpreted and unchanged.
+	    spec.type = TypeSpec.UNKNOWN;
+	}
+
+	// Populate native_representation for the benefit of the SameAsSource
+	// script generator.
+
+	if (dbType.equals("numeric")
+		|| dbType.equals("decimal")) {
+	    if (size.intValue() == 65535 && scale.intValue() == 65531) {
+		size = null;
+		scale = null;
+	    } else if (scale.intValue() == 0)
+		scale = null;
+	} else if (dbType.equals("bit varying")
+		|| dbType.equals("varbit")
+		|| dbType.equals("bit")
+		|| dbType.equals("character varying")
+		|| dbType.equals("varchar")
+		|| dbType.equals("character")
+		|| dbType.equals("char")
+		|| dbType.equals("bpchar")
+		|| dbType.equals("interval")
+		|| dbType.equals("time")
+		|| dbType.equals("timetz")
+		|| dbType.equals("timestamp")
+		|| dbType.equals("timestamptz")) {
+	    scale = null;
+	} else {
+	    size = null;
+	    scale = null;
+	}
+
+	if ((dbType.equals("varchar")
+		    || dbType.equals("character varying"))
+		&& size.intValue() == 0)
+	    size = null;
+
+	if (dbType.equals("bpchar"))
+	    dbType = "char";
+
+	if (size == null)
+	    spec.native_representation = dbType;
+	else if (scale == null)
+	    spec.native_representation = dbType + "(" + size + ")";
+	else
+	    spec.native_representation = dbType + "(" + size + ", " + scale + ")";
+
+	return spec;
     }
 }

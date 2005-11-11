@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.SQLException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -268,7 +270,7 @@ public class QueryResultFrame extends MyFrame
 
 	Container c = getContentPane();
 	c.setLayout(new GridLayout(1, 1));
-	table = new MyTable(model, browser.getDatabase());
+	table = new MyTable(model);
 	model.setTable(table);
 	sortAfterLoading = true;
 	
@@ -775,6 +777,7 @@ public class QueryResultFrame extends MyFrame
 	int row = table.getSelectionModel().getAnchorSelectionIndex();
 	int column = table.getColumnModel().getSelectionModel()
 			  .getAnchorSelectionIndex();
+	column = table.convertColumnIndexToModel(column);
 	if (row == -1 || column == -1)
 	    Toolkit.getDefaultToolkit().beep();
 	else {
@@ -787,13 +790,68 @@ public class QueryResultFrame extends MyFrame
 	int row = table.getSelectionModel().getAnchorSelectionIndex();
 	int column = table.getColumnModel().getSelectionModel()
 			  .getAnchorSelectionIndex();
+	column = table.convertColumnIndexToModel(column);
 	if (row == -1 || column == -1)
 	    Toolkit.getDefaultToolkit().beep();
 	else {
 	    table.stopEditing();
 	    String name = getTitle() + " [" + row + ", " + column + "]";
 	    Object o = model.getValueAt(row, column);
-	    Class k = model.getColumnClass(column);
+	    TypeSpec spec = model.getTypeSpec(column);
+	    Class k = model.getTypeSpec(column).jdbcJavaClass;
+	    
+	    if (o instanceof Blob) {
+		Blob blob = (Blob) o;
+		InputStream is = null;
+		try {
+		    is = blob.getBinaryStream();
+		    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		    byte[] buf = new byte[16384];
+		    try {
+			int bytesRead;
+			while ((bytesRead = is.read(buf)) > 0)
+			    bos.write(buf, 0, bytesRead);
+		    } catch (IOException e) {
+			MessageBox.show("I/O error while reading Blob value!", e);
+		    }
+		    o = bos.toByteArray();
+		} catch (SQLException e) {
+		    MessageBox.show("Reading Blob value failed!", e);
+		    o = new byte[0];
+		} finally {
+		    if (is != null)
+			try {
+			    is.close();
+			} catch (IOException e) {}
+		}
+	    } else if (o instanceof Clob) {
+		Clob clob = (Clob) o;
+		Reader r = null;
+		try {
+		    r = clob.getCharacterStream();
+		    StringBuffer sbuf = new StringBuffer();
+		    char[] cbuf = new char[4096];
+		    try {
+			int n;
+			while ((n = r.read(cbuf)) != -1)
+			    sbuf.append(cbuf, 0, n);
+		    } catch (IOException e) {
+			MessageBox.show("I/O error while reading Clob value!", e);
+		    }
+		    o = sbuf.toString();
+		} catch (SQLException e) {
+		    MessageBox.show("Reading Clob value failed!", e);
+		    o = "";
+		} finally {
+		    if (r != null)
+			try {
+			    r.close();
+			} catch (IOException e) {}
+		}
+	    } else {
+		o = spec.objectToString(o);
+	    }
+
 	    if (k.isArray() && k.getComponentType() == byte.class
 		    || o instanceof byte[]
 		    || o == null && Blob.class.isAssignableFrom(k)) {
@@ -803,20 +861,8 @@ public class QueryResultFrame extends MyFrame
 		bef = new BinaryEditorFrame(name, data, p_model, row, column);
 		bef.setParent(this);
 		bef.showStaggered();
-	    } else if (Blob.class.isAssignableFrom(k)) {
-		Blob blob = (Blob) o;
-		BinaryEditorFrame bef;
-		ResultSetTableModel p_model = editable ? model : null;
-		bef = new BinaryEditorFrame(name, blob, p_model, row, column);
-		bef.setParent(this);
-		bef.showStaggered();
 	    } else {
-		// TODO: toString() is not really right... I need a central
-		// place to do the Object <-> String conversions. That would
-		// help clean up the Date mess also.
-		// Also note that the TextEditorFrame needs to do the reverse
-		// conversion when applying the changes to the cell.
-		String text = o == null ? null : o.toString();
+		String text = (String) o;
 		TextEditorFrame tef;
 		ResultSetTableModel p_model = editable ? model : null;
 		tef = new TextEditorFrame(name, text, p_model, row, column);

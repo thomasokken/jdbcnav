@@ -4,7 +4,7 @@ public interface Data {
     int getRowCount();
     int getColumnCount();
     String getColumnName(int col);
-    Class getColumnClass(int col);
+    TypeSpec getTypeSpec(int col);
     Object getValueAt(int row, int col);
 
     static final int LOADING = 0;

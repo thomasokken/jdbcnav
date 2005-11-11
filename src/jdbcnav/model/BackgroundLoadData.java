@@ -5,15 +5,15 @@ import java.util.*;
 
 public class BackgroundLoadData implements Data {
     private String[] columnNames;
-    private Class[] columnClasses;
+    private TypeSpec[] typeSpecs;
     private ArrayList data;
     private ArrayList listeners;
     private int state;
     private long lastUpdateTime;
 
-    public BackgroundLoadData(String[] columnNames, Class[] columnClasses) {
+    public BackgroundLoadData(String[] columnNames, TypeSpec[] typeSpecs) {
 	this.columnNames = columnNames;
-	this.columnClasses = columnClasses;
+	this.typeSpecs = typeSpecs;
 	data = new ArrayList();
 	listeners = new ArrayList();
 	state = LOADING;
@@ -36,8 +36,8 @@ public class BackgroundLoadData implements Data {
 	return columnNames[col];
     }
 
-    public Class getColumnClass(int col) {
-	return columnClasses[col];
+    public TypeSpec getTypeSpec(int col) {
+	return typeSpecs[col];
     }
 
     public synchronized Object getValueAt(int row, int col) {

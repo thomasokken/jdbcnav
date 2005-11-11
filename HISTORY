@@ -1,3 +1,14 @@
+?? ????? ????: build ????
+*) Fixed a few bugs having to do with moving columns in table editing windows.
+*) Clob and Blob handling changed: table editing windows now load them lazily,
+and they are written back to the database when the table is committed, and no
+longer immediately.
+*) Snapshots, CSV files, and scripts now convert objects using the same
+database-dependent object->string conversions that are used in the table
+editing window.
+*) Oracle BINARY_FLOAT and BINARY_DOUBLE can now be written back to the DB,
+rather than merely being displayed in table editing windows.
+
 10 November 2005: build 2203
 *) Oracle DATE columns are once again treated as java.sql.Timestamp values; I
 added code to enable the Oracle 8i compatibility mode in the Oracle >= 9
