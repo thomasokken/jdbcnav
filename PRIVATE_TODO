@@ -7,7 +7,7 @@ Abstraction of object<->string conversions: remember ResultSetTableModel, in
 particular setValueAt(), doImport(), and export().
 
 Need to resurrect the code that populates TableSpec.part_of_key and
-TableSpec.part_of_index. Should be in BasicDatabase.makeTableSpec(), I guess.
+TableSpec.part_of_index.
 
 Make Clob/Blob columns non-editable?
 
