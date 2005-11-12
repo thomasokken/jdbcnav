@@ -1,6 +1,9 @@
 package jdbcnav.model;
 
+import java.sql.Blob;
+import java.sql.Clob;
 import java.util.*;
+import jdbcnav.util.MiscUtils;
 
 
 public class BasicData implements Data {
@@ -24,10 +27,14 @@ public class BasicData implements Data {
 	data = new ArrayList();
 	for (int i = 0; i < rows; i++) {
 	    Object[] row = new Object[cols];
-	    // TODO: handle objects that need to be cloned (mutable objects;
-	    // e.g. java.sql.Blob, java.sql.Clob).
-	    for (int j = 0; j < cols; j++)
-		row[j] = src.getValueAt(i, j);
+	    for (int j = 0; j < cols; j++) {
+		Object o = src.getValueAt(i, j);
+		if (o instanceof Blob)
+		    o = MiscUtils.loadBlob((Blob) o);
+		else if (o instanceof Clob)
+		    o = MiscUtils.loadClob((Clob) o);
+		row[j] = o;
+	    }
 	    data.add(row);
 	}
     }

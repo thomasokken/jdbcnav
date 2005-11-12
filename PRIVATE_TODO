@@ -9,10 +9,16 @@ particular setValueAt(), doImport(), and export().
 Need to resurrect the code that populates TableSpec.part_of_key and
 TableSpec.part_of_index.
 
+The code that loads a table row on a background thread
+(JDBCDatabase$BackgroundLoader.run()) should be synchronized on the Database
+object. This would prevent Oracle complaining about trying to load multiple
+LONG/LOB values simultaneously.
+
 Make Clob/Blob columns non-editable?
 
-Regression test all the FileDatabase (snapshot) stuff, CSV import/export,
-and SQL script generation.
+Regression test CSV import/export and SQL script generation.
+
+Integrate "inspector" into jdbcnav.
 
 Make "Reload Tree", "Clear Cache", and "Remove Orphans" scriptable, so that
 you can mix the SQL embedding and the JDBCNav functionality in one script --

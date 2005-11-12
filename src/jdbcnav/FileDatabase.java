@@ -2,6 +2,9 @@ package jdbcnav;
 
 import java.io.*;
 import java.lang.reflect.*;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Timestamp;
 import java.util.*;
 import javax.swing.*;
 import javax.xml.parsers.*;
@@ -371,17 +374,30 @@ public class FileDatabase extends BasicDatabase {
     }
 
     private static void dumpData(XMLWriter xml, Data data) {
-	xml.openTag("rows");
-	for (int i = 0; i < data.getRowCount(); i++) {
+	int rows = data.getRowCount();
+	int columns = data.getColumnCount();
+	TypeSpec[] specs = new TypeSpec[columns];
+	for (int i = 0; i < columns; i++)
+	    specs[i] = data.getTypeSpec(i);
+	Class byteArrayClass = new Byte[1].getClass();
+
+	xml.openTag("data");
+	for (int i = 0; i < rows; i++) {
 	    xml.openTag("row");
-	    for (int j = 0; j < data.getColumnCount(); j++) {
+	    for (int j = 0; j < columns; j++) {
 		Object o = data.getValueAt(i, j);
+		String s;
 		if (o == null)
 		    continue;
-		if (o.getClass() == java.util.Date.class)
-		    o = new java.sql.Timestamp(((java.util.Date) o).getTime());
+		Class k = specs[j].jdbcJavaClass;
+		if (k == String.class || Clob.class.isAssignableFrom(k))
+		    s = FileUtils.encodeEntities((String) o);
+		else if (k == byteArrayClass || Blob.class.isAssignableFrom(k))
+		    s = FileUtils.byteArrayToBase64((byte[]) o);
+		else
+		    s = specs[j].objectToString(o);
 		xml.openTagNoNewline("_" + j);
-		xml.writeValue(o.toString());
+		xml.writeValue(s);
 		xml.closeTagNoIndent();
 	    }
 	    xml.closeTag();
@@ -586,15 +602,37 @@ public class FileDatabase extends BasicDatabase {
 		int n = tr.getColumnCount();
 		String[] sa = (String[]) arrayBuffer.toArray(new String[n]);
 		Object[] oa = new Object[n];
+		Class byteArrayClass = new byte[1].getClass();
 		for (int i = 0; i < n; i++) {
+		    String s = sa[i];
+		    if (s == null)
+			continue;
 		    TypeSpec spec = tr.getTypeSpec(i);
+		    Class k = spec.jdbcJavaClass;
 		    try {
-			oa[i] = spec.objectToString(sa[i]);
+			if (k == String.class || Clob.class.isAssignableFrom(k))
+			    oa[i] = FileUtils.decodeEntities(s);
+			else if (k == byteArrayClass || Blob.class.isAssignableFrom(k))
+			    oa[i] = FileUtils.base64ToByteArray(s);
+			else
+			    try {
+				oa[i] = spec.stringToObject(s);
+			    } catch (IllegalArgumentException e) {
+				if (!spec.jdbcJavaType.startsWith("java"))
+				    // Probably a DB-specific type; we just put
+				    // the String version into the model and
+				    // hope for the best.
+				    oa[i] = s;
+				else
+				    // If instantiating a standard java class
+				    // fails, we have a bad input file, and we
+				    // really should complain.
+				    throw e;
+			    }
 		    } catch (IllegalArgumentException e) {
-			throw new SAXException("Bad value " + sa[i]
-				+ " in column " + i + " ("
-				+ table.getColumnNames()[i] + ") of table "
-				+ table.getQualifiedName());
+			throw new SAXException("Bad value " + s
+				+ " in column " + table.getColumnNames()[i]
+				+ " of table " + table.getQualifiedName());
 		    }
 		}
 		tr.addRow(oa);
@@ -730,5 +768,23 @@ public class FileDatabase extends BasicDatabase {
     protected boolean showTableTypes() {
 	findOutWhatToShow();
 	return showTableTypes;
+    }
+
+    /**
+     * Overriding BasicTable.objectToString() in order to render
+     * database-specific datatypes that somehow survive the transition
+     * into a FileDatabase, but have no useful toString() method.
+     */
+    protected String objectToString(TypeSpec spec, Object o) {
+	if (o == null)
+	    return super.objectToString(spec, o);
+	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMP")) {
+	    try {
+		Method m = spec.jdbcJavaClass.getMethod("timestampValue", null);
+		Timestamp ts = (Timestamp) m.invoke(o, null);
+		return ts.toString();
+	    } catch (Exception e) {}
+	}
+	return super.objectToString(spec, o);
     }
 }

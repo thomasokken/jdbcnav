@@ -800,59 +800,9 @@ public class QueryResultFrame extends MyFrame
 	    TypeSpec spec = model.getTypeSpec(column);
 	    Class k = model.getTypeSpec(column).jdbcJavaClass;
 	    
-	    if (o instanceof Blob) {
-		Blob blob = (Blob) o;
-		InputStream is = null;
-		try {
-		    is = blob.getBinaryStream();
-		    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		    byte[] buf = new byte[16384];
-		    try {
-			int bytesRead;
-			while ((bytesRead = is.read(buf)) > 0)
-			    bos.write(buf, 0, bytesRead);
-		    } catch (IOException e) {
-			MessageBox.show("I/O error while reading Blob value!", e);
-		    }
-		    o = bos.toByteArray();
-		} catch (SQLException e) {
-		    MessageBox.show("Reading Blob value failed!", e);
-		    o = new byte[0];
-		} finally {
-		    if (is != null)
-			try {
-			    is.close();
-			} catch (IOException e) {}
-		}
-	    } else if (o instanceof Clob) {
-		Clob clob = (Clob) o;
-		Reader r = null;
-		try {
-		    r = clob.getCharacterStream();
-		    StringBuffer sbuf = new StringBuffer();
-		    char[] cbuf = new char[4096];
-		    try {
-			int n;
-			while ((n = r.read(cbuf)) != -1)
-			    sbuf.append(cbuf, 0, n);
-		    } catch (IOException e) {
-			MessageBox.show("I/O error while reading Clob value!", e);
-		    }
-		    o = sbuf.toString();
-		} catch (SQLException e) {
-		    MessageBox.show("Reading Clob value failed!", e);
-		    o = "";
-		} finally {
-		    if (r != null)
-			try {
-			    r.close();
-			} catch (IOException e) {}
-		}
-	    } else {
-		o = spec.objectToString(o);
-	    }
-
-	    if (k.isArray() && k.getComponentType() == byte.class
+	    if (o instanceof Blob)
+		o = MiscUtils.loadBlob((Blob) o);
+	    if (k == new byte[1].getClass()
 		    || o instanceof byte[]
 		    || o == null && Blob.class.isAssignableFrom(k)) {
 		byte[] data = (byte[]) o;
@@ -861,14 +811,19 @@ public class QueryResultFrame extends MyFrame
 		bef = new BinaryEditorFrame(name, data, p_model, row, column);
 		bef.setParent(this);
 		bef.showStaggered();
-	    } else {
-		String text = (String) o;
-		TextEditorFrame tef;
-		ResultSetTableModel p_model = editable ? model : null;
-		tef = new TextEditorFrame(name, text, p_model, row, column);
-		tef.setParent(this);
-		tef.showStaggered();
+		return;
 	    }
+
+	    String text;
+	    if (o instanceof Clob)
+		text = MiscUtils.loadClob((Clob) o);
+	    else
+		text = spec.objectToString(o);
+	    TextEditorFrame tef;
+	    ResultSetTableModel p_model = editable ? model : null;
+	    tef = new TextEditorFrame(name, text, p_model, row, column);
+	    tef.setParent(this);
+	    tef.showStaggered();
 	}
     }
 

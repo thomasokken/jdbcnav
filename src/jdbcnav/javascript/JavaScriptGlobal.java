@@ -13,7 +13,10 @@ public class JavaScriptGlobal extends ScriptableObject {
 	String[] names = { "print", "println" };
 	try {
 	    defineFunctionProperties(names, JavaScriptGlobal.class,
-				     ScriptableObject.DONTENUM);
+				     ScriptableObject.DONTENUM
+				     + ScriptableObject.PERMANENT);
+	    defineProperty("clipboard", JavaScriptGlobal.class,
+			   ScriptableObject.PERMANENT);
 	} catch (PropertyException e) {
 	    MessageBox.show("Problem constructing JavaScriptGlobal", e);
 	}
@@ -46,6 +49,14 @@ public class JavaScriptGlobal extends ScriptableObject {
 	    pipe.print(ctx.toString(args[i]));
 	}
 	pipe.println();
+    }
+
+    public void setClipboard(Object o) {
+	jdbcnav.Main.getClipboard().put(o);
+    }
+
+    public Object getClipboard() {
+	return jdbcnav.Main.getClipboard().get();
     }
 
     public interface Pipe {

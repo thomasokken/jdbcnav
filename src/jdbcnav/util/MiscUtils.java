@@ -1,8 +1,12 @@
 package jdbcnav.util;
 
 import java.io.*;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.*;
+import jdbcnav.MessageBox;
 
 public class MiscUtils {
     public static final Comparator caseInsensitiveComparator =
@@ -175,6 +179,56 @@ public class MiscUtils {
 	    case Types.VARBINARY: return "VARBINARY";
 	    case Types.VARCHAR: return "VARCHAR";
 	    default: return Integer.toString(type);
+	}
+    }
+
+    public static byte[] loadBlob(Blob blob) {
+	InputStream is = null;
+	try {
+	    is = blob.getBinaryStream();
+	    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	    byte[] buf = new byte[16384];
+	    try {
+		int bytesRead;
+		while ((bytesRead = is.read(buf)) > 0)
+		    bos.write(buf, 0, bytesRead);
+	    } catch (IOException e) {
+		MessageBox.show("I/O error while reading Blob value!", e);
+	    }
+	    return bos.toByteArray();
+	} catch (SQLException e) {
+	    MessageBox.show("Reading Blob value failed!", e);
+	    return new byte[0];
+	} finally {
+	    if (is != null)
+		try {
+		    is.close();
+		} catch (IOException e) {}
+	}
+    }
+
+    public static String loadClob(Clob clob) {
+	Reader r = null;
+	try {
+	    r = clob.getCharacterStream();
+	    StringBuffer sbuf = new StringBuffer();
+	    char[] cbuf = new char[4096];
+	    try {
+		int n;
+		while ((n = r.read(cbuf)) != -1)
+		    sbuf.append(cbuf, 0, n);
+	    } catch (IOException e) {
+		MessageBox.show("I/O error while reading Clob value!", e);
+	    }
+	    return sbuf.toString();
+	} catch (SQLException e) {
+	    MessageBox.show("Reading Clob value failed!", e);
+	    return "";
+	} finally {
+	    if (r != null)
+		try {
+		    r.close();
+		} catch (IOException e) {}
 	}
     }
 }

@@ -8,6 +8,8 @@ database-dependent object->string conversions that are used in the table
 editing window.
 *) Oracle BINARY_FLOAT and BINARY_DOUBLE can now be written back to the DB,
 rather than merely being displayed in table editing windows.
+*) Added 'clipboard' property to the global scope in JavaScript; this can be
+used to get and set the JDBC Navigator clipboard.
 
 10 November 2005: build 2203
 *) Oracle DATE columns are once again treated as java.sql.Timestamp values; I
