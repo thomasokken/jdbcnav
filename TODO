@@ -1,7 +1,5 @@
 PostgreSQL INTERVAL type support
 
-ResultSetTableModel.doImport() does not use the new type conversion code yet.
-
 Oracle TIMESTAMPLTZ values act weird. It seems like the timestampValue() method
 and the Timestamp-consuming constructor are not each other's inverses.
 

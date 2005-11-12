@@ -5,7 +5,7 @@ and they are written back to the database when the table is committed, and no
 longer immediately.
 *) Snapshots, CSV files, and scripts now convert objects using the same
 database-dependent object->string conversions that are used in the table
-editing window.
+editing window. Snapshots and CSV files now support LOB and RAW types properly.
 *) Oracle BINARY_FLOAT and BINARY_DOUBLE can now be written back to the DB,
 rather than merely being displayed in table editing windows.
 *) Added 'clipboard' property to the global scope in JavaScript; this can be
@@ -25,7 +25,7 @@ java.sql.Blob.setBytes(long, byte[]), but it does not work. So, I had to
 disable the code that uses this method, and keep using the old Oracle
 work-around code, which fortunately is still OK.
 The whole thing is rather weird, because according to Oracle's own Javadocs,
-oracle.sql.BLOB does *not* implement setBytes(long, byte[]) at all.
+oracle.sql.BLOB does not implement setBytes(long, byte[]) at all.
 
 9 November 2005: build 2189
 *) Fixed a few bugs (related to BLOB and RAW types, and Oracle 8 & 9) that I

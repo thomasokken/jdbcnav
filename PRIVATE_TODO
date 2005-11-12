@@ -3,9 +3,6 @@
  /////            to announce until they're actually done             /////
  //////////////////////////////////////////////////////////////////////////
 
-Abstraction of object<->string conversions: remember ResultSetTableModel, in
-particular setValueAt(), doImport(), and export().
-
 Need to resurrect the code that populates TableSpec.part_of_key and
 TableSpec.part_of_index.
 
@@ -16,7 +13,7 @@ LONG/LOB values simultaneously.
 
 Make Clob/Blob columns non-editable?
 
-Regression test CSV import/export and SQL script generation.
+Regression test SQL script generation.
 
 Integrate "inspector" into jdbcnav.
 
