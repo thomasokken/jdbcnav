@@ -32,6 +32,7 @@ output may still be in the process of being displayed.
 void print(...);                       // Print zero or more objects.
 void println(...);                     // Print zero or more objects, followed
                                        // by a line break.
+Object clipboard;                      // The JDBC Navigator clipboard.
 
 TreeNode[] browsers;                   // Array containing all open browsers;
                                        // they appear here in the order in
