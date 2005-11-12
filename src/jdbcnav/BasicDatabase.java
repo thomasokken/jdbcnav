@@ -998,7 +998,8 @@ public abstract class BasicDatabase implements Database {
 	    }
 	}
 
-	if (klass == new byte[1].getClass()) {
+	if (klass == new byte[1].getClass()
+		|| spec.jdbcJavaType.equals("byte[]")) {
 	    byte[] barray = (byte[]) o;
 	    StringBuffer buf = new StringBuffer();
 	    for (int i = 0; i < barray.length; i++) {

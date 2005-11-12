@@ -3,6 +3,8 @@ package jdbcnav;
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.*;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
@@ -14,6 +16,8 @@ import jdbcnav.model.Table;
 import jdbcnav.model.TypeSpec;
 import jdbcnav.util.ArrayCollection;
 import jdbcnav.util.CSVTokenizer;
+import jdbcnav.util.FileUtils;
+import jdbcnav.util.MiscUtils;
 import jdbcnav.util.NavigatorException;
 
 
@@ -659,32 +663,35 @@ public class ResultSetTableModel extends AbstractTableModel
 		    }
 		}
 
-		boolean[] number = new boolean[columns];
-		for (int i = 0; i < columns; i++) {
-		    Class c = getColumnClass(i);
-		    number[i] = c != null && Number.class.isAssignableFrom(c);
-		}
+		TypeSpec[] specs = new TypeSpec[columns];
+		for (int i = 0; i < columns; i++)
+		    specs[i] = getTypeSpec(i);
 
 		int rows = getRowCount();
+		Class byteArrayClass = new byte[1].getClass();
 		for (int i = 0; i < rows; i++) {
 		    for (int j = 0; j < columns; j++) {
 			Object o = getValueAt(i, j);
-			if (o != null)
-			    if (number[j])
-				pw.print(o);
+			if (o != null) {
+			    if (o instanceof Blob)
+				o = MiscUtils.loadBlob((Blob) o);
+			    else if (o instanceof Clob)
+				o = MiscUtils.loadClob((Clob) o);
+			    Class k = specs[j].jdbcJavaClass;
+			    String s;
+			    if (k == String.class
+				    || Clob.class.isAssignableFrom(k))
+				s = quote((String) o);
+			    else if (k == byteArrayClass
+				    || Blob.class.isAssignableFrom(k))
+				s = FileUtils.byteArrayToBase64((byte[]) o);
 			    else {
-				// The important subclasses of java.util.Date,
-				// that is, java.sql.Date, java.sql.Time, and
-				// java.sql.Timestamp, all have resonable
-				// toString() methods, but
-				// java.util.Date.toString() produces the kind
-				// of human-friendly mess we really don't want
-				// here. So, use java.sql.Timestamp instead.
-				if (o.getClass() == java.util.Date.class)
-				    o = new java.sql.Timestamp(
-						((java.util.Date) o).getTime());
-				pw.print(quote(o.toString()));
+				s = specs[j].objectToString(o);
+				if (!Number.class.isAssignableFrom(k))
+				    s = quote(s);
 			    }
+			    pw.print(s);
+			}
 			if (j < columns - 1)
 			    pw.print(",");
 			else
@@ -714,7 +721,7 @@ public class ResultSetTableModel extends AbstractTableModel
 		ArrayList al = new ArrayList();
 		while (tok.hasMoreTokens())
 		    al.add(tok.nextToken());
-		colName = (String[]) al.toArray(new String[0]);
+		colName = (String[]) al.toArray(new String[al.size()]);
 	    }
 	    int[] colIndex = new int[colName.length];
 	    for (int i = 0; i < colName.length; i++) {
@@ -780,6 +787,11 @@ public class ResultSetTableModel extends AbstractTableModel
 		return;
 	    }
 
+	    TypeSpec[] specs = new TypeSpec[columns];
+	    for (int i = 0; i < columns; i++)
+		specs[i] = getTypeSpec(i);
+	    Class byteArrayClass = new byte[1].getClass();
+
 	    while ((line = readLines(in)) != null) {
 		Object[] row = new Object[columns];
 		if (importMode == RUDE) {
@@ -799,7 +811,33 @@ public class ResultSetTableModel extends AbstractTableModel
 		    if (i == -1)
 			// Column in imported file does not exist in table
 			continue;
-		    row[i] = data.getTypeSpec(i).stringToObject(s);
+		    Class k = specs[i].jdbcJavaClass;
+		    if (k == String.class
+			    || Clob.class.isAssignableFrom(k))
+			row[i] = s;
+		    else if (k == byteArrayClass
+			    || Blob.class.isAssignableFrom(k))
+			row[i] = FileUtils.base64ToByteArray(s);
+		    else
+			try {
+			    row[i] = specs[i].stringToObject(s);
+			} catch (IllegalArgumentException e) {
+			    if (!specs[i].jdbcJavaType.startsWith("java.")) {
+				// Probably a DB-specific type; we just put
+				// the String version into the model and
+				// hope for the best.
+				row[i] = s;
+			    } else {
+				// If instantiating a standard java class
+				// fails, we have a bad input file, and we
+				// really should complain.throw
+				MessageBox.show("Bad value in CSV file (row "
+					+ in.getLineNumber() + ", column "
+					+ (index + 1) + ").", e);
+				return;
+			    }
+			}
+
 		}
 		imported.add(row);
 	    }
@@ -828,11 +866,18 @@ public class ResultSetTableModel extends AbstractTableModel
 
     private static String quote(String s) {
 	StringBuffer buf = new StringBuffer("\"");
-	StringTokenizer tok = new StringTokenizer(s, "\"", true);
+	StringTokenizer tok = new StringTokenizer(s, "\"\\\r\n", true);
 	while (tok.hasMoreTokens()) {
 	    String t = tok.nextToken();
-	    buf.append(t);
 	    if (t.equals("\""))
+		buf.append("\"\"");
+	    else if (t.equals("\\"))
+		buf.append("\\\\");
+	    else if (t.equals("\r"))
+		buf.append("\\r");
+	    else if (t.equals("\n"))
+		buf.append("\\n");
+	    else
 		buf.append(t);
 	}
 	buf.append("\"");

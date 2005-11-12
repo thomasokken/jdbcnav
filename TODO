@@ -1,5 +1,9 @@
 PostgreSQL INTERVAL type support
 
+SQL script generation should use the new database-dependent object->string
+conversion code (or rather, I probably need to add database-dependent
+object->SQLstring conversion functions).
+
 Oracle TIMESTAMPLTZ values act weird. It seems like the timestampValue() method
 and the Timestamp-consuming constructor are not each other's inverses.
 

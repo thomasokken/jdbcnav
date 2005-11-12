@@ -1,11 +1,11 @@
-?? ????? ????: build ????
+12 November 2005: build 2239
 *) Fixed a few bugs having to do with moving columns in table editing windows.
 *) Clob and Blob handling changed: table editing windows now load them lazily,
 and they are written back to the database when the table is committed, and no
 longer immediately.
-*) Snapshots, CSV files, and scripts now convert objects using the same
-database-dependent object->string conversions that are used in the table
-editing window. Snapshots and CSV files now support LOB and RAW types properly.
+*) Snapshots and CSV files now convert objects using the same database-
+dependent object->string conversions that are used in the table editing window.
+Snapshots and CSV files now support LOB and RAW types properly.
 *) Oracle BINARY_FLOAT and BINARY_DOUBLE can now be written back to the DB,
 rather than merely being displayed in table editing windows.
 *) Added 'clipboard' property to the global scope in JavaScript; this can be

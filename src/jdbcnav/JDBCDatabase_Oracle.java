@@ -379,6 +379,10 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 
 	TypeSpec spec = super.makeTypeSpec(dbType, size, scale, sqlType,
 								javaType);
+
+	if (spec.jdbcJavaType.equals("byte[]"))
+	    spec.jdbcJavaClass = new byte[1].getClass();
+
 	if (dbType.equals("CHAR")) {
 	    spec.type = TypeSpec.CHAR;
 	    spec.size = size.intValue();
@@ -535,11 +539,11 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	    } catch (NoSuchMethodException e) {
 		// From Class.getMethod()
 		// Should not happen
-		return "Not a BFILE";
+		return o.toString();
 	    } catch (IllegalAccessException e) {
 		// From Method.invoke()
 		// Should not happen
-		return "Not a BFILE";
+		return o.toString();
 	    } catch (InvocationTargetException e) {
 		// From Method.invoke()
 		// Should be a SQLException from BFILE.getName()

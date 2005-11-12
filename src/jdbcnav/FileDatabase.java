@@ -618,7 +618,7 @@ public class FileDatabase extends BasicDatabase {
 			    try {
 				oa[i] = spec.stringToObject(s);
 			    } catch (IllegalArgumentException e) {
-				if (!spec.jdbcJavaType.startsWith("java"))
+				if (!spec.jdbcJavaType.startsWith("java."))
 				    // Probably a DB-specific type; we just put
 				    // the String version into the model and
 				    // hope for the best.

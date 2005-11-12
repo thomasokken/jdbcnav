@@ -48,9 +48,23 @@ public class CSVTokenizer {
 	StringBuffer buf = new StringBuffer();
 	int tokstate = UNQUOTED;
 	int rawLength = 0;
+	boolean escape = false;
 	while (pos < s.length()) {
 	    char ch = s.charAt(pos++);
-	    if (ch == '"') {
+	    if (escape) {
+		if (ch == '\\')
+		    buf.append(ch);
+		else if (ch == 'r')
+		    buf.append('\r');
+		else if (ch == 'n')
+		    buf.append('\n');
+		else
+		    buf.append(ch);
+		escape = false;
+		rawLength++;
+	    } else if (ch == '\\') {
+		escape = true;
+	    } else if (ch == '"') {
 		if (tokstate == UNQUOTED)
 		    tokstate = QUOTED;
 		else if (tokstate == QUOTED)
@@ -58,6 +72,7 @@ public class CSVTokenizer {
 		else { // tokstate == QUOTED_PENDING
 		    buf.append(ch);
 		    tokstate = QUOTED;
+		    rawLength++;
 		}
 	    } else {
 		if (tokstate == QUOTED_PENDING) {
@@ -65,12 +80,13 @@ public class CSVTokenizer {
 		    tokstate = QUOTED;
 		    if (ch == ',')
 			break;
-		} else if (tokstate == UNQUOTED && ch == ',')
+		} else if (tokstate == UNQUOTED && ch == ',') {
 		    break;
-		else
+		} else {
 		    buf.append(ch);
+		    rawLength++;
+		}
 	    }
-	    rawLength++;
 	}
 	token = rawLength == 0 ? null : buf.toString();
 	state = HAVE_MORE;
