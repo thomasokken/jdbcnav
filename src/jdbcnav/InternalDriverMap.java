@@ -81,7 +81,6 @@ public class InternalDriverMap {
     static {
 	scriptGeneratorClassMap = new TreeMap();
 	scriptGeneratorClassMap.put("Generic", "jdbcnav.ScriptGenerator");
-	scriptGeneratorClassMap.put("Same As Source", "jdbcnav.ScriptGenerator_SameAsSource");
 	scriptGeneratorClassMap.put("Oracle 8", "jdbcnav.ScriptGenerator_Oracle8");
 	scriptGeneratorClassMap.put("Oracle 9", "jdbcnav.ScriptGenerator_Oracle9");
 	scriptGeneratorClassMap.put("Oracle 10", "jdbcnav.ScriptGenerator_Oracle");
@@ -99,9 +98,7 @@ public class InternalDriverMap {
     public static String[] getScriptGeneratorNames() {
 	ArrayList list = new ArrayList(scriptGeneratorClassMap.keySet());
 	list.remove("Generic");
-	list.remove("Same As Source");
 	list.add(0, "Generic");
-	list.add(1, "Same As Source");
 	return (String[]) list.toArray(new String[list.size()]);
     }
 }

@@ -257,6 +257,8 @@ public class ScriptGenerator {
 
 	int columns = table.getColumnCount();
 	boolean comma = false;
+	boolean sameAsSource = name.equals(table.getDatabase()
+						.getInternalDriverName());
 	for (int i = 0; i < columns; i++) {
 	    if (comma)
 		buf.append(",");
@@ -265,7 +267,10 @@ public class ScriptGenerator {
 	    buf.append("\n    ");
 	    buf.append(table.getColumnNames()[i]);
 	    buf.append(" ");
-	    buf.append(printType(table.getTypeSpecs()[i]));
+	    if (sameAsSource)
+		buf.append(table.getTypeSpecs()[i].native_representation);
+	    else
+		buf.append(printType(table.getTypeSpecs()[i]));
 	    if (!"YES".equals(table.getIsNullable()[i]))
 		buf.append(" not null");
 	}
@@ -602,6 +607,8 @@ public class ScriptGenerator {
 	    return "null";
 	else if (spec.type == TypeSpec.FIXED || spec.type == TypeSpec.FLOAT)
 	    return spec.objectToString(obj);
+	else if (obj instanceof java.sql.Clob)
+	    return quote(MiscUtils.loadClob((java.sql.Clob) obj));
 	else
 	    return quote(spec.objectToString(obj));
     }
@@ -652,7 +659,7 @@ public class ScriptGenerator {
     private String limitLineLength(String s, int maxlen) {
 	if (s.length() <= maxlen)
 	    return s;
-	StringTokenizer tok = new StringTokenizer(s, "'", true);
+	StringTokenizer tok = new StringTokenizer(s, "' ", true);
 	StringBuffer buf = new StringBuffer();
 	// State: 0 = outside literal, 1 = inside literal, 2 = maybe inside
 	// literal (previous state was 1 but we just read a single quote;

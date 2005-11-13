@@ -422,4 +422,14 @@ public class FileUtils {
         24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34,
         35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
     };
+
+    public static String byteArrayToHex(byte[] ba) {
+	StringBuffer buf = new StringBuffer();
+	for (int i = 0; i < ba.length; i++) {
+	    byte b = ba[i];
+	    buf.append("0123456789ABCDEF".charAt((b >> 4) & 15));
+	    buf.append("0123456789ABCDEF".charAt(b & 15));
+	}
+	return buf.toString();
+    }
 }

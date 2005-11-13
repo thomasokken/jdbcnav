@@ -194,9 +194,6 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 	    spec.type = TypeSpec.UNKNOWN;
 	}
 
-	// Populate native_representation for the benefit of the SameAsSource
-	// script generator.
-
 	if (dbType.equals("numeric")
 		|| dbType.equals("decimal")) {
 	    if (size.intValue() == 65535 && scale.intValue() == 65531) {

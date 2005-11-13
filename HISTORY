@@ -1,3 +1,33 @@
+13 November 2005: build 2254
+*) SQL script generation: the code that checks if a column is part of a key or
+index is back, and this means that when the Script Generator generates CREATE
+TABLE statements for Oracle, it will not use BLOB or CLOB types for such
+columns, but fall back on RAW(4000) or VARCHAR2(4000) instead.
+*) SQL script generation: Oracle DATE and TIMESTAMP values now handled. Note
+that TIMESTAMP WITH LOCAL TIME ZONE probably does not work correctly; it is
+misbehaving in the table editor too (the timestampValue() method and the
+Timestamp-consuming constructor appear not to be each other's inverses; I must
+be missing something there).
+*) SQL script generation: now handles Oracle LOB, LONG, and RAW types -- but
+note that due to string length restrictions in SQL*Plus, you may still not be
+able to use jdbcnav-generated SQL scripts for backing up tables containing
+large objects. A big rotten tomato for Oracle for having a script processor
+with such silly restrictions!
+*) SQL script generation: now handles Oracle BFILE.
+*) SQL script generation: the "Same As Source" driver was removed; its special
+behavior, which is to use the source database's native data type representation
+in CREATE TABLE statements, is now the standard behavior whenever the source
+and destination databases have the same internal driver name. It made no sense
+to re-encode the type representations in this situation anyway, and the Same
+As Source driver also had the problem that it had no specialized knowledge of
+how to render data *values*, which made it pretty much useless for generating
+Populate and Update scripts.
+*) Table editing windows now prevent the user from editing cells containing
+Blob, Clob, and byte[] objects inside the JTable; they must use the Edit Cell
+command to bring up a separate Binary/Text editor frame. This is to avoid the
+confusion over what happens when you start editing a string like
+"Clob (size = 10000)" or the hex representation of a byte array.
+
 12 November 2005: build 2239
 *) Fixed a few bugs having to do with moving columns in table editing windows.
 *) Clob and Blob handling changed: table editing windows now load them lazily,

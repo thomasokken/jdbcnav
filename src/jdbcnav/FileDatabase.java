@@ -673,6 +673,10 @@ public class FileDatabase extends BasicDatabase {
 		}
 	    } else if (name.equals("exp_of_2")) {
 		spec.exp_of_2 = Boolean.parseBoolean(data);
+	    } else if (name.equals("part_of_key")) {
+		spec.part_of_key = Boolean.parseBoolean(data);
+	    } else if (name.equals("part_of_index")) {
+		spec.part_of_index = Boolean.parseBoolean(data);
 	    } else if (name.equals("jdbc_db_type")) {
 		spec.jdbcDbType = data;
 	    } else if (name.equals("jdbc_size")) {

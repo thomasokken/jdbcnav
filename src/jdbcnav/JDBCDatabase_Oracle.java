@@ -481,9 +481,6 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	    spec.type = TypeSpec.UNKNOWN;
 	}
 
-	// Populate native_representation for the benefit of the SameAsSource
-	// script generator.
-
 	if (dbType.startsWith("INTERVAL YEAR"))
 	    spec.native_representation = "INTERVAL YEAR(" + size + ") TO MONTH";
 	else if (dbType.startsWith("INTERVAL DAY"))
@@ -533,9 +530,11 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	if (className.equals("oracle.sql.BFILE")) {
 	    try {
 		Class bfileClass = o.getClass();
-		Method getNameMethod = bfileClass.getMethod("getName", null);
-		String name = (String) getNameMethod.invoke(o, null);
-		return "Bfile (name = \"" + name + "\")";
+		Method m = bfileClass.getMethod("getDirAlias", null);
+		String dir = (String) m.invoke(o, null);
+		m = bfileClass.getMethod("getName", null);
+		String name = (String) m.invoke(o, null);
+		return "Bfile ('" + dir + "', '" + name + "')";
 	    } catch (NoSuchMethodException e) {
 		// From Class.getMethod()
 		// Should not happen

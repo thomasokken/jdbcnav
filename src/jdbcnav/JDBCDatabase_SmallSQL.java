@@ -148,9 +148,6 @@ public class JDBCDatabase_SmallSQL extends JDBCDatabase {
 	    spec.type = TypeSpec.UNKNOWN;
 	}
 
-	// Populate native_representation for the benefit of the SameAsSource
-	// script generator.
-
 	if (dbType.equals("NUMERIC")
 		|| dbType.equals("DECIMAL")
 		|| dbType.equals("NUMBER")

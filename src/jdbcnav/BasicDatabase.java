@@ -138,7 +138,7 @@ public abstract class BasicDatabase implements Database {
 	if (sg != null)
 	    sgname = sg.getName();
 	else
-	    sgname = "Same As Source";
+	    sgname = getInternalDriverName();
 	GenerateScriptDialog gsd = new GenerateScriptDialog(browser, cb, sgname);
 	gsd.showCentered();
     }
@@ -999,16 +999,8 @@ public abstract class BasicDatabase implements Database {
 	}
 
 	if (klass == new byte[1].getClass()
-		|| spec.jdbcJavaType.equals("byte[]")) {
-	    byte[] barray = (byte[]) o;
-	    StringBuffer buf = new StringBuffer();
-	    for (int i = 0; i < barray.length; i++) {
-		byte b = barray[i];
-		buf.append("0123456789ABCDEF".charAt((b >> 4) & 15));
-		buf.append("0123456789ABCDEF".charAt(b & 15));
-	    }
-	    return buf.toString();
-	}
+		|| spec.jdbcJavaType.equals("byte[]"))
+	    return FileUtils.byteArrayToHex((byte[]) o);
 
 	if (Clob.class.isAssignableFrom(klass)) {
 	    if (o instanceof Clob) {

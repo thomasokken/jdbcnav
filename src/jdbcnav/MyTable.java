@@ -500,13 +500,14 @@ public class MyTable extends JTable {
 
 	public boolean stopCellEditing() {
 	    String s = (String) super.getCellEditorValue();
-	    try {
-		value = spec.stringToObject(s);
-	    } catch (IllegalArgumentException e) {
-		((JComponent) getComponent()).setBorder(
-					    new LineBorder(Color.red));
-		return false;
-	    }
+	    if (!java.sql.Clob.class.isAssignableFrom(spec.jdbcJavaClass))
+		try {
+		    value = spec.stringToObject(s);
+		} catch (IllegalArgumentException e) {
+		    ((JComponent) getComponent()).setBorder(
+						new LineBorder(Color.red));
+		    return false;
+		}
 	    return super.stopCellEditing();
 	}
 

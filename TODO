@@ -1,11 +1,24 @@
 PostgreSQL INTERVAL type support
 
-SQL script generation should use the new database-dependent object->string
-conversion code (or rather, I probably need to add database-dependent
-object->SQLstring conversion functions).
-
 Oracle TIMESTAMPLTZ values act weird. It seems like the timestampValue() method
-and the Timestamp-consuming constructor are not each other's inverses.
+and the Timestamp-consuming constructor are not each other's inverses. Whenever
+I call TIMESTAMPLTZ.timestampValue(), I seem to be getting a value that is 8
+hours off. Very strange -- I am in the CET (UTC+0100) time zone, so where does
+an 8 hour discrepancy come from? Does Oracle think I'm in Montana or Japan?
+
+When opening multiple table editing windows at the same time, and one or more
+of them are for tables containing Oracle LONG or LONG RAW columns, the
+exception "Stream has already been closed" may occur, or the application may
+freeze completely. To avoid this, you must always open tables containing LONG
+or LONG RAW columns separately. It would be nice if JDBC Navigator would load
+such tables separately automagically; this will require (1) a new Table
+property mustBeLoadedSeparately, plus (2) code in BasicDatabase and
+JDBCDatabase to load such tables serially (the easiest approach would be to
+load them first, before opening all the remaining windows; this will require
+a mechanism whereby the Database can keep track of whether any loads are still
+in progress). Of course this also affects other tables that might be opened
+while a background load of a LONG-containing table is in progress; the solution
+will probably have to be something along the lines of a queue.
 
 "Set Password" should make the user type the password twice if it doesn't match
 any of the existing ones (i.e., if it does not successfully decrypt any

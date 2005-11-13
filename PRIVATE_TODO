@@ -3,19 +3,13 @@
  /////            to announce until they're actually done             /////
  //////////////////////////////////////////////////////////////////////////
 
-Need to resurrect the code that populates TableSpec.part_of_key and
-TableSpec.part_of_index.
+Can we add a BFILE editor? Could be tricky because there does not seem to be a
+straightforward way to construct a BFILE object.
 
-The code that loads a table row on a background thread
-(JDBCDatabase$BackgroundLoader.run()) should be synchronized on the Database
-object. This would prevent Oracle complaining about trying to load multiple
-LONG/LOB values simultaneously.
-
-Make Clob/Blob columns non-editable?
-
-Regression test SQL script generation.
-
-Integrate "inspector" into jdbcnav.
+Integrate "inspector" into jdbcnav. The old web interface would be cool, but
+I guess it would be even better if the thing were a part of the JavaScript
+embedding. (Do I even need to do any work for this? Does LiveWire provide
+an easy interface to enumerate an object's fields and methods?)
 
 Make "Reload Tree", "Clear Cache", and "Remove Orphans" scriptable, so that
 you can mix the SQL embedding and the JDBCNav functionality in one script --

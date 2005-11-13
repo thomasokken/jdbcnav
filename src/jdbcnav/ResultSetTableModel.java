@@ -243,7 +243,11 @@ public class ResultSetTableModel extends AbstractTableModel
     }
 
     public synchronized boolean isCellEditable(int row, int column) {
-	return editable;
+	if (!editable)
+	    return false;
+	Object o = getValueAt(row, column);
+	return !(o instanceof Blob) && !(o instanceof Clob)
+	    && !(o instanceof byte[]);
     }
 
     public synchronized void setValueAt(Object value, int row, int column) {

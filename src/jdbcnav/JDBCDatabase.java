@@ -1167,7 +1167,6 @@ public class JDBCDatabase extends BasicDatabase {
 	    bd.setTypeSpecs(typeSpecs);
 
 	    ArrayList data = new ArrayList();
-	    char[] cbuf = new char[4096];
 	    while (rs.next()) {
 		Object[] row = new Object[columns];
 		for (int i = 0; i < columns; i++)
@@ -1402,6 +1401,34 @@ public class JDBCDatabase extends BasicDatabase {
 		fks = JDBCDatabase.this.getFK(qualifiedName, true);
 		rks = JDBCDatabase.this.getFK(qualifiedName, false);
 		indexes = JDBCDatabase.this.getIndexes(this);
+
+		TreeSet keyColumns = new TreeSet(String.CASE_INSENSITIVE_ORDER);
+		if (pk != null) {
+		    int n = pk.getColumnCount();
+		    for (int i = 0; i < n; i++)
+			keyColumns.add(pk.getColumnName(i));
+		}
+		for (int i = 0; i < fks.length; i++) {
+		    ForeignKey fk = fks[i];
+		    int n = fk.getColumnCount();
+		    for (int j = 0; j < n; j++)
+			keyColumns.add(fk.getThisColumnName(j));
+		}
+		TreeSet indexColumns = new TreeSet(String.CASE_INSENSITIVE_ORDER);
+		for (int i = 0; i < indexes.length; i++) {
+		    Index idx = indexes[i];
+		    int n = idx.getColumnCount();
+		    for (int j = 0; j < n; j++)
+			indexColumns.add(idx.getColumnName(j));
+		}
+
+		for (int i = 0; i < cols; i++) {
+		    String name = columnNames[i];
+		    if (keyColumns.contains(name))
+			typeSpecs[i].part_of_key = true;
+		    if (indexColumns.contains(name))
+			typeSpecs[i].part_of_index = true;
+		}
 
 		super.updateDetails();
 
@@ -1933,7 +1960,6 @@ public class JDBCDatabase extends BasicDatabase {
 
 	public void run() {
 	    try {
-		char[] cbuf = new char[4096];
 		int columns = data.getColumnCount();
 		while (rs.next()) {
 		    synchronized (this) {

@@ -1,10 +1,13 @@
 package jdbcnav;
 
 import java.text.*;
+import java.lang.reflect.*;
 import jdbcnav.model.Index;
 import jdbcnav.model.PrimaryKey;
 import jdbcnav.model.Table;
 import jdbcnav.model.TypeSpec;
+import jdbcnav.util.FileUtils;
+import jdbcnav.util.MiscUtils;
 
 public class ScriptGenerator_Oracle extends ScriptGenerator {
     private static SimpleDateFormat dateFormat =
@@ -212,16 +215,50 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
     protected String toSqlString(TypeSpec spec, Object obj) {
 	if (obj == null)
 	    return "null";
-	else if (obj instanceof java.sql.Time)
+	Class k = spec.jdbcJavaClass;
+	if (java.sql.Time.class.isAssignableFrom(k)) {
 	    return "to_date('" + timeFormat.format((java.util.Date) obj)
 			       + "', 'HH24:MI:SS')";
-	else if (obj instanceof java.sql.Timestamp)
+	} else if (java.sql.Timestamp.class.isAssignableFrom(k)) {
 	    return "to_date('" + dateTimeFormat.format((java.util.Date) obj)
 			       + "', 'YYYY-MM-DD HH24:MI:SS')";
-	else if (obj instanceof java.util.Date)
+	} else if (java.sql.Date.class.isAssignableFrom(k)) {
 	    return "to_date('" + dateFormat.format((java.util.Date) obj)
 			       + "', 'YYYY-MM-DD')";
-	else
+	} else if (java.util.Date.class.isAssignableFrom(k)) {
+	    return "to_date('" + dateTimeFormat.format((java.util.Date) obj)
+			       + "', 'YYYY-MM-DD HH24:MI:SS')";
+	} else if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMP")) {
+	    return "to_timestamp('" + spec.objectToString(obj)
+				    + "', 'YYYY-MM-DD HH24:MI:SS.FF')";
+	} else if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPTZ")) {
+	    return "to_timestamp_tz('" + spec.objectToString(obj)
+				    + "', 'YYYY-MM-DD HH24:MI:SS.FF')";
+	} else if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPLTZ")) {
+	    return "cast(to_timestamp('" + spec.objectToString(obj)
+				    + "', 'YYYY-MM-DD HH24:MI:SS.FF')"
+				    + " as timestamp with local time zone)";
+	} else if (obj instanceof java.sql.Blob || obj instanceof byte[]) {
+	    byte[] ba;
+	    if (obj instanceof java.sql.Blob)
+		ba = MiscUtils.loadBlob((java.sql.Blob) obj);
+	    else
+		ba = (byte[]) obj;
+	    return "hextoraw('" + FileUtils.byteArrayToHex(ba) + "')";
+	} else if (obj.getClass().getName().equals("oracle.sql.BFILE")) {
+	    Class bfileClass = obj.getClass();
+	    String dir = "?";
+	    String name = "?";
+	    try {
+		Method m = bfileClass.getMethod("getDirAlias", null);
+		dir = (String) m.invoke(obj, null);
+	    } catch (Exception e) {}
+	    try {
+		Method m = bfileClass.getMethod("getName", null);
+		name = (String) m.invoke(obj, null);
+	    } catch (Exception e) {}
+	    return "bfilename('" + dir + "', '" + name + "')";
+	} else
 	    return super.toSqlString(spec, obj);
     }
 }
