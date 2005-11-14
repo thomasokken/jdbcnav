@@ -3,13 +3,28 @@
  /////            to announce until they're actually done             /////
  //////////////////////////////////////////////////////////////////////////
 
-Can we add a BFILE editor? Could be tricky because there does not seem to be a
-straightforward way to construct a BFILE object.
+Can we add a BFILE editor? Well, the good news is that regardless of what the
+lying Oracle Javadocs say, there are public constructors for BFILE. The problem
+is that there are no setDirAlias() and setName() methods; all I can find is
+setLocator(byte[]) (and there is a constuctor that takes a byte[] as its second
+argument; I expect that is also a "locator"). From looking at the output of
+getLocator(), this is definitely the ticket; unfortunately, the format of the
+thing is undocumented, and I haven't figured it out yet. Here's the locator
+returned by a BFILE with dirAlias 'BFILEDIR' and name 'Viewer.cc':
+0 35 0 1 8 8 0 0 0 1 0 0 -28 -52 -47 37 0 8 66 70 73 76 69 68 73 82 0 9 86 105 101 119 101 114 46 99 99 
+Seems like the first two bytes represent the length of what follows, and from
+offset 16, we have the dirAlias followed by the name, each preceded by two
+length bytes. It is the bit from offset 2 to offset 16 that has me stumped.
 
-Integrate "inspector" into jdbcnav. The old web interface would be cool, but
-I guess it would be even better if the thing were a part of the JavaScript
-embedding. (Do I even need to do any work for this? Does LiveWire provide
-an easy interface to enumerate an object's fields and methods?)
+Re: BFILE, again: it would be nice if we could use Edit Cell to look at the
+contents of the referenced file. Note that you cannot save data *to* a BFILE,
+so there should be no "Apply to table" option in this case.
+
+Recheck SQL script generation, particularly limitLineLength(). I modified that
+function recently in order to make it smarter about breaking lines on spaces,
+but I think that modification may well be evil. May need to bite the bullet and
+actually figure out *exactly* where it is possible to insert line breaks in
+SQL, i.e. where do tokens begin and end etc.
 
 Make "Reload Tree", "Clear Cache", and "Remove Orphans" scriptable, so that
 you can mix the SQL embedding and the JDBCNav functionality in one script --
