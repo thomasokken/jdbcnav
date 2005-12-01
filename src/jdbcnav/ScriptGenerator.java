@@ -5,12 +5,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
-import jdbcnav.model.Data;
-import jdbcnav.model.ForeignKey;
-import jdbcnav.model.Index;
-import jdbcnav.model.PrimaryKey;
-import jdbcnav.model.Table;
-import jdbcnav.model.TypeSpec;
+import jdbcnav.model.*;
 import jdbcnav.util.MiscUtils;
 import jdbcnav.util.NavigatorException;
 
@@ -19,6 +14,13 @@ public class ScriptGenerator {
 
     protected static final double LOG10_2 = Math.log(2) / Math.log(10);
     private static final int MAXLINELEN = 1000;
+
+    protected static final SimpleDateFormat dateFormat =
+	new SimpleDateFormat("yyyy-MM-dd");
+    protected static final SimpleDateFormat timeFormat =
+	new SimpleDateFormat("HH:mm:ss");
+    protected static final SimpleDateFormat dateTimeFormat =
+	new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private String name;
 
@@ -606,12 +608,53 @@ public class ScriptGenerator {
     protected String toSqlString(TypeSpec spec, Object obj) {
 	if (obj == null)
 	    return "null";
-	else if (spec.type == TypeSpec.FIXED || spec.type == TypeSpec.FLOAT)
-	    return spec.objectToString(obj);
-	else if (obj instanceof java.sql.Clob)
+	if (spec.type == TypeSpec.DATE) {
+	    return "date '" + spec.objectToString(obj) + "'";
+	} else if (spec.type == TypeSpec.TIME) {
+	    return "time(" + spec.size + ") '"
+		+ spec.objectToString(obj) + "'";
+	} else if (spec.type == TypeSpec.TIMESTAMP) {
+	    return "timestamp(" + spec.size + ") '"
+		+ spec.objectToString(obj) + "'";
+	} else if (spec.type == TypeSpec.TIME_TZ) {
+	    // Not using spec.objectToString() here, because it displays the
+	    // time zone name in a human-readable format; for SQL code, we want
+	    // to print the zone offset instead.
+	    // TODO: What kind of time zone specifiers does SQL allow? It would
+	    // be nice to use an ID or name, rather than an offset.
+	    DateTime dt = (DateTime) obj;
+	    return "time(" + spec.size + ") with time zone '"
+		+ dt.toString(spec, DateTime.ZONE_OFFSET) + "'";
+	} else if (spec.type == TypeSpec.TIMESTAMP_TZ) {
+	    // Not using spec.objectToString() here, because it displays the
+	    // time zone name in a human-readable format; for SQL code, we want
+	    // to print the zone offset instead.
+	    // TODO: What kind of time zone specifiers does SQL allow? It would
+	    // be nice to use an ID or name, rather than an offset.
+	    DateTime dt = (DateTime) obj;
+	    return "timestamp(" + spec.size + ") with time zone '"
+		+ dt.toString(spec, DateTime.ZONE_OFFSET) + "'";
+	} else if (obj instanceof java.sql.Time) {
+	    // Just a fallback -- better use jdbcnav.model.DateTime
+	    return spec.native_representation
+		+ " '" + timeFormat.format((java.util.Date) obj) + "'";
+	} else if (obj instanceof java.sql.Timestamp) {
+	    // Just a fallback -- better use jdbcnav.model.DateTime
+	    return spec.native_representation
+		+ " '" + dateTimeFormat.format((java.util.Date) obj) + "'";
+	} else if (obj instanceof java.sql.Date) {
+	    // Just a fallback -- better use jdbcnav.model.DateTime
+	    return spec.native_representation
+		+ " '" + dateFormat.format((java.util.Date) obj) + "'";
+	} else if (obj instanceof java.util.Date) {
+	    // Just a fallback -- better use jdbcnav.model.DateTime
+	    return spec.native_representation
+		+ " '" + dateTimeFormat.format((java.util.Date) obj) + "'";
+	} else if (obj instanceof java.sql.Clob) {
 	    return quote(MiscUtils.loadClob((java.sql.Clob) obj));
-	else
+	} else {
 	    return quote(spec.objectToString(obj));
+	}
     }
 
     protected String quote(String s) {
@@ -761,7 +804,8 @@ public class ScriptGenerator {
 			
 		case 3:
 		    // Inside number, just after 'e'
-		    if (c >= '0' && c <= '9' || c == '.' || c == '-' || c == '+') {
+		    if (c >= '0' && c <= '9' || c == '.'
+						|| c == '-' || c == '+') {
 			// Resume number state
 			state = 2;
 			i--;

@@ -157,13 +157,15 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 	} else if (dbType.equals("time")) {
 	    spec.type = TypeSpec.TIME;
 	    spec.size = size.intValue();
-	} else if (dbType.equals("time with time zone")) {
+	} else if (dbType.equals("time with time zone")
+		|| dbType.equals("timetz")) {
 	    spec.type = TypeSpec.TIME_TZ;
 	    spec.size = size.intValue();
 	} else if (dbType.equals("timestamp")) {
 	    spec.type = TypeSpec.TIMESTAMP;
 	    spec.size = size.intValue();
-	} else if (dbType.equals("timestamp with time zone")) {
+	} else if (dbType.equals("timestamp with time zone")
+		|| dbType.equals("timestamptz")) {
 	    spec.type = TypeSpec.TIMESTAMP_TZ;
 	    spec.size = size.intValue();
 	} else if (dbType.equals("interval")) {

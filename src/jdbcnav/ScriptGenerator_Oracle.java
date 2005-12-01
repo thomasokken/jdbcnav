@@ -1,22 +1,11 @@
 package jdbcnav;
 
-import java.text.*;
 import java.lang.reflect.*;
-import jdbcnav.model.Index;
-import jdbcnav.model.PrimaryKey;
-import jdbcnav.model.Table;
-import jdbcnav.model.TypeSpec;
+import jdbcnav.model.*;
 import jdbcnav.util.FileUtils;
 import jdbcnav.util.MiscUtils;
 
 public class ScriptGenerator_Oracle extends ScriptGenerator {
-    private static SimpleDateFormat dateFormat =
-	new SimpleDateFormat("yyyy-MM-dd");
-    private static SimpleDateFormat timeFormat =
-	new SimpleDateFormat("HH:mm:ss");
-    private static SimpleDateFormat dateTimeFormat =
-	new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
     protected boolean oracle9types = true;
     protected boolean oracle10types = true;
 
@@ -214,30 +203,49 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
     }
     protected String toSqlString(TypeSpec spec, Object obj) {
 	if (obj == null)
-	    return "null";
-	Class k = spec.jdbcJavaClass;
-	if (java.sql.Time.class.isAssignableFrom(k)) {
-	    return "to_date('" + timeFormat.format((java.util.Date) obj)
-			       + "', 'HH24:MI:SS')";
-	} else if (java.sql.Timestamp.class.isAssignableFrom(k)) {
-	    return "to_date('" + dateTimeFormat.format((java.util.Date) obj)
-			       + "', 'YYYY-MM-DD HH24:MI:SS')";
-	} else if (java.sql.Date.class.isAssignableFrom(k)) {
-	    return "to_date('" + dateFormat.format((java.util.Date) obj)
-			       + "', 'YYYY-MM-DD')";
-	} else if (java.util.Date.class.isAssignableFrom(k)) {
-	    return "to_date('" + dateTimeFormat.format((java.util.Date) obj)
-			       + "', 'YYYY-MM-DD HH24:MI:SS')";
-	} else if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMP")) {
-	    return "to_timestamp('" + spec.objectToString(obj)
-				    + "', 'YYYY-MM-DD HH24:MI:SS.FF')";
-	} else if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPTZ")) {
-	    return "to_timestamp_tz('" + spec.objectToString(obj)
-				    + "', 'YYYY-MM-DD HH24:MI:SS.FF')";
-	} else if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPLTZ")) {
+	    return super.toSqlString(spec, obj);
+	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPLTZ")) {
 	    return "cast(to_timestamp('" + spec.objectToString(obj)
 				    + "', 'YYYY-MM-DD HH24:MI:SS.FF')"
 				    + " as timestamp with local time zone)";
+	} else if (spec.type == TypeSpec.DATE) {
+	    return "to_date('" + spec.objectToString(obj)
+				+ "', 'YYYY-MM-DD')";
+	} else if (spec.type == TypeSpec.TIME) {
+	    return "to_timestamp('" + spec.objectToString(obj)
+				+ "', 'HH24:MI:SS.FF')";
+	} else if (spec.type == TypeSpec.TIMESTAMP) {
+	    return "to_timestamp('" + spec.objectToString(obj)
+				+ "', 'YYYY-MM-DD HH24:MI:SS.FF')";
+	} else if (spec.type == TypeSpec.TIME_TZ) {
+	    // Not using spec.objectToString() here, because it displays the
+	    // time zone name in a human-readable format; for Oracle, we want
+	    // to print the zone ID instead.
+	    DateTime dt = (DateTime) obj;
+	    return "to_timestamp_tz('" + dt.toString(spec, DateTime.ZONE_ID)
+				+ "', 'HH24:MI:SS.FF TZR')";
+	} else if (spec.type == TypeSpec.TIMESTAMP_TZ) {
+	    // Not using spec.objectToString() here, because it displays the
+	    // time zone name in a human-readable format; for Oracle, we want
+	    // to print the zone ID instead.
+	    DateTime dt = (DateTime) obj;
+	    return "to_timestamp_tz('" + dt.toString(spec, DateTime.ZONE_ID)
+				    + "', 'YYYY-MM-DD HH24:MI:SS.FF TZR')";
+	} else if (obj instanceof java.sql.Time) {
+	    // TODO: handle fractional seconds
+	    return "to_date('" + timeFormat.format((java.util.Date) obj)
+			       + "', 'HH24:MI:SS')";
+	} else if (obj instanceof java.sql.Timestamp) {
+	    // TODO: handle fractional seconds
+	    return "to_date('" + dateTimeFormat.format((java.util.Date) obj)
+			       + "', 'YYYY-MM-DD HH24:MI:SS')";
+	} else if (obj instanceof java.sql.Date) {
+	    return "to_date('" + dateFormat.format((java.util.Date) obj)
+			       + "', 'YYYY-MM-DD')";
+	} else if (obj instanceof java.util.Date) {
+	    // TODO: handle fractional seconds
+	    return "to_date('" + dateTimeFormat.format((java.util.Date) obj)
+			       + "', 'YYYY-MM-DD HH24:MI:SS')";
 	} else if (obj instanceof java.sql.Blob || obj instanceof byte[]) {
 	    byte[] ba;
 	    if (obj instanceof java.sql.Blob)

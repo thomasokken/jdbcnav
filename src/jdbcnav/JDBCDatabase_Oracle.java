@@ -283,53 +283,6 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	return new OraclePartialTable(q, t, d);
     }
 
-    protected Object db2nav(Object o, TypeSpec spec) {
-	if (o == null)
-	    return o;
-	if (spec.jdbcJavaClass == java.sql.Timestamp.class) {
-	    Timestamp ts = (Timestamp) o;
-	    return new DateTime(ts.getTime(), 0, null);
-	}
-	Class klass = o.getClass();
-	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMP")) {
-	    try {
-		Method m = klass.getMethod("getBytes", null);
-		byte[] b = (byte[]) m.invoke(o, null);
-		m = klass.getMethod("toString",
-			new Class[] { new byte[1].getClass() });
-		String s = (String) m.invoke(null, new Object[] { b });
-		return new DateTime(s);
-	    } catch (Exception e) {
-		return o;
-	    }
-	}
-	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPTZ")) {
-	    try {
-		Method m = klass.getMethod("getBytes", null);
-		byte[] b = (byte[]) m.invoke(o, null);
-		m = klass.getMethod("toString",
-		    new Class[] { Connection.class, new byte[1].getClass() });
-		String s = (String) m.invoke(null, new Object[] { con, b });
-		return new DateTime(s);
-	    } catch (Exception e) {
-		return o;
-	    }
-	}
-	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPLTZ")) {
-	    try {
-		Method m = klass.getMethod("getBytes", null);
-		byte[] b = (byte[]) m.invoke(o, null);
-		m = klass.getMethod("toString",
-		    new Class[] { Connection.class, new byte[1].getClass() });
-		String s = (String) m.invoke(null, new Object[] { con, b });
-		return new DateTime(s);
-	    } catch (Exception e) {
-		return o;
-	    }
-	}
-	return super.db2nav(o, spec);
-    }
-
     protected void setObject(PreparedStatement stmt, int index,
 			     int dbtable_col, Object o,
 			     Table table) throws SQLException {
@@ -596,5 +549,101 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	}
 
 	return super.objectToString(spec, o);
+    }
+
+    protected Object db2nav(Object o, TypeSpec spec) {
+	if (o == null)
+	    return null;
+	if (spec.jdbcJavaClass == Timestamp.class) {
+	    Timestamp ts = (Timestamp) o;
+	    return new DateTime(ts.getTime(), 0, null);
+	}
+	Class klass = o.getClass();
+	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMP")) {
+	    try {
+		Method m = klass.getMethod("getBytes", null);
+		byte[] b = (byte[]) m.invoke(o, null);
+		m = klass.getMethod("toString",
+			new Class[] { new byte[1].getClass() });
+		String s = (String) m.invoke(null, new Object[] { b });
+		return new DateTime(s);
+	    } catch (Exception e) {
+		return o;
+	    }
+	}
+	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPTZ")) {
+	    try {
+		Method m = klass.getMethod("getBytes", null);
+		byte[] b = (byte[]) m.invoke(o, null);
+		m = klass.getMethod("toString",
+		    new Class[] { Connection.class, new byte[1].getClass() });
+		String s = (String) m.invoke(null, new Object[] { con, b });
+		return new DateTime(s);
+	    } catch (Exception e) {
+		return o;
+	    }
+	}
+	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPLTZ")) {
+	    try {
+		Method m = klass.getMethod("getBytes", null);
+		byte[] b = (byte[]) m.invoke(o, null);
+		m = klass.getMethod("toString",
+		    new Class[] { Connection.class, new byte[1].getClass() });
+		String s = (String) m.invoke(null, new Object[] { con, b });
+		return new DateTime(s);
+	    } catch (Exception e) {
+		return o;
+	    }
+	}
+	return super.db2nav(o, spec);
+    }
+
+    protected Object nav2db(Object o, TypeSpec spec) {
+	if (o == null)
+	    return null;
+	if (spec.jdbcJavaClass == Timestamp.class) {
+	    DateTime dt = (DateTime) o;
+	    Timestamp ts = new Timestamp(dt.time);
+	    ts.setNanos(dt.nanos);
+	    return ts;
+	}
+	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMP")) {
+	    DateTime dt = (DateTime) o;
+	    Timestamp ts = new Timestamp(dt.time);
+	    ts.setNanos(dt.nanos);
+	    try {
+		Class c = Class.forName("oracle.sql.TIMESTAMP");
+		Constructor cnstr = c.getConstructor(new Class[] { Timestamp.class });
+		return cnstr.newInstance(new Object[] { ts });
+	    } catch (Exception e) {
+		return o;
+	    }
+	}
+	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPTZ")) {
+	    DateTime dt = (DateTime) o;
+	    Timestamp ts = new Timestamp(dt.time);
+	    ts.setNanos(dt.nanos);
+	    Calendar cal = new GregorianCalendar(dt.tz);
+	    try {
+		Class c = Class.forName("oracle.sql.TIMESTAMPTZ");
+		Constructor cnstr = c.getConstructor(new Class[] { Connection.class, Timestamp.class, Calendar.class });
+		return cnstr.newInstance(new Object[] { con, ts, cal });
+	    } catch (Exception e) {
+		return o;
+	    }
+	}
+	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPLTZ")) {
+	    DateTime dt = (DateTime) o;
+	    Timestamp ts = new Timestamp(dt.time);
+	    ts.setNanos(dt.nanos);
+	    try {
+		Class c = Class.forName("oracle.sql.TIMESTAMPLTZ");
+		Constructor cnstr = c.getConstructor(new Class[] { Connection.class, Timestamp.class });
+		return cnstr.newInstance(new Object[] { con, ts });
+	    } catch (Exception e) {
+		return o;
+	    }
+	}
+	return super.nav2db(o, spec);
     }
 }

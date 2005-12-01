@@ -1,6 +1,7 @@
 package jdbcnav;
 
 import jdbcnav.model.TypeSpec;
+import jdbcnav.util.MiscUtils;
 
 public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
     protected String printType(TypeSpec td) {
@@ -110,5 +111,36 @@ public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
 		return td.native_representation;
 	    }
 	}
+    }
+    protected String toSqlString(TypeSpec spec, Object obj) {
+	if (obj == null)
+	    return super.toSqlString(spec, obj);
+	else if (obj instanceof java.sql.Blob || obj instanceof byte[]) {
+	    byte[] ba;
+	    if (obj instanceof java.sql.Blob)
+		ba = MiscUtils.loadBlob((java.sql.Blob) obj);
+	    else
+		ba = (byte[]) obj;
+	    StringBuffer buf = new StringBuffer();
+	    buf.append('\'');
+	    for (int i = 0; i < ba.length; i++) {
+		int c = ba[i];
+		if (c < 0)
+		    c += 256;
+		if (c == '\'')
+		    buf.append("''");
+		else if (c >= 32 && c <= 126)
+		    buf.append((char) c);
+		else {
+		    buf.append("\\\\");
+		    buf.append('0' + (c >> 6));
+		    buf.append('0' + ((c >> 3) & 7));
+		    buf.append('0' + (c & 7));
+		}
+	    }
+	    buf.append('\'');
+	    return buf.toString();
+	} else
+	    return super.toSqlString(spec, obj);
     }
 }

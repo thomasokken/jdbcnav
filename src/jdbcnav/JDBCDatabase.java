@@ -901,6 +901,18 @@ public class JDBCDatabase extends BasicDatabase {
      * (jdbcnav.model.DateTime, IntervalDS, IntervalYM).
      */
     protected Object db2nav(Object o, TypeSpec spec) {
+	if (o == null)
+	    return null;
+	if (spec.jdbcJavaClass == Timestamp.class) {
+	    Timestamp ts = (Timestamp) o;
+	    int nanos = ts.getNanos();
+	    long time = ts.getTime() - nanos / 1000000;
+	    return new DateTime(time, nanos, null);
+	}
+	if (java.util.Date.class.isAssignableFrom(spec.jdbcJavaClass)) {
+	    java.util.Date d = (java.util.Date) o;
+	    return new DateTime(d.getTime(), 0, null);
+	}
 	return o;
     }
 
@@ -910,6 +922,24 @@ public class JDBCDatabase extends BasicDatabase {
      * IntervalDS, IntervalYM) to the DB-specific versions of those types.
      */
     protected Object nav2db(Object o, TypeSpec spec) {
+	if (o == null)
+	    return null;
+	if (spec.jdbcJavaClass == Timestamp.class) {
+	    DateTime dt = (DateTime) o;
+	    Timestamp ts = new Timestamp(dt.time);
+	    ts.setNanos(dt.nanos);
+	    return ts;
+	}
+	if (spec.jdbcJavaClass == Time.class) {
+	    DateTime dt = (DateTime) o;
+	    Time t = new Time(dt.time + dt.nanos / 1000000);
+	    return t;
+	}
+	if (spec.jdbcJavaClass == java.sql.Date.class) {
+	    DateTime dt = (DateTime) o;
+	    java.sql.Date d = new java.sql.Date(dt.time);
+	    return d;
+	}
 	return o;
     }
 

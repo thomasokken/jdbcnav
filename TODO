@@ -1,20 +1,10 @@
 PostgreSQL INTERVAL type support
 
-Banish database-dependent date/time/timestamp/timestamp_tz/interval types from
-the ResultSetTableModel. There should be jdbcnav-specific types for these, with
-the responsibility of converting them to/from db-specific types moved to
-the JDBCDriver subclasses, and the responsibility of converting them to
-db-specific SQL expressions moved to the ScriptGenerator subclasses.
-For other database-dependent types, the current generic mechanisms should stay
-in place; at least they provide a reasonable fallback, in case we encounter
-unexpected types (as long as they have a reasonable toString() method, plus
-a String-consuming constructor that is the inverse of toString()).
-
-Oracle TIMESTAMPLTZ values act weird. It seems like the timestampValue() method
-and the Timestamp-consuming constructor are not each other's inverses. Whenever
-I call TIMESTAMPLTZ.timestampValue(), I seem to be getting a value that is 8
-hours off. Very strange -- I am in the CET (UTC+0100) time zone, so where does
-an 8 hour discrepancy come from? Does Oracle think I'm in Montana or Japan?
+Banish database-dependent interval types from the ResultSetTableModel. There
+should be jdbcnav-specific types for these, with the responsibility of
+converting them to/from db-specific types moved to the JDBCDriver subclasses,
+and the responsibility of converting them to db-specific SQL expressions moved
+to the ScriptGenerator subclasses.
 
 When opening multiple table editing windows at the same time, and one or more
 of them are for tables containing Oracle LONG or LONG RAW columns, the

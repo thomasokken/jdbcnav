@@ -1,6 +1,8 @@
 package jdbcnav;
 
-import jdbcnav.model.TypeSpec;
+import jdbcnav.model.*;
+import jdbcnav.util.FileUtils;
+import jdbcnav.util.MiscUtils;
 
 public class ScriptGenerator_SmallSQL extends ScriptGenerator {
     protected String printType(TypeSpec td) {
@@ -123,6 +125,51 @@ public class ScriptGenerator_SmallSQL extends ScriptGenerator {
 		// TODO - Warning (internal error); should never get here
 		return td.native_representation;
 	    }
+	}
+    }
+
+    protected String toSqlString(TypeSpec spec, Object obj) {
+	if (obj == null)
+	    return super.toSqlString(spec, obj);
+	if (spec.type == TypeSpec.DATE) {
+	    return "{ d '" + spec.objectToString(obj) + "' }";
+	} else if (spec.type == TypeSpec.TIME) {
+	    return "{ t '" + spec.objectToString(obj) + "' }";
+	} else if (spec.type == TypeSpec.TIMESTAMP) {
+	    return "{ ts '" + spec.objectToString(obj) + "' }";
+	} else if (spec.type == TypeSpec.TIME_TZ) {
+	    // Not using spec.objectToString() here, because it displays the
+	    // time zone name in a human-readable format; for SQL code, we want
+	    // to print the zone offset instead.
+	    // TODO: What kind of time zone specifiers does SQL allow? It would
+	    // be nice to use an ID or name, rather than an offset.
+	    DateTime dt = (DateTime) obj;
+	    return "{ t '" + dt.toString(spec, DateTime.ZONE_NONE) + "' }";
+	} else if (spec.type == TypeSpec.TIMESTAMP_TZ) {
+	    // Not using spec.objectToString() here, because it displays the
+	    // time zone name in a human-readable format; for SQL code, we want
+	    // to print the zone offset instead.
+	    // TODO: What kind of time zone specifiers does SQL allow? It would
+	    // be nice to use an ID or name, rather than an offset.
+	    DateTime dt = (DateTime) obj;
+	    return "{ ts '" + dt.toString(spec, DateTime.ZONE_NONE) + "' }";
+	} else if (obj instanceof java.sql.Time) {
+	    return "{ t '" + timeFormat.format((java.util.Date) obj) + "' }";
+	} else if (obj instanceof java.sql.Timestamp) {
+	    return "{ ts '" + dateTimeFormat.format((java.util.Date) obj) + "' }";
+	} else if (obj instanceof java.sql.Date) {
+	    return "{ d '" + dateFormat.format((java.util.Date) obj) + "' }";
+	} else if (obj instanceof java.util.Date) {
+	    return "{ ts '" + dateTimeFormat.format((java.util.Date) obj) + "' }";
+	} else if (obj instanceof java.sql.Blob || obj instanceof byte[]) {
+	    byte[] ba;
+	    if (obj instanceof java.sql.Blob)
+		ba = MiscUtils.loadBlob((java.sql.Blob) obj);
+	    else
+		ba = (byte[]) obj;
+	    return "0x" + FileUtils.byteArrayToHex(ba);
+	} else {
+	    return super.toSqlString(spec, obj);
 	}
     }
 }

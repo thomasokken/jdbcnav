@@ -8,6 +8,12 @@ import java.util.*;
  * and java.sql.Timestamp, but those don't handle time zones properly.
  */
 public class DateTime {
+    public static final int ZONE_ID = 0;
+    public static final int ZONE_SHORT = 1;
+    public static final int ZONE_LONG = 2;
+    public static final int ZONE_OFFSET = 3;
+    public static final int ZONE_NONE = 4;
+
     private static HashMap zoneMap;
     static {
 	zoneMap = new HashMap();
@@ -24,9 +30,22 @@ public class DateTime {
     }
 
     public DateTime(long time, int nanos, TimeZone tz) {
-	this.time = time;
-	this.nanos = nanos;
+	this.time = (time / 1000) * 1000;
+	int millis = (int) (time - this.time);
+	if (millis < 0) {
+	    millis += 1000;
+	    this.time -= 1000;
+	}
+
+	this.nanos = nanos + millis * 1000000;
+	if (this.nanos > 1000000000) {
+	    this.nanos -= 1000000000;
+	    this.time += 1000;
+	}
+
 	this.tz = tz;
+	java.sql.Timestamp ts = new java.sql.Timestamp(this.time);
+	ts.setNanos(this.nanos);
     }
 
     public DateTime(String s) {
@@ -69,15 +88,20 @@ public class DateTime {
 		tzname.append(p);
 	    }
 	}
+	if (tzname.length() > 0)
+	    tz = (TimeZone) zoneMap.get(tzname.toString());
 	GregorianCalendar cal = new GregorianCalendar(
 				    tz == null ? TimeZone.getDefault() : tz);
 	cal.set(year, month - 1, day, hour, minute, second);
+	cal.set(Calendar.MILLISECOND, 0);
 	time = cal.getTimeInMillis();
-	if (tzname.length() > 0)
-	    tz = (TimeZone) zoneMap.get(tzname.toString());
     }
 
     public String toString(TypeSpec spec) {
+	return toString(spec, ZONE_LONG);
+    }
+
+    public String toString(TypeSpec spec, int zoneStyle) {
 	GregorianCalendar cal = new GregorianCalendar(
 				    tz == null ? TimeZone.getDefault() : tz);
 	cal.setTimeInMillis(time);
@@ -123,17 +147,45 @@ public class DateTime {
 	    if (spec.size > 0) {
 		buf.append('.');
 		String n = Integer.toString(1000000000 + nanos);
-		buf.append(n.substring(1, 1 + spec.size));
+		int size = spec.size > 9 ? 9 : spec.size;
+		buf.append(n.substring(1, 1 + size));
 	    }
 	}
 
-	if ((spec.type == TypeSpec.TIME_TZ
-		|| spec.type == TypeSpec.TIMESTAMP_TZ)
-		&& tz != null) {
+	if (zoneStyle != ZONE_NONE
+		&& (spec.type == TypeSpec.TIME_TZ
+		|| spec.type == TypeSpec.TIMESTAMP_TZ)) {
+	    TimeZone zone = tz;
+	    if (zone == null)
+		zone = TimeZone.getDefault();
 	    if (buf.length() > 0)
 		buf.append(' ');
-	    boolean dst = tz.inDaylightTime(new java.util.Date(time));
-	    buf.append(tz.getDisplayName(dst, TimeZone.LONG));
+	    boolean dst = zone.inDaylightTime(new java.util.Date(time));
+	    switch (zoneStyle) {
+		case ZONE_ID:
+		    buf.append(zone.getID());
+		    break;
+		case ZONE_SHORT:
+		    buf.append(zone.getDisplayName(dst, TimeZone.SHORT));
+		    break;
+		case ZONE_LONG:
+		    buf.append(zone.getDisplayName(dst, TimeZone.LONG));
+		    break;
+		case ZONE_OFFSET:
+		    int offset = zone.getOffset(time) / 60000;
+		    if (offset < 0) {
+			buf.append('-');
+			offset = -offset;
+		    } else
+			buf.append('+');
+		    buf.append(offset / 60);
+		    buf.append(':');
+		    offset %= 60;
+		    if (offset < 10)
+			buf.append('0');
+		    buf.append(offset);
+		    break;
+	    }
 	}
 
 	return buf.toString();
