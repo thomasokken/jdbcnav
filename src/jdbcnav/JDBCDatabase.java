@@ -382,8 +382,11 @@ public class JDBCDatabase extends BasicDatabase {
 		}
 	    }
 	    try {
-		for (int i = 0; i < columns; i++)
-		    setObject(insertStatement, i + 1, i, row[i], table);
+		TypeSpec[] specs = table.getTypeSpecs();
+		for (int i = 0; i < columns; i++) {
+		    Object o = nav2db(row[i], specs[i]);
+		    setObject(insertStatement, i + 1, i, o, table);
+		}
 		insertStatement.executeUpdate();
 	    } catch (SQLException e) {
 		throw new NavigatorException(e);
@@ -411,10 +414,13 @@ public class JDBCDatabase extends BasicDatabase {
 		PreparedStatement s = null;
 		try {
 		    s = con.prepareStatement(buf.toString());
+		    TypeSpec[] specs = table.getTypeSpecs();
 		    int p = 1;
 		    for (int i = 0; i < key.length; i++)
-			if (key[i] != null)
-			    setObject(s, p++, i, key[i], table);
+			if (key[i] != null) {
+			    Object o = nav2db(key[i], specs[keyIndexes[i]]);
+			    setObject(s, p++, i, o, table);
+			}
 		    s.executeUpdate();
 		} catch (SQLException e) {
 		    throw new NavigatorException(e);
@@ -446,8 +452,11 @@ public class JDBCDatabase extends BasicDatabase {
 		    }
 		}
 		try {
-		    for (int i = 0; i < key.length; i++)
-			setObject(deleteStatement, i + 1, i, key[i], table);
+		    TypeSpec[] specs = table.getTypeSpecs();
+		    for (int i = 0; i < key.length; i++) {
+			Object o = nav2db(key[i], specs[keyIndexes[i]]);
+			setObject(deleteStatement, i + 1, i, o, table);
+		    }
 		    deleteStatement.executeUpdate();
 		} catch (SQLException e) {
 		    throw new NavigatorException(e);
@@ -502,15 +511,21 @@ public class JDBCDatabase extends BasicDatabase {
 	    PreparedStatement s = null;
 	    try {
 		s = con.prepareStatement(buf.toString());
+		TypeSpec[] specs = table.getTypeSpecs();
 		int p = 1;
 		for (int i = 0; i < columns; i++)
 		    if (oldRow[i] == null ? newRow[i] != null
-					: !oldRow[i].equals(newRow[i]))
-			setObject(s, p++, i, newRow[i], table);
-		for (int i = 0; i < keyIndexes.length; i++)
-		    if (oldRow[keyIndexes[i]] != null)
-			setObject(s, p++, keyIndexes[i],
-					    oldRow[keyIndexes[i]], table);
+					: !oldRow[i].equals(newRow[i])) {
+			Object o = nav2db(newRow[i], specs[i]);
+			setObject(s, p++, i, o, table);
+		    }
+		for (int i = 0; i < keyIndexes.length; i++) {
+		    int idx = keyIndexes[i];
+		    if (oldRow[idx] != null) {
+			Object o = nav2db(oldRow[idx], specs[idx]);
+			setObject(s, p++, idx, o, table);
+		    }
+		}
 		s.executeUpdate();
 	    } catch (SQLException e) {
 		throw new NavigatorException(e);
@@ -881,11 +896,27 @@ public class JDBCDatabase extends BasicDatabase {
 
 
     /**
+     * This method is provided so that drivers can convert date, time, and
+     * interval types to JDBC Navigator's private versions of those types
+     * (jdbcnav.model.DateTime, IntervalDS, IntervalYM).
+     */
+    protected Object db2nav(Object o, TypeSpec spec) {
+	return o;
+    }
+
+    /**
+     * This method is provided so that drivers can convert JDBC Navigator's
+     * private date, time, and interval types (jdbcnav.model.DateTime,
+     * IntervalDS, IntervalYM) to the DB-specific versions of those types.
+     */
+    protected Object nav2db(Object o, TypeSpec spec) {
+	return o;
+    }
+
+    /**
      * This method is provided so that drivers that need to perform special
      * contortions to set values can override it (e.g., Oracle needs to do
      * streaming to get around size limits on LONG, LONG RAW, and [BC]LOB).
-     * It is only called for non-key objects, the assumption being that columns
-     * that are part of a primary key can always be set the standard way.
      */
     protected void setObject(PreparedStatement stmt, int index, int
 			     dbtable_col, Object o, Table table)
@@ -1044,6 +1075,10 @@ public class JDBCDatabase extends BasicDatabase {
 			break;
 		}
 	    }
+            if (state == 4 && identifier == null)
+                // We ran out of tokens just after having found a table name
+                // in a "select * from <tablename>" query.
+                success = true;
 	    if (success) {
 		// If the table name looks to be unqualified, we try to
 		// qualify it ourselves (in some DB-specific manner)
@@ -1170,7 +1205,7 @@ public class JDBCDatabase extends BasicDatabase {
 	    while (rs.next()) {
 		Object[] row = new Object[columns];
 		for (int i = 0; i < columns; i++)
-		    row[i] = rs.getObject(i + 1);
+		    row[i] = db2nav(rs.getObject(i + 1), bd.getTypeSpec(i));
 		data.add(row);
 	    }
 
@@ -1942,8 +1977,7 @@ public class JDBCDatabase extends BasicDatabase {
 	return true;
     }
 
-    private static class BackgroundLoader implements Runnable,
-					    Data.StateListener {
+    private class BackgroundLoader implements Runnable, Data.StateListener {
 	private BackgroundLoadData data;
 	private Statement stmt;
 	private ResultSet rs;
@@ -1972,7 +2006,7 @@ public class JDBCDatabase extends BasicDatabase {
 		    }
 		    Object[] row = new Object[columns];
 		    for (int i = 0; i < columns; i++)
-			row[i] = rs.getObject(i + 1);
+			row[i] = db2nav(rs.getObject(i+1), data.getTypeSpec(i));
 		    data.addRow(row);
 		}
 	    } catch (SQLException e) {

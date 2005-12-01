@@ -88,20 +88,22 @@ public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
 		return "date";
 	    }
 	    case TypeSpec.TIME: {
-		return "time";
+		return "time(" + td.size + ")";
 	    }
 	    case TypeSpec.TIME_TZ: {
-		return "time with time zone";
+		return "time(" + td.size + ") with time zone";
 	    }
 	    case TypeSpec.TIMESTAMP: {
-		return "timestamp";
+		return "timestamp(" + td.size + ")";
 	    }
 	    case TypeSpec.TIMESTAMP_TZ: {
-		return "timestamp with time zone";
+		return "timestamp(" + td.size + ") with time zone";
 	    }
-	    case TypeSpec.INTERVAL_YM:
+	    case TypeSpec.INTERVAL_YM: {
+		return "interval(0)";
+	    }
 	    case TypeSpec.INTERVAL_DS: {
-		return "interval";
+		return "interval(" + td.scale + ")";
 	    }
 	    default: {
 		// TODO - Warning (internal error); should never get here

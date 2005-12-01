@@ -283,6 +283,53 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	return new OraclePartialTable(q, t, d);
     }
 
+    protected Object db2nav(Object o, TypeSpec spec) {
+	if (o == null)
+	    return o;
+	if (spec.jdbcJavaClass == java.sql.Timestamp.class) {
+	    Timestamp ts = (Timestamp) o;
+	    return new DateTime(ts.getTime(), 0, null);
+	}
+	Class klass = o.getClass();
+	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMP")) {
+	    try {
+		Method m = klass.getMethod("getBytes", null);
+		byte[] b = (byte[]) m.invoke(o, null);
+		m = klass.getMethod("toString",
+			new Class[] { new byte[1].getClass() });
+		String s = (String) m.invoke(null, new Object[] { b });
+		return new DateTime(s);
+	    } catch (Exception e) {
+		return o;
+	    }
+	}
+	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPTZ")) {
+	    try {
+		Method m = klass.getMethod("getBytes", null);
+		byte[] b = (byte[]) m.invoke(o, null);
+		m = klass.getMethod("toString",
+		    new Class[] { Connection.class, new byte[1].getClass() });
+		String s = (String) m.invoke(null, new Object[] { con, b });
+		return new DateTime(s);
+	    } catch (Exception e) {
+		return o;
+	    }
+	}
+	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPLTZ")) {
+	    try {
+		Method m = klass.getMethod("getBytes", null);
+		byte[] b = (byte[]) m.invoke(o, null);
+		m = klass.getMethod("toString",
+		    new Class[] { Connection.class, new byte[1].getClass() });
+		String s = (String) m.invoke(null, new Object[] { con, b });
+		return new DateTime(s);
+	    } catch (Exception e) {
+		return o;
+	    }
+	}
+	return super.db2nav(o, spec);
+    }
+
     protected void setObject(PreparedStatement stmt, int index,
 			     int dbtable_col, Object o,
 			     Table table) throws SQLException {
@@ -449,16 +496,15 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	} else if (dbType.equals("RAW")) {
 	    spec.type = TypeSpec.VARRAW;
 	    spec.size = size.intValue();
-	} else if (dbType.equals("DATE")) {
+	} else if (javaType.equals("java.sql.Timestamp")) {
 	    spec.type = TypeSpec.TIMESTAMP;
 	    spec.size = 0;
-	} else if (dbType.startsWith("TIMESTAMP")) {
-	    if (dbType.endsWith("WITH LOCAL TIME ZONE"))
-		spec.type = TypeSpec.TIMESTAMP;
-	    else if (dbType.endsWith("WITH TIME ZONE"))
-		spec.type = TypeSpec.TIMESTAMP_TZ;
-	    else
-		spec.type = TypeSpec.TIMESTAMP;
+	} else if (javaType.equals("oracle.sql.TIMESTAMP")
+		|| javaType.equals("oracle.sql.TIMESTAMPLTZ")) {
+	    spec.type = TypeSpec.TIMESTAMP;
+	    spec.size = scale.intValue();
+	} else if (javaType.equals("oracle.sql.TIMESTAMPTZ")) {
+	    spec.type = TypeSpec.TIMESTAMP_TZ;
 	    spec.size = scale.intValue();
 	} else if (dbType.startsWith("INTERVAL YEAR")) {
 	    spec.type = TypeSpec.INTERVAL_YM;
@@ -486,11 +532,11 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	else if (dbType.startsWith("INTERVAL DAY"))
 	    spec.native_representation = "INTERVAL DAY(" + size
 		+ ") TO SECOND(" + scale + ")";
-	else if (dbType.startsWith("TIMESTAMP")) {
+	else if (javaType.startsWith("oracle.sql.TIMESTAMP")) {
 	    spec.native_representation = "TIMESTAMP(" + scale + ")";
-	    if (dbType.endsWith("WITH LOCAL TIME ZONE"))
+	    if (javaType.endsWith("LTZ"))
 		spec.native_representation += " WITH LOCAL TIME ZONE";
-	    else if (dbType.endsWith("WITH TIME ZONE"))
+	    else if (javaType.endsWith("TZ"))
 		spec.native_representation += " WITH TIME ZONE";
 	} else {
 	    if (!dbType.equals("NUMBER")
@@ -524,7 +570,6 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	if (o == null)
 	    return super.objectToString(spec, o);
 
-	Class klass = o.getClass();
 	String className = spec.jdbcJavaType;
 
 	if (className.equals("oracle.sql.BFILE")) {
@@ -550,92 +595,6 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	    }
 	}
 
-	if (className.equals("oracle.sql.TIMESTAMP")) {
-	    try {
-		Method m = klass.getMethod("timestampValue", null);
-		Timestamp ts = (Timestamp) m.invoke(o, null);
-		return ts.toString();
-	    } catch (Exception e) {
-		return o.toString();
-	    }
-	}
-
-	if (className.equals("oracle.sql.TIMESTAMPTZ")) {
-	    try {
-		Method m = klass.getMethod("timestampValue",
-			new Class[] { Connection.class });
-		Timestamp ts = (Timestamp) m.invoke(o, new Object[] { con });
-		return ts.toString();
-	    } catch (Exception e) {
-		return o.toString();
-	    }
-	}
-
-	if (className.equals("oracle.sql.TIMESTAMPLTZ")) {
-	    try {
-		Method m = klass.getMethod("timestampValue",
-			new Class[] { Connection.class, Calendar.class });
-		Timestamp ts = (Timestamp) m.invoke(o,
-			new Object[] { con, Calendar.getInstance() });
-		return ts.toString();
-	    } catch (Exception e) {
-		return o.toString();
-	    }
-	}
-
 	return super.objectToString(spec, o);
-    }
-
-    protected Object stringToObject(TypeSpec spec, String s) {
-	if (s == null)
-	    return super.stringToObject(spec, s);
-
-	String className = spec.jdbcJavaType;
-
-	if (className.equals("oracle.sql.TIMESTAMP")) {
-	    if (s.equals(""))
-		return null;
-	    try {
-		Timestamp ts = Timestamp.valueOf(s);
-		Class klass = Class.forName(className);
-		Constructor cnstr = klass.getConstructor(
-			new Class[] { Timestamp.class });
-		return cnstr.newInstance(new Object[] { ts });
-	    } catch (Exception e) {
-		throw new IllegalArgumentException(e);
-	    }
-	}
-
-	if (className.equals("oracle.sql.TIMESTAMPTZ")) {
-	    if (s.equals(""))
-		return null;
-	    try {
-		Timestamp ts = Timestamp.valueOf(s);
-		Class klass = Class.forName(className);
-		Constructor cnstr = klass.getConstructor(
-			new Class[] { Connection.class, Timestamp.class });
-		return cnstr.newInstance(new Object[] { con, ts });
-	    } catch (Exception e) {
-		throw new IllegalArgumentException(e);
-	    }
-	}
-
-	if (className.equals("oracle.sql.TIMESTAMPLTZ")) {
-	    if (s.equals(""))
-		return null;
-	    try {
-		Timestamp ts = Timestamp.valueOf(s);
-		Class klass = Class.forName(className);
-		Constructor cnstr = klass.getConstructor(
-			new Class[] { Connection.class, Calendar.class,
-					Timestamp.class });
-		return cnstr.newInstance(
-			new Object[] { con, Calendar.getInstance(), ts });
-	    } catch (Exception e) {
-		throw new IllegalArgumentException(e);
-	    }
-	}
-
-	return super.stringToObject(spec, s);
     }
 }

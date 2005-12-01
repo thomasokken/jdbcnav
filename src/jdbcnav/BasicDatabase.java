@@ -968,6 +968,19 @@ public abstract class BasicDatabase implements Database {
 	if (o == null)
 	    return null;
 
+	if (spec.type == TypeSpec.DATE
+		|| spec.type == TypeSpec.TIME
+		|| spec.type == TypeSpec.TIME_TZ
+		|| spec.type == TypeSpec.TIMESTAMP
+		|| spec.type == TypeSpec.TIMESTAMP_TZ)
+	    return ((DateTime) o).toString(spec);
+
+	if (spec.type == TypeSpec.INTERVAL_DS)
+	    return ((IntervalDS) o).toString(spec);
+    
+	if (spec.type == TypeSpec.INTERVAL_YM)
+	    return ((IntervalYM) o).toString(spec);
+
 	Class klass = spec.jdbcJavaClass;
 
 	if (java.sql.Date.class.isAssignableFrom(klass)
@@ -1021,15 +1034,27 @@ public abstract class BasicDatabase implements Database {
 	    return null;
 
         try {
+	    if (spec.type == TypeSpec.DATE
+		    || spec.type == TypeSpec.TIME
+		    || spec.type == TypeSpec.TIME_TZ
+		    || spec.type == TypeSpec.TIMESTAMP
+		    || spec.type == TypeSpec.TIMESTAMP_TZ)
+		return new DateTime(s);
+	    if (spec.type == TypeSpec.INTERVAL_DS)
+		return new IntervalDS(s, spec);
+	    if (spec.type == TypeSpec.INTERVAL_YM)
+		return new IntervalYM(s, spec);
+
 	    Class klass = spec.jdbcJavaClass;
 	    if (java.sql.Time.class.isAssignableFrom(klass))
 		return java.sql.Time.valueOf(s);
-	    else if (java.sql.Date.class.isAssignableFrom(klass))
+	    if (java.sql.Date.class.isAssignableFrom(klass))
 		return java.sql.Date.valueOf(s);
-	    else if (java.sql.Timestamp.class.isAssignableFrom(klass))
+	    if (java.sql.Timestamp.class.isAssignableFrom(klass))
 		return java.sql.Timestamp.valueOf(s);
-	    else if (java.util.Date.class.isAssignableFrom(klass))
+	    if (java.util.Date.class.isAssignableFrom(klass))
 		return new java.util.Date(java.sql.Timestamp.valueOf(s).getTime());
+
 	    java.lang.reflect.Constructor cnstr =
 			klass.getConstructor(new Class[] { String.class });
 	    return cnstr.newInstance(new Object[] { s });

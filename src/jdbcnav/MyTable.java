@@ -28,6 +28,7 @@ public class MyTable extends JTable {
 
 	FastTableCellRenderer ljr = new FastTableCellRenderer();
 	FastTableCellRenderer rjr = new FastTableCellRenderer(false);
+	DatabaseObjectRenderer dbor = new DatabaseObjectRenderer();
 	setDefaultRenderer(String.class, ljr);
 	setDefaultRenderer(java.util.Date.class, new UtilDateRenderer());
 	setDefaultRenderer(java.sql.Time.class, ljr);
@@ -38,7 +39,12 @@ public class MyTable extends JTable {
 	setDefaultRenderer(Double.class, rjr);
 	setDefaultRenderer(Boolean.class, ljr);
 	setDefaultRenderer(Object.class, ljr);
-	setDefaultRenderer(TypeSpec.class, new DatabaseObjectRenderer());
+	setDefaultRenderer(jdbcnav.model.DateTime.class, dbor);
+	setDefaultRenderer(jdbcnav.model.IntervalDS.class, dbor);
+	setDefaultRenderer(jdbcnav.model.IntervalYM.class, dbor);
+	setDefaultRenderer(TypeSpec.class, dbor);
+
+	DatabaseObjectEditor dboe = new DatabaseObjectEditor();
 	setDefaultEditor(java.util.Date.class,
 			    new DateEditor(java.util.Date.class));
 	setDefaultEditor(java.sql.Time.class,
@@ -47,7 +53,10 @@ public class MyTable extends JTable {
 			    new DateEditor(java.sql.Date.class));
 	setDefaultEditor(java.sql.Timestamp.class,
 			    new DateEditor(java.sql.Timestamp.class));
-	setDefaultEditor(TypeSpec.class, new DatabaseObjectEditor());
+	setDefaultEditor(jdbcnav.model.DateTime.class, dboe);
+	setDefaultEditor(jdbcnav.model.IntervalDS.class, dboe);
+	setDefaultEditor(jdbcnav.model.IntervalYM.class, dboe);
+	setDefaultEditor(TypeSpec.class, dboe);
 
 	if (dm instanceof SortedTableModel) {
 	    getTableHeader().addMouseListener(

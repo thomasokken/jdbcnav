@@ -1,7 +1,7 @@
 package jdbcnav;
 
 import java.sql.*;
-import jdbcnav.model.TypeSpec;
+import jdbcnav.model.*;
 import jdbcnav.util.NavigatorException;
 
 
@@ -156,12 +156,16 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 	    spec.type = TypeSpec.DATE;
 	} else if (dbType.equals("time")) {
 	    spec.type = TypeSpec.TIME;
+	    spec.size = size.intValue();
 	} else if (dbType.equals("time with time zone")) {
 	    spec.type = TypeSpec.TIME_TZ;
+	    spec.size = size.intValue();
 	} else if (dbType.equals("timestamp")) {
 	    spec.type = TypeSpec.TIMESTAMP;
+	    spec.size = size.intValue();
 	} else if (dbType.equals("timestamp with time zone")) {
 	    spec.type = TypeSpec.TIMESTAMP_TZ;
+	    spec.size = size.intValue();
 	} else if (dbType.equals("interval")) {
 	    // Yuck; PostgreSQL does not distinguish between
 	    // INTERVAL YEAR TO MONTH and INTERVAL DAY TO SECOND; it has one
@@ -169,6 +173,8 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 	    // to INTERVAL DAY TO SECOND, because I don't want to lose the
 	    // resolution.
 	    spec.type = TypeSpec.INTERVAL_DS;
+	    spec.size = 11;
+	    spec.scale = size.intValue();
 	} else if (dbType.equals("bytea")) {
 	    spec.type = TypeSpec.LONGVARRAW;
 	} else if (dbType.equals("char")

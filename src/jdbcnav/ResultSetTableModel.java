@@ -41,6 +41,7 @@ public class ResultSetTableModel extends AbstractTableModel
     private int datatotallength;
     private MyTable table;
     private String[] headers;
+    private TypeSpec[] specs;
     private ArrayList cells = new ArrayList();
     private ArrayList sequence = new ArrayList();
     private int columns;
@@ -64,9 +65,14 @@ public class ResultSetTableModel extends AbstractTableModel
 	columns = data.getColumnCount();
 	colIndex = new int[columns];
 	headers = new String[columns];
+	specs = new TypeSpec[columns];
 	for (int i = 0; i < columns; i++) {
 	    colIndex[i] = i + 1;
 	    headers[i] = data.getColumnName(i);
+	    if (dbTable != null)
+		specs[i] = dbTable.getTypeSpecs()[i];
+	    else
+		specs[i] = data.getTypeSpec(i);
 	}
 	sortPriority = new int[columns];
 	sortAscending = new boolean[columns];
@@ -200,7 +206,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	origdata.setColumnNames(headers);
 	TypeSpec[] typeSpecs = new TypeSpec[columns];
 	for (int i = 0; i < columns; i++)
-	    typeSpecs[i] = data.getTypeSpec(i);
+	    typeSpecs[i] = specs[i];
 	origdata.setTypeSpecs(typeSpecs);
 	origdata.setData(original);
 	return origdata;
@@ -224,11 +230,7 @@ public class ResultSetTableModel extends AbstractTableModel
     }
     
     public synchronized Class getColumnClass(int column) {
-	TypeSpec spec;
-	if (dbTable != null)
-	    spec = dbTable.getTypeSpecs()[column];
-	else
-	    spec = data.getTypeSpec(column);
+	TypeSpec spec = specs[column];
 	if (spec.type == TypeSpec.CLASS)
 	    return spec.jdbcJavaClass;
 	else
@@ -236,10 +238,7 @@ public class ResultSetTableModel extends AbstractTableModel
     }
 
     public synchronized TypeSpec getTypeSpec(int column) {
-	if (dbTable != null)
-	    return dbTable.getTypeSpecs()[column];
-	else
-	    return data.getTypeSpec(column);
+	return specs[column];
     }
 
     public synchronized boolean isCellEditable(int row, int column) {
@@ -666,10 +665,6 @@ public class ResultSetTableModel extends AbstractTableModel
 			    pw.println();
 		    }
 		}
-
-		TypeSpec[] specs = new TypeSpec[columns];
-		for (int i = 0; i < columns; i++)
-		    specs[i] = getTypeSpec(i);
 
 		int rows = getRowCount();
 		Class byteArrayClass = new byte[1].getClass();

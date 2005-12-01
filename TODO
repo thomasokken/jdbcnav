@@ -47,4 +47,6 @@ prevent the AWT event thread from dying.
 Hourglass cursor for slow operations that block the UI. Maybe also use Windows-
 style "hourglass+arrow" cursor for QueryResultFrame while query is in progess.
 
+Progress dialog for Generate Script.
+
 Support for additional database products (Transbase, DB2, MySQL).

@@ -18,6 +18,7 @@ import jdbcnav.util.NavigatorException;
 public class ScriptGenerator {
 
     protected static final double LOG10_2 = Math.log(2) / Math.log(10);
+    private static final int MAXLINELEN = 1000;
 
     private String name;
 
@@ -485,7 +486,7 @@ public class ScriptGenerator {
 	    buf.append(");\n");
 	    if (postmortem)
 		this.buf.append("-- ");
-	    this.buf.append(limitLineLength(buf.toString(), 1000));
+	    this.buf.append(limitLineLength(buf.toString(), MAXLINELEN));
 	}
 
 	public void deleteRow(Table table, Object[] key)
@@ -517,7 +518,7 @@ public class ScriptGenerator {
 	    buf.append(";\n");
 	    if (postmortem)
 		this.buf.append("-- ");
-	    this.buf.append(limitLineLength(buf.toString(), 1000));
+	    this.buf.append(limitLineLength(buf.toString(), MAXLINELEN));
 	}
 
 	public void updateRow(Table table, Object[] oldRow, Object[] newRow)
@@ -559,7 +560,7 @@ public class ScriptGenerator {
 	    buf.append(";\n");
 	    if (postmortem)
 		this.buf.append("-- ");
-	    this.buf.append(limitLineLength(buf.toString(), 1000));
+	    this.buf.append(limitLineLength(buf.toString(), MAXLINELEN));
 	}
 
 	public boolean continueAfterError() {
@@ -653,103 +654,226 @@ public class ScriptGenerator {
 	return buf.toString();
     }
 
+    private static final String wordChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_$";
+
     // Oracle chokes on lines that are more than 2499 characters long.
     // Hence, a function to chop long commands into several lines.
 
     private String limitLineLength(String s, int maxlen) {
 	if (s.length() <= maxlen)
 	    return s;
-	StringTokenizer tok = new StringTokenizer(s, "' ", true);
 	StringBuffer buf = new StringBuffer();
-	// State: 0 = outside literal, 1 = inside literal, 2 = maybe inside
-	// literal (previous state was 1 but we just read a single quote;
-	// if the next char is another single quote, we go back to state 1,
-	// and otherwise we go to state 0).
+	StringBuffer wordbuf = new StringBuffer();
+	int slen = s.length();
+	// State: 0 = base, 1 = maybe number (just read '-'), 2 = inside
+	// number, 3 = inside number just after 'e', 4 = inside word,
+	// 5 = inside double-quoted word, 6 = inside string, 7 = maybe inside
+	// string (previous state was 6 but we just read a single quote; if
+	// the next char is another single quote, we append a single quote and
+	// go back to state 6, and otherwise we go to state 0).
 	int state = 0;
 	int linelen = 0;
-	while (tok.hasMoreTokens()) {
-	    String t = tok.nextToken();
-	    if (t.equals("'")) {
-		switch (state) {
-		    case 0:
+	for (int i = 0; i < s.length(); i++) {
+	    char c = s.charAt(i);
+	    switch (state) {
+		case 0:
+		    // Base state
+		    if (c == '-') {
+			wordbuf.append(c);
+			state = 1;
+		    } else if (c >= '0' && c <= '9') {
+			wordbuf.append(c);
+			state = 2;
+		    } else if (wordChars.indexOf(c) != -1) {
+			wordbuf.append(c);
+			state = 4;
+		    } else if (c == '"') {
+			wordbuf.append(c);
+			state = 5;
+		    } else if (c == '\'') {
 			if (linelen > maxlen - 4) {
-			    buf.append("\n");
+			    // I don't want to start a string literal if
+			    // there's less than 4 positions left on the line;
+			    // the idea is I want to avoid having to break the
+			    // string while it's still empty. Consider the case
+			    // of a string literal that starts with a single
+			    // quote (i.e. '''Hello!''' -- what we would write
+			    // "'Hello'" in Java).
+			    buf.append('\n');
 			    linelen = 0;
 			}
-			buf.append(t);
+			buf.append(c);
 			linelen++;
-			state = 1;
-			break;
-		    case 1:
+			state = 6;
+		    } else if (c != ' ' || linelen > 0) {
+			if (linelen == maxlen) {
+			    buf.append('\n');
+			    linelen = 0;
+			}
+			buf.append(c);
+			linelen++;
+		    }
+		    break;
+
+		case 1:
+		    // Maybe inside number (last char was '-')
+		    if (c >= '0' && c <= '9' || c == '.') {
+			wordbuf.append(c);
 			state = 2;
 			break;
-		    case 2:
-			if (linelen > maxlen - 3) {
-			    buf.append("'\n||'''");
-			    linelen = 5;
-			} else {
-			    buf.append("''");
-			    linelen += 2;
-			}
-			state = 1;
-			break;
-		}
-	    } else {
-		switch (state) {
-		    case 2:
-			buf.append("'");
-			linelen++;
-			state = 0;
-			// Fall through to case 0
-		    case 0:
-			// Note: we're assuming that tokens outside literals
-			// are never too long to fit on a line; this may not
-			// always be true (imagine a horrendously long
-			// expression like chr(10)||chr(10)||...) but I'm not
-			// dealing with it right now because it could be tricky
-			// to handle (where can you insert a line break safely?
-			// you'd have to know where SQL tokens begin and end...
-			// Sigh.) So, that's a TODO.
-			if (linelen + t.length() > maxlen) {
-			    buf.append("\n");
+		    }
+		    // Not a number; write the '-' that made us go into
+		    // state 1 to begin with, and fall through to the base
+		    // state.
+		    if (linelen == maxlen) {
+			buf.append('\n');
+			linelen = 0;
+		    }
+		    buf.append('-');
+		    linelen++;
+		    wordbuf.setLength(0);
+		    // Fall through to base state...
+		    state = 0;
+		    i--;
+		    continue;
+
+		case 2:
+		    // Inside number
+		    if (c >= '0' && c <= '9' || c == '.') {
+			wordbuf.append(c);
+		    } else if (c == 'e' || c == 'E') {
+			wordbuf.append(c);
+			state = 3;
+		    } else {
+			if (linelen + wordbuf.length() > maxlen) {
+			    buf.append('\n');
 			    linelen = 0;
 			}
-			buf.append(t);
-			linelen += t.length();
-			break;
-		    case 1:
-			if (linelen + t.length() < maxlen) {
-			    // Let's get the easy case out of the way
-			    // first
-			    buf.append(t);
-			    linelen += t.length();
-			    break;
+			buf.append(wordbuf);
+			linelen += wordbuf.length();
+			wordbuf.setLength(0);
+			// fall through to base state
+			state = 0;
+			i--;
+			continue;
+		    }
+		    break;
+			
+		case 3:
+		    // Inside number, just after 'e'
+		    if (c >= '0' && c <= '9' || c == '.' || c == '-' || c == '+') {
+			// Resume number state
+			state = 2;
+			i--;
+			continue;
+		    } else {
+			if (linelen + wordbuf.length() > maxlen) {
+			    buf.append('\n');
+			    linelen = 0;
 			}
-			int n = maxlen - linelen - 1;
-			buf.append(t.substring(0, n));
-			buf.append("'\n||'");
-			linelen = 3;
-			int pos = n;
-			int remaining = t.length() - n;
-			while (remaining > 0) {
-			    n = remaining;
-			    if (n > maxlen - 4)
-				n = maxlen - 4;
-			    buf.append(t.substring(pos, pos + n));
-			    linelen += n;
-			    remaining -= n;
-			    pos += n;
-			    if (remaining > 0) {
-				buf.append("'\n||'");
-				linelen = 3;
-			    }
+			buf.append(wordbuf);
+			linelen += wordbuf.length();
+			wordbuf.setLength(0);
+			// fall through to base state
+			state = 0;
+			i--;
+			continue;
+		    }
+
+		case 4:
+		    // Inside word
+		    if (wordChars.indexOf(c) != -1) {
+			wordbuf.append(c);
+		    } else {
+			if (linelen + wordbuf.length() > maxlen) {
+			    buf.append('\n');
+			    linelen = 0;
 			}
-			break;
-		}
+			buf.append(wordbuf);
+			linelen += wordbuf.length();
+			wordbuf.setLength(0);
+			// fall through to base state
+			state = 0;
+			i--;
+			continue;
+		    }
+		    break;
+
+		case 5:
+		    // Inside double-quoted word
+		    wordbuf.append(c);
+		    if (c == '"') {
+			if (linelen + wordbuf.length() > maxlen) {
+			    buf.append('\n');
+			    linelen = 0;
+			}
+			buf.append(wordbuf);
+			linelen += wordbuf.length();
+			wordbuf.setLength(0);
+			state = 0;
+		    }
+		    break;
+
+		case 6:
+		    // Inside string
+		    if (c == '\'') {
+			state = 7;
+		    } else {
+			if (linelen >= maxlen - 1) {
+			    buf.append("'\n||'");
+			    linelen = 3;
+			}
+			buf.append(c);
+			linelen++;
+		    }
+		    break;
+
+		case 7:
+		    // Maybe inside string (prev char was '\'')
+		    if (c == '\'') {
+			if (linelen >= maxlen - 1) {
+			    buf.append("'\n||'");
+			    linelen = 3;
+			}
+			buf.append("''");
+			linelen += 2;
+			state = 6;
+		    } else {
+			buf.append('\'');
+			linelen++;
+			// fall through to state 0
+			state = 0;
+			i--;
+			continue;
+		    }
+		    break;
 	    }
 	}
-	if (state == 2)
-	    buf.append("'");
+
+	// Clean up...
+	switch (state) {
+	    case 0:
+		// Nothing to do
+		break;
+	    case 1:
+	    case 2:
+	    case 3:
+	    case 4:
+	    case 5:
+		// Flush word buffer
+		if (linelen + wordbuf.length() > maxlen)
+		    buf.append('\n');
+		buf.append(wordbuf);
+		break;
+	    case 6:
+		// Nothing to do
+		break;
+	    case 7:
+		// Write that last quote
+		buf.append('\'');
+		break;
+	}
+
 	return buf.toString();
     }
 

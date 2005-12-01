@@ -40,7 +40,7 @@ public abstract class TypeSpec {
     public int type;
     public int size; // chars, digits, or bits; for FLOAT, mantissa size
     public boolean size_in_bits; // for FIXED & FLOAT
-    public int scale; // for FIXED
+    public int scale; // for FIXED and INTERVAL_DS
     public boolean scale_in_bits;
     public int min_exp, max_exp; // for FLOAT
     public boolean exp_of_2;
@@ -58,4 +58,44 @@ public abstract class TypeSpec {
 
     public abstract String objectToString(Object o);
     public abstract Object stringToObject(String s);
+
+    public String toString() {
+	StringBuffer buf = new StringBuffer();
+	buf.append(super.toString());
+	buf.append("[type=");
+	switch (type) {
+	    case CLASS: buf.append("CLASS"); break;
+	    case UNKNOWN: buf.append("UNKNOWN"); break;
+	    case FIXED: buf.append("FIXED"); break;
+	    case FLOAT: buf.append("FLOAT"); break;
+	    case CHAR: buf.append("CHAR"); break;
+	    case VARCHAR: buf.append("VARCHAR"); break;
+	    case LONGVARCHAR: buf.append("LONGVARCHAR"); break;
+	    case NCHAR: buf.append("NCHAR"); break;
+	    case VARNCHAR: buf.append("VARNCHAR"); break;
+	    case LONGVARNCHAR: buf.append("LONGVARNCHAR"); break;
+	    case RAW: buf.append("RAW"); break;
+	    case VARRAW: buf.append("VARRAW"); break;
+	    case LONGVARRAW: buf.append("LONGVARRAW"); break;
+	    case DATE: buf.append("DATE"); break;
+	    case TIME: buf.append("TIME"); break;
+	    case TIME_TZ: buf.append("TIME_TZ"); break;
+	    case TIMESTAMP: buf.append("TIMESTAMP"); break;
+	    case TIMESTAMP_TZ: buf.append("TIMESTAMP_TZ"); break;
+	    case INTERVAL_YM: buf.append("INTERVAL_YM"); break;
+	    case INTERVAL_DS: buf.append("INTERVAL_DS"); break;
+	    default: buf.append("?"); break;
+	}
+	buf.append(", size=" + size + " " + (size_in_bits ? "bits" : "digits")
+		+ ", scale=" + scale + " " + (scale_in_bits ? "bits" : "digits")
+		+ ", min_exp=" + min_exp + ", max_exp=" + max_exp
+		+ ", exp_of_2=" + exp_of_2 + ", part_of_key=" + part_of_key
+		+ ", part_of_index=" + part_of_index + ", jdbcDbType="
+		+ jdbcDbType + ", jdbcSize=" + jdbcSize + ", jdbcScale="
+		+ jdbcScale + ", jdbcSqlType="
+		+ jdbcnav.util.MiscUtils.sqlTypeIntToString(jdbcSqlType)
+		+ ", jdbcJavaType=" + jdbcJavaType + ", jdbcJavaClass="
+		+ jdbcJavaClass.getName() + "]");
+	return buf.toString();
+    }
 }

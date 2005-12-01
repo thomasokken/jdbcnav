@@ -1,3 +1,10 @@
+?? ???? ????: build ????
+*) Fixed the limitLineLength() function in the SQL script generator; it will
+now not only wrap long string literals properly, but also wrap SQL code, by
+inserting line feeds when needed but never inside a word, double-quoted word,
+or number literal.
+*) Fixed behavior of "select * from <table>" in SQL Window.
+
 13 November 2005: build 2254
 *) SQL script generation: the code that checks if a column is part of a key or
 index is back, and this means that when the Script Generator generates CREATE

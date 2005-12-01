@@ -126,22 +126,36 @@ public class JDBCDatabase_SmallSQL extends JDBCDatabase {
 		|| dbType.equals("CLOB")) {
 	    spec.type = TypeSpec.LONGVARCHAR;
 	} else if (dbType.equals("LONGNVARCHAR")
-		|| dbType.equals("NTEXT")) {
+		|| dbType.equals("NTEXT")
+		|| dbType.equals("NCLOB")) {
 	    spec.type = TypeSpec.LONGVARNCHAR;
 	// The following are types not mentioned in the SmallSQL doc,
 	// but which do occur in the sample database...
 	} else if (dbType.equals("BINARY")) {
 	    spec.type = TypeSpec.VARRAW;
 	    spec.size = size.intValue();
-	} else if (dbType.equals("VARBINARY")) {
+	} else if (dbType.equals("VARBINARY")
+		|| dbType.equals("RAW")) {
 	    spec.type = TypeSpec.VARRAW;
 	    spec.size = size.intValue();
-	} else if (dbType.equals("LONGVARBINARY")) {
+	} else if (dbType.equals("LONGVARBINARY")
+		|| dbType.equals("IMAGE")
+		|| dbType.equals("LONG RAW")
+		|| dbType.equals("BLOB")) {
 	    spec.type = TypeSpec.LONGVARRAW;
+	} else if (dbType.equals("DATE")) {
+	    spec.type = TypeSpec.DATE;
+	} else if (dbType.equals("TIME")) {
+	    spec.type = TypeSpec.TIME;
+	    spec.size = 0;
 	} else if (dbType.equals("DATETIME")
-		|| dbType.equals("SMALLDATETIME"))
+		|| dbType.equals("TIMESTAMP")) {
 	    spec.type = TypeSpec.TIMESTAMP;
-	else {
+	    spec.size = 3;
+	} else if (dbType.equals("SMALLDATETIME")) {
+	    spec.type = TypeSpec.TIMESTAMP;
+	    spec.size = 0; // Actually, precision is minutes
+	} else {
 	    // Unexpected/unsupported value. Don't know how to handle it so
 	    // we tag it UNKNOWN, which will cause the script generator to pass
 	    // it on uninterpreted and unchanged.
