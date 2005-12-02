@@ -879,9 +879,13 @@ public abstract class BasicTable implements Table, Scriptable {
 	    if (model == null)
 		return;
 	    if (colIndex >= 0 && colIndex < model.getColumnCount()
-		    && rowIndex >= 0 && rowIndex < model.getRowCount())
+		    && rowIndex >= 0 && rowIndex < model.getRowCount()) {
 		model.stopEditing();
+		TypeSpec spec = model.getTypeSpec(colIndex);
+		if (value instanceof String)
+		    value = spec.stringToObject((String) value);
 		model.setValueAt(value, rowIndex, colIndex);
+	    }
 	}
 	public void put(String name, Scriptable start, Object value) {
 	    if (model == null)
@@ -892,7 +896,11 @@ public abstract class BasicTable implements Table, Scriptable {
 	    for (int col = 0; col < ncols; col++)
 		if (model.getColumnName(col).equalsIgnoreCase(name)) {
 		    model.stopEditing();
+		    TypeSpec spec = model.getTypeSpec(col);
+		    if (value instanceof String)
+			value = spec.stringToObject((String) value);
 		    model.setValueAt(value, rowIndex, col);
+		    break;
 		}
 	}
 	public void setParentScope(Scriptable parentScope) {

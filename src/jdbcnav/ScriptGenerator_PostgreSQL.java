@@ -1,6 +1,7 @@
 package jdbcnav;
 
-import jdbcnav.model.TypeSpec;
+import java.text.DecimalFormat;
+import jdbcnav.model.*;
 import jdbcnav.util.MiscUtils;
 
 public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
@@ -112,10 +113,71 @@ public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
 	    }
 	}
     }
+
+    private static DecimalFormat df = new DecimalFormat("0.#########");
+
     protected String toSqlString(TypeSpec spec, Object obj) {
 	if (obj == null)
 	    return super.toSqlString(spec, obj);
-	else if (obj instanceof java.sql.Blob || obj instanceof byte[]) {
+	if (spec.type == TypeSpec.INTERVAL_YS
+		|| spec.type == TypeSpec.INTERVAL_YM
+		|| spec.type == TypeSpec.INTERVAL_DS) {
+	    Interval inter = (Interval) obj;
+	    int m = inter.months;
+	    int years = m / 12;
+	    int months = m - years * 12;
+	    long n = inter.nanos;
+	    int days = (int) (n / 86400000000000L);
+	    n -= days * 86400000000000L;
+	    int hours = (int) (n / 3600000000000L);
+	    n -= hours * 3600000000000L;
+	    int minutes = (int) (n / 60000000000L);
+	    n -= minutes * 60000000000L;
+	    double seconds = n / 1000000000.0;
+	    StringBuffer buf = new StringBuffer();
+	    buf.append('\'');
+	    if (years != 0) {
+		buf.append(years);
+		buf.append(" year");
+	    }
+	    if (months != 0) {
+		if (buf.length() != 1)
+		    buf.append(' ');
+		buf.append(months);
+		buf.append(" month");
+	    }
+	    if (days != 0) {
+		if (buf.length() != 1)
+		    buf.append(' ');
+		buf.append(days);
+		buf.append(" day");
+	    }
+	    if (hours != 0) {
+		if (buf.length() != 1)
+		    buf.append(' ');
+		buf.append(hours);
+		buf.append(" hour");
+	    }
+	    if (minutes != 0) {
+		if (buf.length() != 1)
+		    buf.append(' ');
+		buf.append(minutes);
+		buf.append(" minute");
+	    }
+	    if (seconds != 0 || buf.length() == 1) {
+		if (buf.length() != 1)
+		    buf.append(' ');
+		String s;
+		synchronized (df) {
+		    s = df.format(seconds);
+		}
+		buf.append(s);
+		buf.append(" second");
+	    }
+	    buf.append('\'');
+	    return buf.toString();
+	}
+	if (obj instanceof java.sql.Blob || obj instanceof byte[]) {
 	    byte[] ba;
 	    if (obj instanceof java.sql.Blob)
 		ba = MiscUtils.loadBlob((java.sql.Blob) obj);

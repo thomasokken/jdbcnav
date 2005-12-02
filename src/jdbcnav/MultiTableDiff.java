@@ -90,7 +90,7 @@ public class MultiTableDiff {
 		Table t2 = null;
 		for (Iterator iter2 = newColl.iterator(); iter2.hasNext();) {
 		    Table t = (Table) iter2.next();
-		    if (t1.getName().equals(t.getName())) {
+		    if (t1.getName().equalsIgnoreCase(t.getName())) {
 			t2 = t;
 			break;
 		    }

@@ -459,10 +459,12 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	} else if (javaType.equals("oracle.sql.TIMESTAMPTZ")) {
 	    spec.type = TypeSpec.TIMESTAMP_TZ;
 	    spec.size = scale.intValue();
-	} else if (dbType.startsWith("INTERVAL YEAR")) {
+	} else if (dbType.equals("INTERVALYM")
+		|| dbType.startsWith("INTERVAL YEAR")) {
 	    spec.type = TypeSpec.INTERVAL_YM;
 	    spec.size = size.intValue();
-	} else if (dbType.startsWith("INTERVAL DAY")) {
+	} else if (dbType.equals("INTERVALDS")
+		|| dbType.startsWith("INTERVAL DAY")) {
 	    spec.type = TypeSpec.INTERVAL_DS;
 	    spec.size = size.intValue();
 	    spec.scale = scale.intValue();
@@ -595,6 +597,27 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 		return o;
 	    }
 	}
+	if (spec.jdbcJavaType.equals("oracle.sql.INTERVALDS")) {
+	    String s = o.toString();
+	    // The fractional-seconds part is a number, not a fraction; this
+	    // means that '0 0:0:0.1' is one nanosecond, NOT one-tenth of a
+	    // second!
+	    // The jdbcnav.model.Interval(String) constructor uses a more
+	    // normal approach... So I have to fix the string by left-padding
+	    // the fraction part before passing it on.
+	    int dot = s.lastIndexOf('.');
+	    if (dot != -1) {
+		int fracdigits = s.length() - dot - 1;
+		if (fracdigits < 9)
+		    s = s.substring(0, dot + 1)
+			+ "000000000".substring(fracdigits)
+			+ s.substring(dot + 1);
+	    }
+	    return new Interval(spec, s);
+	}
+	if (spec.jdbcJavaType.equals("oracle.sql.INTERVALYM")) {
+	    return new Interval(spec, o.toString());
+	}
 	return super.db2nav(o, spec);
     }
 
@@ -640,6 +663,39 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 		Class c = Class.forName("oracle.sql.TIMESTAMPLTZ");
 		Constructor cnstr = c.getConstructor(new Class[] { Connection.class, Timestamp.class });
 		return cnstr.newInstance(new Object[] { con, ts });
+	    } catch (Exception e) {
+		return o;
+	    }
+	}
+	if (spec.jdbcJavaType.equals("oracle.sql.INTERVALDS")) {
+	    Interval inter = (Interval) o;
+	    // The oracle.sql.INTERVALDS class interprets the fractional-seconds
+	    // part like a number, not like a fraction. This can lead to
+	    // unexpected results: "0 0:0:0.1" means one nanosecond, NOT one-
+	    // tenth of a second!
+	    // Because of this, I pad the fraction part to 9 digits before
+	    // passing it to the INTERVALDS constructor.
+	    String s = inter.toString(spec);
+	    int dot = s.lastIndexOf('.');
+	    if (dot != -1) {
+		int fracdigits = s.length() - dot - 1;
+		if (fracdigits < 9)
+		    s += "000000000".substring(fracdigits);
+	    }
+	    try {
+		Class c = Class.forName("oracle.sql.INTERVALDS");
+		Constructor cnstr = c.getConstructor(new Class[] { String.class });
+		return cnstr.newInstance(new Object[] { s });
+	    } catch (Exception e) {
+		return o;
+	    }
+	}
+	if (spec.jdbcJavaType.equals("oracle.sql.INTERVALYM")) {
+	    Interval inter = (Interval) o;
+	    try {
+		Class c = Class.forName("oracle.sql.INTERVALYM");
+		Constructor cnstr = c.getConstructor(new Class[] { String.class });
+		return cnstr.newInstance(new Object[] { inter.toString(spec) });
 	    } catch (Exception e) {
 		return o;
 	    }

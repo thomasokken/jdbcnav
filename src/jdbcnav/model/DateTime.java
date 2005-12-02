@@ -29,6 +29,24 @@ public class DateTime {
 	}
     }
 
+    /**
+     * The 'time' field is the time in milliseconds since 1970-01-01 00:00:00
+     * GMT. The time is a multiple of 1000; milliseconds go in the 'nanos'
+     * field.
+     */
+    public long time;
+
+    /**
+     * Sub-second time information; the actual time, in seconds, is
+     * time / 1000.0 + nanos / 1000000000.0
+     */
+    public int nanos;
+
+    /**
+     * Time Zone; if null, use the default time zone.
+     */
+    public java.util.TimeZone tz;
+
     public DateTime(long time, int nanos, TimeZone tz) {
 	this.time = (time / 1000) * 1000;
 	int millis = (int) (time - this.time);
@@ -97,19 +115,27 @@ public class DateTime {
 	time = cal.getTimeInMillis();
     }
 
+    public String toString() {
+	return toString(TypeSpec.TIMESTAMP_TZ, 9, ZONE_ID);
+    }
+
     public String toString(TypeSpec spec) {
-	return toString(spec, ZONE_LONG);
+	return toString(spec.type, spec.size, ZONE_ID);
     }
 
     public String toString(TypeSpec spec, int zoneStyle) {
+	return toString(spec.type, spec.size, zoneStyle);
+    }
+
+    private String toString(int type, int size, int zoneStyle) {
 	GregorianCalendar cal = new GregorianCalendar(
 				    tz == null ? TimeZone.getDefault() : tz);
 	cal.setTimeInMillis(time);
 	StringBuffer buf = new StringBuffer();
 
-	if (spec.type == TypeSpec.DATE
-		|| spec.type == TypeSpec.TIMESTAMP
-		|| spec.type == TypeSpec.TIMESTAMP_TZ) {
+	if (type == TypeSpec.DATE
+		|| type == TypeSpec.TIMESTAMP
+		|| type == TypeSpec.TIMESTAMP_TZ) {
 	    int year = cal.get(Calendar.YEAR);
 	    int month = cal.get(Calendar.MONTH) + 1;
 	    int day = cal.get(Calendar.DAY_OF_MONTH);
@@ -124,10 +150,10 @@ public class DateTime {
 	    buf.append(Integer.toString(day));
 	}
 
-	if (spec.type == TypeSpec.TIME
-		|| spec.type == TypeSpec.TIME_TZ
-		|| spec.type == TypeSpec.TIMESTAMP
-		|| spec.type == TypeSpec.TIMESTAMP_TZ) {
+	if (type == TypeSpec.TIME
+		|| type == TypeSpec.TIME_TZ
+		|| type == TypeSpec.TIMESTAMP
+		|| type == TypeSpec.TIMESTAMP_TZ) {
 	    int hour = cal.get(Calendar.HOUR_OF_DAY);
 	    int minute = cal.get(Calendar.MINUTE);
 	    int second = cal.get(Calendar.SECOND);
@@ -144,17 +170,17 @@ public class DateTime {
 	    if (second < 10)
 		buf.append('0');
 	    buf.append(Integer.toString(second));
-	    if (spec.size > 0) {
+	    if (size > 0) {
 		buf.append('.');
 		String n = Integer.toString(1000000000 + nanos);
-		int size = spec.size > 9 ? 9 : spec.size;
-		buf.append(n.substring(1, 1 + size));
+		int sz = size > 9 ? 9 : size;
+		buf.append(n.substring(1, 1 + sz));
 	    }
 	}
 
 	if (zoneStyle != ZONE_NONE
-		&& (spec.type == TypeSpec.TIME_TZ
-		|| spec.type == TypeSpec.TIMESTAMP_TZ)) {
+		&& (type == TypeSpec.TIME_TZ
+		|| type == TypeSpec.TIMESTAMP_TZ)) {
 	    TimeZone zone = tz;
 	    if (zone == null)
 		zone = TimeZone.getDefault();
@@ -191,21 +217,11 @@ public class DateTime {
 	return buf.toString();
     }
 
-    /**
-     * The 'time' field is the time in milliseconds since 1970-01-01 00:00:00
-     * GMT. The time is a multiple of 1000; milliseconds go in the 'nanos'
-     * field.
-     */
-    public long time;
-
-    /**
-     * Sub-second time information; the actual time, in seconds, is
-     * time / 1000.0 + nanos / 1000000000.0
-     */
-    public int nanos;
-
-    /**
-     * Time Zone; if null, use the default time zone.
-     */
-    public java.util.TimeZone tz;
+    public boolean equals(Object o) {
+	if (!(o instanceof DateTime))
+	    return false;
+	DateTime that = (DateTime) o;
+	return time == that.time && nanos == that.nanos
+	    && (tz == null ? that.tz == null : tz.equals(that.tz));
+    }
 }

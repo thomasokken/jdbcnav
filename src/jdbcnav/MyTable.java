@@ -40,8 +40,7 @@ public class MyTable extends JTable {
 	setDefaultRenderer(Boolean.class, ljr);
 	setDefaultRenderer(Object.class, ljr);
 	setDefaultRenderer(jdbcnav.model.DateTime.class, dbor);
-	setDefaultRenderer(jdbcnav.model.IntervalDS.class, dbor);
-	setDefaultRenderer(jdbcnav.model.IntervalYM.class, dbor);
+	setDefaultRenderer(jdbcnav.model.Interval.class, dbor);
 	setDefaultRenderer(TypeSpec.class, dbor);
 
 	DatabaseObjectEditor dboe = new DatabaseObjectEditor();
@@ -54,8 +53,7 @@ public class MyTable extends JTable {
 	setDefaultEditor(java.sql.Timestamp.class,
 			    new DateEditor(java.sql.Timestamp.class));
 	setDefaultEditor(jdbcnav.model.DateTime.class, dboe);
-	setDefaultEditor(jdbcnav.model.IntervalDS.class, dboe);
-	setDefaultEditor(jdbcnav.model.IntervalYM.class, dboe);
+	setDefaultEditor(jdbcnav.model.Interval.class, dboe);
 	setDefaultEditor(TypeSpec.class, dboe);
 
 	if (dm instanceof SortedTableModel) {

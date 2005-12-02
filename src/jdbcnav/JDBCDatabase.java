@@ -898,12 +898,12 @@ public class JDBCDatabase extends BasicDatabase {
     /**
      * This method is provided so that drivers can convert date, time, and
      * interval types to JDBC Navigator's private versions of those types
-     * (jdbcnav.model.DateTime, IntervalDS, IntervalYM).
+     * (jdbcnav.model.DateTime, IntervalDS, IntervalYM, IntervalYS).
      */
     protected Object db2nav(Object o, TypeSpec spec) {
 	if (o == null)
 	    return null;
-	if (spec.jdbcJavaClass == Timestamp.class) {
+	if (Timestamp.class.isAssignableFrom(spec.jdbcJavaClass)) {
 	    Timestamp ts = (Timestamp) o;
 	    int nanos = ts.getNanos();
 	    long time = ts.getTime() - nanos / 1000000;
@@ -924,20 +924,25 @@ public class JDBCDatabase extends BasicDatabase {
     protected Object nav2db(Object o, TypeSpec spec) {
 	if (o == null)
 	    return null;
-	if (spec.jdbcJavaClass == Timestamp.class) {
+	if (Timestamp.class.isAssignableFrom(spec.jdbcJavaClass)) {
 	    DateTime dt = (DateTime) o;
 	    Timestamp ts = new Timestamp(dt.time);
 	    ts.setNanos(dt.nanos);
 	    return ts;
 	}
-	if (spec.jdbcJavaClass == Time.class) {
+	if (Time.class.isAssignableFrom(spec.jdbcJavaClass)) {
 	    DateTime dt = (DateTime) o;
 	    Time t = new Time(dt.time + dt.nanos / 1000000);
 	    return t;
 	}
-	if (spec.jdbcJavaClass == java.sql.Date.class) {
+	if (java.sql.Date.class.isAssignableFrom(spec.jdbcJavaClass)) {
 	    DateTime dt = (DateTime) o;
 	    java.sql.Date d = new java.sql.Date(dt.time);
+	    return d;
+	}
+	if (java.util.Date.class.isAssignableFrom(spec.jdbcJavaClass)) {
+	    DateTime dt = (DateTime) o;
+	    java.util.Date d = new java.util.Date(dt.time + dt.nanos / 1000000);
 	    return d;
 	}
 	return o;

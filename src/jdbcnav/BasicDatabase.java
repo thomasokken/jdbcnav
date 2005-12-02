@@ -975,12 +975,11 @@ public abstract class BasicDatabase implements Database {
 		|| spec.type == TypeSpec.TIMESTAMP_TZ)
 	    return ((DateTime) o).toString(spec);
 
-	if (spec.type == TypeSpec.INTERVAL_DS)
-	    return ((IntervalDS) o).toString(spec);
+	if (spec.type == TypeSpec.INTERVAL_DS
+		|| spec.type == TypeSpec.INTERVAL_YM
+		|| spec.type == TypeSpec.INTERVAL_YS)
+	    return ((Interval) o).toString(spec);
     
-	if (spec.type == TypeSpec.INTERVAL_YM)
-	    return ((IntervalYM) o).toString(spec);
-
 	Class klass = spec.jdbcJavaClass;
 
 	if (java.sql.Date.class.isAssignableFrom(klass)
@@ -1034,16 +1033,23 @@ public abstract class BasicDatabase implements Database {
 	    return null;
 
         try {
+	    if (spec.type == TypeSpec.CHAR
+		    || spec.type == TypeSpec.VARCHAR
+		    || spec.type == TypeSpec.LONGVARCHAR
+		    || spec.type == TypeSpec.NCHAR
+		    || spec.type == TypeSpec.VARNCHAR
+		    || spec.type == TypeSpec.LONGVARNCHAR)
+		return s;
 	    if (spec.type == TypeSpec.DATE
 		    || spec.type == TypeSpec.TIME
 		    || spec.type == TypeSpec.TIME_TZ
 		    || spec.type == TypeSpec.TIMESTAMP
 		    || spec.type == TypeSpec.TIMESTAMP_TZ)
 		return new DateTime(s);
-	    if (spec.type == TypeSpec.INTERVAL_DS)
-		return new IntervalDS(s, spec);
-	    if (spec.type == TypeSpec.INTERVAL_YM)
-		return new IntervalYM(s, spec);
+	    if (spec.type == TypeSpec.INTERVAL_DS
+		    || spec.type == TypeSpec.INTERVAL_YM
+		    || spec.type == TypeSpec.INTERVAL_YS)
+		return new Interval(spec, s);
 
 	    Class klass = spec.jdbcJavaClass;
 	    if (java.sql.Time.class.isAssignableFrom(klass))

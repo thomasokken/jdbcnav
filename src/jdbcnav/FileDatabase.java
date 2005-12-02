@@ -303,7 +303,9 @@ public class FileDatabase extends BasicDatabase {
 	    if (spec.type == TypeSpec.FIXED || spec.type == TypeSpec.FLOAT)
 		xml.wholeTag("size_in_bits", spec.size_in_bits ? "true" : "false");
 	}
-	if (spec.type == TypeSpec.FIXED) {
+	if (spec.type == TypeSpec.FIXED
+		|| spec.type == TypeSpec.INTERVAL_DS
+		|| spec.type == TypeSpec.INTERVAL_YS) {
 	    xml.wholeTag("scale", Integer.toString(spec.scale));
 	    xml.wholeTag("scale_in_bits", spec.scale_in_bits ? "true" : "false");
 	}

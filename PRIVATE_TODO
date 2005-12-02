@@ -3,10 +3,3 @@
  /////            to announce until they're actually done             /////
  //////////////////////////////////////////////////////////////////////////
 
-BFILE: it would be nice if we could use Edit Cell to look at the contents of
-the referenced file. Note that you cannot save data *to* a BFILE, so there
-should be no "Apply to table" option in this case.
-
-Make "Reload Tree", "Clear Cache", and "Remove Orphans" scriptable, so that
-you can mix the SQL embedding and the JDBCNav functionality in one script --
-this could be useful for testing etc.

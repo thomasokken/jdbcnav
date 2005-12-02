@@ -36,11 +36,12 @@ public abstract class TypeSpec {
     public static final int TIMESTAMP_TZ = 16;
     public static final int INTERVAL_YM = 17;
     public static final int INTERVAL_DS = 18;
+    public static final int INTERVAL_YS = 19;
 
     public int type;
     public int size; // chars, digits, or bits; for FLOAT, mantissa size
     public boolean size_in_bits; // for FIXED & FLOAT
-    public int scale; // for FIXED and INTERVAL_DS
+    public int scale; // for FIXED, INTERVAL_DS, and INTERVAL_YS
     public boolean scale_in_bits;
     public int min_exp, max_exp; // for FLOAT
     public boolean exp_of_2;

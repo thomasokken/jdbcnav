@@ -1,6 +1,7 @@
 package jdbcnav;
 
 import java.sql.*;
+import java.lang.reflect.*;
 import jdbcnav.model.*;
 import jdbcnav.util.NavigatorException;
 
@@ -156,27 +157,37 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 	    spec.type = TypeSpec.DATE;
 	} else if (dbType.equals("time")) {
 	    spec.type = TypeSpec.TIME;
-	    spec.size = size.intValue();
+	    // TODO -- the current PostgreSQL driver is lying about 'size'
+	    //spec.size = size.intValue();
+	    spec.size = 9;
 	} else if (dbType.equals("time with time zone")
 		|| dbType.equals("timetz")) {
 	    spec.type = TypeSpec.TIME_TZ;
-	    spec.size = size.intValue();
+	    // TODO -- the current PostgreSQL driver is lying about 'size'
+	    //spec.size = size.intValue();
+	    spec.size = 9;
 	} else if (dbType.equals("timestamp")) {
 	    spec.type = TypeSpec.TIMESTAMP;
-	    spec.size = size.intValue();
+	    // TODO -- the current PostgreSQL driver is lying about 'size'
+	    //spec.size = size.intValue();
+	    spec.size = 9;
 	} else if (dbType.equals("timestamp with time zone")
 		|| dbType.equals("timestamptz")) {
 	    spec.type = TypeSpec.TIMESTAMP_TZ;
-	    spec.size = size.intValue();
+	    // TODO -- the current PostgreSQL driver is lying about 'size'
+	    //spec.size = size.intValue();
+	    spec.size = 9;
 	} else if (dbType.equals("interval")) {
 	    // Yuck; PostgreSQL does not distinguish between
 	    // INTERVAL YEAR TO MONTH and INTERVAL DAY TO SECOND; it has one
-	    // type that is basically INTERVAL YEAR TO SECOND. I convert this
-	    // to INTERVAL DAY TO SECOND, because I don't want to lose the
-	    // resolution.
-	    spec.type = TypeSpec.INTERVAL_DS;
-	    spec.size = 11;
-	    spec.scale = size.intValue();
+	    // type that is basically INTERVAL YEAR TO SECOND.
+	    spec.type = TypeSpec.INTERVAL_YS;
+	    // TODO -- the current PostgreSQL driver is lying about
+	    // size & scale.
+	    //spec.size = 11;
+	    //spec.scale = size.intValue();
+	    spec.size = 4;
+	    spec.scale = 9;
 	} else if (dbType.equals("bytea")) {
 	    spec.type = TypeSpec.LONGVARRAW;
 	} else if (dbType.equals("char")
@@ -244,5 +255,72 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 	    spec.native_representation = dbType + "(" + size + ", " + scale + ")";
 
 	return spec;
+    }
+
+    protected Object db2nav(Object o, TypeSpec spec) {
+	if (o == null)
+	    return null;
+	if (spec.type == TypeSpec.INTERVAL_YS) {
+	    int years = 0, months = 0;
+	    long days = 0, hours = 0, minutes = 0;
+	    double seconds = 0;
+	    try {
+		Class c = o.getClass();
+		Method m = c.getMethod("getYears", null);
+		years = ((Integer) m.invoke(o, null)).intValue();
+		m = c.getMethod("getMonths", null);
+		months = ((Integer) m.invoke(o, null)).intValue();
+		m = c.getMethod("getDays", null);
+		days = ((Integer) m.invoke(o, null)).intValue();
+		m = c.getMethod("getHours", null);
+		hours = ((Integer) m.invoke(o, null)).intValue();
+		m = c.getMethod("getMinutes", null);
+		minutes = ((Integer) m.invoke(o, null)).intValue();
+		m = c.getMethod("getSeconds", null);
+		seconds = ((Double) m.invoke(o, null)).doubleValue();
+	    } catch (Exception e) {
+		return o;
+	    }
+	    long nanos = days * 86400000000000L
+		       + hours * 3600000000000L
+		       + minutes * 60000000000L
+		       + (long) (seconds * 1000000000);
+	    months += years * 12;
+	    return new Interval(months, nanos);
+	}
+	return super.db2nav(o, spec);
+    }
+
+    protected Object nav2db(Object o, TypeSpec spec) {
+	if (o == null)
+	    return null;
+	if (spec.type == TypeSpec.INTERVAL_YS) {
+	    Interval inter = (Interval) o;
+	    int m = inter.months;
+	    int years = m / 12;
+	    int months = m - years * 12;
+	    long n = inter.nanos;
+	    int days = (int) (n / 86400000000000L);
+	    n -= days * 86400000000000L;
+	    int hours = (int) (n / 3600000000000L);
+	    n -= hours * 3600000000000L;
+	    int minutes = (int) (n / 60000000000L);
+	    n -= minutes * 60000000000L;
+	    double seconds = n / 1000000000.0;
+	    try {
+		Class c = Class.forName("org.postgresql.util.PGInterval");
+		Constructor cnstr = c.getConstructor(new Class [] {
+				    int.class, int.class, int.class,
+				    int.class, int.class, double.class });
+		return cnstr.newInstance(new Object[] {
+				    new Integer(years), new Integer(months),
+				    new Integer(days), new Integer(hours),
+				    new Integer(minutes), new Double(seconds) });
+	    } catch (Exception e) {
+		e.printStackTrace();
+		return o;
+	    }
+	}
+	return super.nav2db(o, spec);
     }
 }
