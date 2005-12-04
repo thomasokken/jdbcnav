@@ -17,16 +17,4 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
     protected boolean resultSetContainsTableInfo() {
 	return false;
     }
-
-    protected boolean showCatalogs() {
-	return false;
-    }
-
-    protected boolean showSchemas() {
-	return true;
-    }
-
-    protected boolean showTableTypes() {
-	return true;
-    }
 }

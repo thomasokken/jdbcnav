@@ -53,3 +53,5 @@ should be no "Apply to table" option in this case.
 Make "Reload Tree", "Clear Cache", and "Remove Orphans" scriptable, so that
 you can mix the SQL embedding and the JDBCNav functionality in one script --
 this could be useful for testing etc.
+
+Add option to Preferences to suppress the splash screen on startup.

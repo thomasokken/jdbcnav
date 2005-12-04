@@ -245,9 +245,11 @@ public class TableFrame extends QueryResultFrame {
 
     private void details() {
 	Database db = dbTable.getDatabase();
-	if (dbTable.isUpdatableQueryResult())
-	    new TableDetailsFrame(dbTable, db.getBrowser()).showStaggered();
-	else
+	if (dbTable.isUpdatableQueryResult()) {
+	    TableDetailsFrame tdf = new TableDetailsFrame(dbTable, db.getBrowser());
+	    tdf.setParent(browser);
+	    tdf.showStaggered();
+	} else
 	    db.showTableDetailsFrame(dbTable.getQualifiedName());
     }
 

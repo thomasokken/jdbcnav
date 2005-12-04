@@ -1001,11 +1001,17 @@ public class JDBCDatabase extends BasicDatabase {
 	spec.jdbcSize = size;
 	spec.jdbcScale = scale;
 	spec.jdbcSqlType = sqlType;
-	spec.jdbcJavaType = javaType;
-	try {
-	    spec.jdbcJavaClass = Class.forName(javaType);
-	} catch (ClassNotFoundException e) {
+	if (javaType == null) {
+	    // Transbase
+	    spec.jdbcJavaType = "java.lang.Object";
 	    spec.jdbcJavaClass = Object.class;
+	} else {
+	    spec.jdbcJavaType = javaType;
+	    try {
+		spec.jdbcJavaClass = Class.forName(javaType);
+	    } catch (ClassNotFoundException e) {
+		spec.jdbcJavaClass = Object.class;
+	    }
 	}
 	return spec;
     }
@@ -2000,12 +2006,40 @@ public class JDBCDatabase extends BasicDatabase {
 	return name;
     }
 
+    boolean weKnowWhatToShow = false;
+    boolean showCatalogs;
+    boolean showSchemas;
+
+    private void findOutWhatToShow() {
+	if (weKnowWhatToShow)
+	    return;
+	try {
+	    DatabaseMetaData dbmd = con.getMetaData();
+	    try {
+		showCatalogs = dbmd.supportsCatalogsInDataManipulation();
+	    } catch (SQLException e) {
+		showCatalogs = true;
+	    }
+	    try {
+		showSchemas = dbmd.supportsSchemasInDataManipulation();
+	    } catch (SQLException e) {
+		showSchemas = true;
+	    }
+	} catch (SQLException e) {
+	    showCatalogs = true;
+	    showSchemas = true;
+	}
+	weKnowWhatToShow = true;
+    }
+
     protected boolean showCatalogs() {
-	return false;
+	findOutWhatToShow();
+	return showCatalogs;
     }
 
     protected boolean showSchemas() {
-	return true;
+	findOutWhatToShow();
+	return showSchemas;
     }
 
     protected boolean showTableTypes() {

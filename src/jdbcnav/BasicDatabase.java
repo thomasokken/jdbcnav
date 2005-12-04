@@ -671,8 +671,8 @@ public abstract class BasicDatabase implements Database {
      */
     public String makeQualifiedName(String catalog, String schema,
 				       String name) {
-	catalog = quote(catalog);
-	schema = quote(schema);
+	catalog = showCatalogs() ? quote(catalog) : null;
+	schema = showSchemas() ? quote(schema) : null;
 	name = quote(name);
 	if (catalog != null)
 	    if (schema != null)
@@ -712,9 +712,23 @@ public abstract class BasicDatabase implements Database {
 	    }
 	    al.add(buf.toString());
 	}
-	for (int i = al.size(); i < 3; i++)
-	    al.add(0, null);
-	return (String[]) al.toArray(new String[3]);
+
+	int i = al.size();
+	String name, schema, catalog;
+	if (i > 0)
+	    name = (String) al.get(--i);
+	else
+	    name = null;
+	if (showSchemas() && i > 0)
+	    schema = (String) al.get(--i);
+	else
+	    schema = null;
+	if (showCatalogs() && i > 0)
+	    catalog = (String) al.get(--i);
+	else
+	    catalog = null;
+
+	return new String[] { catalog, schema, name };
     }
 
     protected abstract boolean showCatalogs();
@@ -744,6 +758,14 @@ public abstract class BasicDatabase implements Database {
 	String schema = parts[1];
 	String name = parts[2];
 
+	if (showCatalogs() && catalog == null
+		|| showSchemas() && schema == null) {
+	    // We have an unqualified table name, presumably the result of the
+	    // user executing a query in SQLFrame. We do a brute-force scan of
+	    // the tree.
+	    return findTableNodeBruteForce(catalog, schema, name, rootNode);
+	}
+
 	MyNode dn = rootNode;
 	if (showCatalogs()) {
 	    dn = dn.getChildNamed(catalog);
@@ -768,6 +790,29 @@ public abstract class BasicDatabase implements Database {
 	    return dn.getChildNamed(name);
     }
 
+    private MyNode findTableNodeBruteForce(String catalog, String schema,
+					    String name, MyNode n) {
+	for (Iterator iter = n.getChildren(); iter.hasNext();) {
+	    MyNode c = (MyNode) iter.next();
+	    if (c.isLeaf()) {
+		if (!c.name.equalsIgnoreCase(name))
+		    continue;
+		if (catalog == null && schema == null)
+		    return c;
+		String[] parts = parseQualifiedName(c.qualifiedName);
+		if (catalog != null && !catalog.equalsIgnoreCase(parts[0]))
+		    continue;
+		if (schema != null && !schema.equalsIgnoreCase(parts[1]))
+		    continue;
+		return c;
+	    } else {
+		MyNode cc = findTableNodeBruteForce(catalog, schema, name, c);
+		if (cc != null)
+		    return cc;
+	    }
+	}
+	return null;
+    }
 
     private static final Comparator myStringComparator =
 	    new Comparator() {

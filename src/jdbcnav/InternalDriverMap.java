@@ -22,6 +22,8 @@ public class InternalDriverMap {
     public static String getDriverName(String driverClassName, Connection con) {
 	if (driverClassName == null) {
 	    return "Generic";
+	} else if (driverClassName.equals("com.mysql.jdbc.Driver")) {
+	    return "MySQL";
 	} else if (driverClassName.equals("oracle.jdbc.driver.OracleDriver")) {
 	    if (con == null)
 		return "Oracle 10";
@@ -65,6 +67,7 @@ public class InternalDriverMap {
     static {
 	databaseClassMap = new TreeMap();
 	databaseClassMap.put("Generic", "jdbcnav.JDBCDatabase");
+	databaseClassMap.put("MySQL", "jdbcnav.JDBCDatabase_MySQL");
 	databaseClassMap.put("Oracle 8", "jdbcnav.JDBCDatabase_Oracle");
 	databaseClassMap.put("Oracle 9", "jdbcnav.JDBCDatabase_Oracle");
 	databaseClassMap.put("Oracle 10", "jdbcnav.JDBCDatabase_Oracle");

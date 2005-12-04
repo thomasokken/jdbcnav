@@ -23,14 +23,6 @@ public class JDBCDatabase_SmallSQL extends JDBCDatabase {
 	return false;
     }
 
-    protected boolean showSchemas() {
-	return false;
-    }
-
-    protected boolean showTableTypes() {
-	return true;
-    }
-    
     protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,
 				    int sqlType, String javaType) {
 	TypeSpec spec = super.makeTypeSpec(dbType, size, scale, sqlType,

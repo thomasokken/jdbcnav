@@ -344,18 +344,6 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	}
     }
 
-    protected boolean showCatalogs() {
-	return false;
-    }
-
-    protected boolean showSchemas() {
-	return true;
-    }
-
-    protected boolean showTableTypes() {
-	return true;
-    }
-
     protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,
 				    int sqlType, String javaType) {
 	if (javaType == null) {

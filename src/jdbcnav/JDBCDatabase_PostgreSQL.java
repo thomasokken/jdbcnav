@@ -68,18 +68,6 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 	return "public." + name;
     }
 
-    protected boolean showCatalogs() {
-	return false;
-    }
-
-    protected boolean showSchemas() {
-	return true;
-    }
-
-    protected boolean showTableTypes() {
-	return true;
-    }
-
     protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,
 				    int sqlType, String javaType) {
 	TypeSpec spec = super.makeTypeSpec(dbType, size, scale, sqlType,
