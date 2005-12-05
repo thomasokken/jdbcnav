@@ -1000,16 +1000,7 @@ public abstract class BasicDatabase implements Database {
 	}
     }
 
-    protected final class BasicTypeSpec extends TypeSpec {
-	public String objectToString(Object o) {
-	    return BasicDatabase.this.objectToString(this, o);
-	}
-	public Object stringToObject(String s) {
-	    return BasicDatabase.this.stringToObject(this, s);
-	}
-    }
-
-    protected String objectToString(TypeSpec spec, Object o) {
+    public String objectToString(TypeSpec spec, Object o) {
 	if (o == null)
 	    return null;
 
@@ -1073,7 +1064,7 @@ public abstract class BasicDatabase implements Database {
 	return o.toString();
     }
 
-    protected Object stringToObject(TypeSpec spec, String s) {
+    public Object stringToObject(TypeSpec spec, String s) {
 	if (s == null)
 	    return null;
 

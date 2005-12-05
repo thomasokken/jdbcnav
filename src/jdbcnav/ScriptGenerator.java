@@ -13,7 +13,6 @@ import jdbcnav.util.NavigatorException;
 public class ScriptGenerator {
 
     protected static final double LOG10_2 = Math.log(2) / Math.log(10);
-    private static final int MAXLINELEN = 1000;
 
     protected static final SimpleDateFormat dateFormat =
 	new SimpleDateFormat("yyyy-MM-dd");
@@ -154,6 +153,11 @@ public class ScriptGenerator {
 	    }
 	    case TypeSpec.INTERVAL_DS: {
 		return "INTERVAL DAY(" +td.size+ ") TO SECOND(" +td.scale+ ")";
+	    }
+	    case TypeSpec.INTERVAL_YS: {
+		// Not a standard SQL type, so we use DAY TO SECOND instead,
+		// and convert months to days by multiplying with 30.436875
+		return "INTERVAL DAY(9) TO SECOND(" + td.size + ")";
 	    }
 	    default: {
 		// TODO - Warning (internal error); should never get here
@@ -488,7 +492,7 @@ public class ScriptGenerator {
 	    buf.append(");\n");
 	    if (postmortem)
 		this.buf.append("-- ");
-	    this.buf.append(limitLineLength(buf.toString(), MAXLINELEN));
+	    this.buf.append(limitLineLength(buf.toString()));
 	}
 
 	public void deleteRow(Table table, Object[] key)
@@ -520,7 +524,7 @@ public class ScriptGenerator {
 	    buf.append(";\n");
 	    if (postmortem)
 		this.buf.append("-- ");
-	    this.buf.append(limitLineLength(buf.toString(), MAXLINELEN));
+	    this.buf.append(limitLineLength(buf.toString()));
 	}
 
 	public void updateRow(Table table, Object[] oldRow, Object[] newRow)
@@ -562,7 +566,7 @@ public class ScriptGenerator {
 	    buf.append(";\n");
 	    if (postmortem)
 		this.buf.append("-- ");
-	    this.buf.append(limitLineLength(buf.toString(), MAXLINELEN));
+	    this.buf.append(limitLineLength(buf.toString()));
 	}
 
 	public boolean continueAfterError() {
@@ -650,8 +654,17 @@ public class ScriptGenerator {
 	    // Just a fallback -- better use jdbcnav.model.DateTime
 	    return spec.native_representation
 		+ " '" + dateTimeFormat.format((java.util.Date) obj) + "'";
+	} else if (spec.type == TypeSpec.INTERVAL_YS) {
+	    Interval inter = (Interval) obj;
+	    long nanos = inter.months * 2629746000000000L + inter.nanos;
+	    inter = new Interval(0, nanos);
+	    return quote(inter.toString(TypeSpec.INTERVAL_DS, spec.size));
 	} else if (obj instanceof java.sql.Clob) {
 	    return quote(MiscUtils.loadClob((java.sql.Clob) obj));
+	} else if (spec.type == TypeSpec.FIXED
+		|| spec.type == TypeSpec.FLOAT
+		|| obj instanceof Number) {
+	    return spec.objectToString(obj);
 	} else {
 	    return quote(spec.objectToString(obj));
 	}
@@ -702,8 +715,20 @@ public class ScriptGenerator {
     // Oracle chokes on lines that are more than 2499 characters long.
     // Hence, a function to chop long commands into several lines.
 
-    private String limitLineLength(String s, int maxlen) {
-	if (s.length() <= maxlen)
+    protected int maxLineLength() {
+	// If we're ever going to override maxLineLength() in
+	// ScriptGenerator_MySQL or ScriptGenerator_PostgreSQL,
+	// limitLineLength() will need to handle PostgreSQL and MySQL escape
+	// sequences -- these are generated for binary literals (e.g. bytea).
+	// They look like \\nnn (3 octal digits) (PostgreSQL), or \c (where c
+	// is one of 0'"bnrtZ\) (MySQL); there should never be a line break
+	// within such a sequence.
+	return -1;
+    }
+
+    private String limitLineLength(String s) {
+	int maxlen = maxLineLength();
+	if (maxlen == -1 || s.length() <= maxlen)
 	    return s;
 	StringBuffer buf = new StringBuffer();
 	StringBuffer wordbuf = new StringBuffer();

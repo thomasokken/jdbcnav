@@ -66,8 +66,10 @@ public class TableFrame extends QueryResultFrame {
 	PrimaryKey pk = dbTable.getPrimaryKey();
 	if (pk != null) {
 	    int[] pkcol = dbTable.getPKColumns();
-	    for (int i = 0; i < pkcol.length; i++)
-		table.setColumnType(i, table.getColumnType(i) | 1);
+	    for (int i = 0; i < pkcol.length; i++) {
+		int j = pkcol[i];
+		table.setColumnType(j, table.getColumnType(j) | 1);
+	    }
 	}
 
 	PreferencesFrame.addHighlightColorChangeListener(table);

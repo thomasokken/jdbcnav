@@ -130,10 +130,11 @@ public class Interval {
     }
 
     public String toString(TypeSpec spec) {
-	return toString(spec.type, spec.scale);
+	int scale = spec.type == TypeSpec.INTERVAL_DS ? spec.scale : spec.size;
+	return toString(spec.type, scale);
     }
 
-    private String toString(int type, int scale) {
+    public String toString(int type, int scale) {
 	StringBuffer buf = new StringBuffer();
 	long n = nanos;
 	if (n < 0) {

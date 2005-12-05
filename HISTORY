@@ -1,3 +1,16 @@
+5 December 2005: build 2395
+*) Added MySQL support.
+*) Improved the code for handling INTERVAL types in SQL script generation. If
+the target DB does not support INTERVAL, it now generates DECIMAL columns and
+populates them using the interval's number of months or nanoseconds. For
+PostgreSQL's INTERVAL, which has incompatible "YEAR TO SECOND" type semantics,
+the months value is multiplied by 2,629,746,000,000,000 and added to the
+nanoseconds value; the resulting INTERVAL_DS-compatible value is then used
+whenever the target DB is not PostgreSQL.
+*) In tables with a primary key, the wrong columns were highlighted if the
+primary key's columns were not the first columns in the table. Fixed.
+*) SQL script generation would quote number literals. Fixed.
+
 2 December 2005: build 2357
 *) Oracle TIMESTAMP, TIMESTAMP WITH TIME ZONE, and TIMESTAMP WITH LOCAL TIME
 ZONE support completed.

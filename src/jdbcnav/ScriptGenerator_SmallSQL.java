@@ -113,13 +113,15 @@ public class ScriptGenerator_SmallSQL extends ScriptGenerator {
 	    }
 	    case TypeSpec.INTERVAL_YM: {
 		// TODO - Warning
-		// TODO - Take 'size' into account
 		return "NUMERIC(6)";
 	    }
 	    case TypeSpec.INTERVAL_DS: {
 		// TODO - Warning
-		// TODO - Take 'size' and 'scale' into account
-		return "NUMERIC(8)";
+		return "NUMERIC(19)";
+	    }
+	    case TypeSpec.INTERVAL_YS: {
+		// TODO - Warning
+		return "NUMERIC(19)";
 	    }
 	    default: {
 		// TODO - Warning (internal error); should never get here
@@ -161,6 +163,13 @@ public class ScriptGenerator_SmallSQL extends ScriptGenerator {
 	    return "{ d '" + dateFormat.format((java.util.Date) obj) + "' }";
 	} else if (obj instanceof java.util.Date) {
 	    return "{ ts '" + dateTimeFormat.format((java.util.Date) obj) + "' }";
+	} else if (spec.type == TypeSpec.INTERVAL_DS) {
+	    return Long.toString(((Interval) obj).nanos);
+	} else if (spec.type == TypeSpec.INTERVAL_YM) {
+	    return Integer.toString(((Interval) obj).months);
+	} else if (spec.type == TypeSpec.INTERVAL_YS) {
+	    Interval inter = (Interval) obj;
+	    return Long.toString(inter.months * 2629746000000000L + inter.nanos);
 	} else if (obj instanceof java.sql.Blob || obj instanceof byte[]) {
 	    byte[] ba;
 	    if (obj instanceof java.sql.Blob)

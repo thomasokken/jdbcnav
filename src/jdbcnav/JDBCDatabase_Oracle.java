@@ -509,7 +509,7 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	return spec;
     }
 
-    protected String objectToString(TypeSpec spec, Object o) {
+    public String objectToString(TypeSpec spec, Object o) {
 	if (o == null)
 	    return super.objectToString(spec, o);
 
@@ -541,7 +541,7 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	return super.objectToString(spec, o);
     }
 
-    protected Object db2nav(Object o, TypeSpec spec) {
+    protected Object db2nav(TypeSpec spec, Object o) {
 	if (o == null)
 	    return null;
 	if (spec.jdbcJavaClass == Timestamp.class) {
@@ -606,10 +606,10 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	if (spec.jdbcJavaType.equals("oracle.sql.INTERVALYM")) {
 	    return new Interval(spec, o.toString());
 	}
-	return super.db2nav(o, spec);
+	return super.db2nav(spec, o);
     }
 
-    protected Object nav2db(Object o, TypeSpec spec) {
+    protected Object nav2db(TypeSpec spec, Object o) {
 	if (o == null)
 	    return null;
 	if (spec.jdbcJavaClass == Timestamp.class) {
@@ -688,6 +688,6 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 		return o;
 	    }
 	}
-	return super.nav2db(o, spec);
+	return super.nav2db(spec, o);
     }
 }

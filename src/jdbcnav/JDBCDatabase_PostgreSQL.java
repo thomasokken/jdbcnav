@@ -170,12 +170,9 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 	    // INTERVAL YEAR TO MONTH and INTERVAL DAY TO SECOND; it has one
 	    // type that is basically INTERVAL YEAR TO SECOND.
 	    spec.type = TypeSpec.INTERVAL_YS;
-	    // TODO -- the current PostgreSQL driver is lying about
-	    // size & scale.
-	    //spec.size = 11;
-	    //spec.scale = size.intValue();
-	    spec.size = 4;
-	    spec.scale = 9;
+	    // TODO -- the current PostgreSQL driver is lying about 'size'
+	    //spec.size = size.intValue();
+	    spec.size = 9;
 	} else if (dbType.equals("bytea")) {
 	    spec.type = TypeSpec.LONGVARRAW;
 	} else if (dbType.equals("char")
@@ -245,7 +242,7 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 	return spec;
     }
 
-    protected Object db2nav(Object o, TypeSpec spec) {
+    protected Object db2nav(TypeSpec spec, Object o) {
 	if (o == null)
 	    return null;
 	if (spec.type == TypeSpec.INTERVAL_YS) {
@@ -276,10 +273,10 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 	    months += years * 12;
 	    return new Interval(months, nanos);
 	}
-	return super.db2nav(o, spec);
+	return super.db2nav(spec, o);
     }
 
-    protected Object nav2db(Object o, TypeSpec spec) {
+    protected Object nav2db(TypeSpec spec, Object o) {
 	if (o == null)
 	    return null;
 	if (spec.type == TypeSpec.INTERVAL_YS) {
@@ -309,6 +306,6 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 		return o;
 	    }
 	}
-	return super.nav2db(o, spec);
+	return super.nav2db(spec, o);
     }
 }

@@ -1,6 +1,8 @@
 package jdbcnav;
 
 import java.sql.*;
+import java.text.*;
+import java.util.*;
 import jdbcnav.model.TypeSpec;
 
 
@@ -139,12 +141,10 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
 		|| dbType.equalsIgnoreCase("mediumblob")
 		|| dbType.equalsIgnoreCase("longblob")) {
 	    spec.type = TypeSpec.LONGVARRAW;
-	} else if (dbType.equalsIgnoreCase("enum")) {
-	    // Need to use DESCRIBE to find out the details
+	} else if (dbType.toLowerCase().startsWith("enum(")) {
 	    spec.type = TypeSpec.VARCHAR;
 	    spec.size = 255;
-	} else if (dbType.equalsIgnoreCase("set")) {
-	    // Need to use DESCRIBE to find out the details
+	} else if (dbType.toLowerCase().startsWith("set(")) {
 	    spec.type = TypeSpec.VARCHAR;
 	    spec.size = 255;
 	} else {
@@ -194,5 +194,68 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
 	    spec.native_representation = dbType + "(" + size + ", " + scale + ")";
 
 	return spec;
+    }
+
+    protected void fixDbTypes(String qualifiedName, ArrayList dbTypes) {
+	Statement stmt = null;
+	ResultSet rs = null;
+	try {
+	    stmt = con.createStatement();
+	    rs = stmt.executeQuery("describe " + qualifiedName);
+	    int col = 0;
+	    while (rs.next()) {
+		if (col >= dbTypes.size())
+		    break;
+		String type = rs.getString("Type");
+		String tl = type.toLowerCase();
+		if (tl.endsWith(" binary")) {
+		    if (tl.startsWith("character(")
+			    || tl.startsWith("char("))
+			dbTypes.set(col, "binary");
+		    else if (tl.startsWith("character varying(")
+			    || tl.startsWith("varchar("))
+			dbTypes.set(col, "varbinary");
+		} else if (tl.startsWith("enum(")
+			    || tl.startsWith("set("))
+		    dbTypes.set(col, type);
+		col++;
+	    }
+	} catch (SQLException e) {}
+    }
+
+    private static SimpleDateFormat y2format = new SimpleDateFormat("yy");
+    private static SimpleDateFormat y4format = new SimpleDateFormat("yyyy");
+
+    protected Object db2nav(TypeSpec spec, Object o) {
+	if (o == null)
+	    return null;
+	if (spec.jdbcDbType.equalsIgnoreCase("year")) {
+	    String s;
+	    if (spec.size >= 4)
+		s = y4format.format((java.util.Date) o);
+	    else
+		s = y2format.format((java.util.Date) o);
+	    return new Integer(s);
+	}
+	return super.db2nav(spec, o);
+    }
+
+    protected Object nav2db(TypeSpec spec, Object o) {
+	if (o == null)
+	    return null;
+	if (spec.jdbcDbType.equalsIgnoreCase("year")) {
+	    java.util.Date d;
+	    try {
+		String s = o.toString();
+		if (spec.size >= 4)
+		    d = y4format.parse(s);
+		else
+		    d = y2format.parse(s);
+		return new java.sql.Date(d.getTime());
+	    } catch (Exception e) {
+		return o;
+	    }
+	}
+	return super.nav2db(spec, o);
     }
 }

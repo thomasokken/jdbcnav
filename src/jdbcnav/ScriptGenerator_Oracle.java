@@ -182,8 +182,6 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 		if (oracle10types)
 		    return "INTERVAL YEAR(" + td.size + ") TO MONTH";
 		else
-		    // TODO - Warning
-		    // TODO - Take 'size' into account
 		    return "NUMBER(6)";
 	    }
 	    case TypeSpec.INTERVAL_DS: {
@@ -191,9 +189,13 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 		    return "INTERVAL DAY(" + td.size
 				+ ") TO SECOND(" + td.scale + ")";
 		else
-		    // TODO - Warning
-		    // TODO - Take 'size' and 'scale' into account
-		    return "NUMBER(8)";
+		    return "NUMBER(19)";
+	    }
+	    case TypeSpec.INTERVAL_YS: {
+		if (oracle10types)
+		    return "INTERVAL DAY(9) TO SECOND(" + td.size + ")";
+		else
+		    return "NUMBER(19)";
 	    }
 	    default: {
 		// TODO - Warning (internal error); should never get here
@@ -253,6 +255,20 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	    else
 		ba = (byte[]) obj;
 	    return "hextoraw('" + FileUtils.byteArrayToHex(ba) + "')";
+	} else if (spec.type == TypeSpec.INTERVAL_DS
+		|| spec.type == TypeSpec.INTERVAL_YM
+		|| spec.type == TypeSpec.INTERVAL_YS) {
+	    if (oracle10types)
+		return super.toSqlString(spec, obj);
+	    else {
+		Interval inter = (Interval) obj;
+		if (spec.type == TypeSpec.INTERVAL_DS)
+		    return Long.toString(inter.nanos);
+		else if (spec.type == TypeSpec.INTERVAL_YM)
+		    return Integer.toString(inter.months);
+		else // INTERVAL_YS
+		    return Long.toString(inter.months * 2629746000000000L + inter.nanos);
+	    }
 	} else if (obj.getClass().getName().equals("oracle.sql.BFILE")) {
 	    Class bfileClass = obj.getClass();
 	    String dir = "?";
@@ -268,5 +284,8 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	    return "bfilename('" + dir + "', '" + name + "')";
 	} else
 	    return super.toSqlString(spec, obj);
+    }
+    protected int maxLineLength() {
+	return 1000;
     }
 }

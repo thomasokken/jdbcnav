@@ -9,7 +9,7 @@ package jdbcnav.model;
  * accurate description of column types; it then calls
  * ScriptGenerator.printType() to find the appropriate DB-specific type.
  */
-public abstract class TypeSpec {
+public class TypeSpec {
     // For the FIXED_x_y and FLOAT_x_y types, 'x' is the representation of the
     // number or mantissa (and 'size' is the number of bits or digits); 'y' is
     // the number that is raised to the scale (or exponent) to scale the
@@ -38,10 +38,12 @@ public abstract class TypeSpec {
     public static final int INTERVAL_DS = 18;
     public static final int INTERVAL_YS = 19;
 
+    public Database db;
+
     public int type;
     public int size; // chars, digits, or bits; for FLOAT, mantissa size
     public boolean size_in_bits; // for FIXED & FLOAT
-    public int scale; // for FIXED, INTERVAL_DS, and INTERVAL_YS
+    public int scale; // for FIXED, INTERVAL_DS
     public boolean scale_in_bits;
     public int min_exp, max_exp; // for FLOAT
     public boolean exp_of_2;
@@ -57,8 +59,17 @@ public abstract class TypeSpec {
     public String jdbcJavaType;
     public Class jdbcJavaClass;
 
-    public abstract String objectToString(Object o);
-    public abstract Object stringToObject(String s);
+    public TypeSpec(Database db) {
+	this.db = db;
+    }
+
+    public String objectToString(Object o) {
+	return db.objectToString(this, o);
+    }
+
+    public Object stringToObject(String s) {
+	return db.stringToObject(this, s);
+    }
 
     public String toString() {
 	StringBuffer buf = new StringBuffer();

@@ -65,7 +65,7 @@ public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
 	c.setLayout(new GridLayout(1, 1));
 
 	if (data == null)
-	    data = new byte[0];
+	    data = new byte[1];
 	datamgr = new BinaryDataManager(data, undoManager);
 
 	JTextArea addrA = datamgr.makeTextArea(

@@ -1,16 +1,3 @@
-ScriptGenerator.limitLineLength() needs to handle PostgreSQL escape sequences
--- these are generated for binary literals (e.g. bytea). They look like \\nnn;
-there should never be a line break within those 5 chars. Also: when I'm
-generating SQL for PostgreSQL, I guess this means I need to quote backslash
-characters.
-
-INTERVAL support: implement kludges to map PostgreSQL's INTERVAL YEAR TO SECOND
-semantics onto SQL-style INTERVAL DAY TO SECOND, so Oracle SQL scripts can be
-generated from PostgreSQL tables; also, a mapping from INTERVAL to NUMERIC
-would be nice (map INTERVAL YEAR TO MONTH to a number of months; map INTERVAL
-DAY TO SECOND to a number of nanoseconds; PostgreSQL's INTERVAL causes problems
-here, too -- kludge it by using the approximation 1 month = 30.436875 days).
-
 When opening multiple table editing windows at the same time, and one or more
 of them are for tables containing Oracle LONG or LONG RAW columns, the
 exception "Stream has already been closed" may occur, or the application may
@@ -44,7 +31,7 @@ style "hourglass+arrow" cursor for QueryResultFrame while query is in progess.
 
 Progress dialog for Generate Script.
 
-Support for additional database products (Transbase, DB2, MySQL).
+Support for additional database products (Transbase, DB2).
 
 BFILE: it would be nice if we could use Edit Cell to look at the contents of
 the referenced file. Note that you cannot save data *to* a BFILE, so there

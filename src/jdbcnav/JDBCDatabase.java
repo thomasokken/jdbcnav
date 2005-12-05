@@ -384,7 +384,7 @@ public class JDBCDatabase extends BasicDatabase {
 	    try {
 		TypeSpec[] specs = table.getTypeSpecs();
 		for (int i = 0; i < columns; i++) {
-		    Object o = nav2db(row[i], specs[i]);
+		    Object o = nav2db(specs[i], row[i]);
 		    setObject(insertStatement, i + 1, i, o, table);
 		}
 		insertStatement.executeUpdate();
@@ -418,7 +418,7 @@ public class JDBCDatabase extends BasicDatabase {
 		    int p = 1;
 		    for (int i = 0; i < key.length; i++)
 			if (key[i] != null) {
-			    Object o = nav2db(key[i], specs[keyIndexes[i]]);
+			    Object o = nav2db(specs[keyIndexes[i]], key[i]);
 			    setObject(s, p++, i, o, table);
 			}
 		    s.executeUpdate();
@@ -454,7 +454,7 @@ public class JDBCDatabase extends BasicDatabase {
 		try {
 		    TypeSpec[] specs = table.getTypeSpecs();
 		    for (int i = 0; i < key.length; i++) {
-			Object o = nav2db(key[i], specs[keyIndexes[i]]);
+			Object o = nav2db(specs[keyIndexes[i]], key[i]);
 			setObject(deleteStatement, i + 1, i, o, table);
 		    }
 		    deleteStatement.executeUpdate();
@@ -516,13 +516,13 @@ public class JDBCDatabase extends BasicDatabase {
 		for (int i = 0; i < columns; i++)
 		    if (oldRow[i] == null ? newRow[i] != null
 					: !oldRow[i].equals(newRow[i])) {
-			Object o = nav2db(newRow[i], specs[i]);
+			Object o = nav2db(specs[i], newRow[i]);
 			setObject(s, p++, i, o, table);
 		    }
 		for (int i = 0; i < keyIndexes.length; i++) {
 		    int idx = keyIndexes[i];
 		    if (oldRow[idx] != null) {
-			Object o = nav2db(oldRow[idx], specs[idx]);
+			Object o = nav2db(specs[idx], oldRow[idx]);
 			setObject(s, p++, idx, o, table);
 		    }
 		}
@@ -900,7 +900,7 @@ public class JDBCDatabase extends BasicDatabase {
      * interval types to JDBC Navigator's private versions of those types
      * (jdbcnav.model.DateTime, IntervalDS, IntervalYM, IntervalYS).
      */
-    protected Object db2nav(Object o, TypeSpec spec) {
+    protected Object db2nav(TypeSpec spec, Object o) {
 	if (o == null)
 	    return null;
 	if (Timestamp.class.isAssignableFrom(spec.jdbcJavaClass)) {
@@ -921,7 +921,7 @@ public class JDBCDatabase extends BasicDatabase {
      * private date, time, and interval types (jdbcnav.model.DateTime,
      * IntervalDS, IntervalYM) to the DB-specific versions of those types.
      */
-    protected Object nav2db(Object o, TypeSpec spec) {
+    protected Object nav2db(TypeSpec spec, Object o) {
 	if (o == null)
 	    return null;
 	if (Timestamp.class.isAssignableFrom(spec.jdbcJavaClass)) {
@@ -989,7 +989,7 @@ public class JDBCDatabase extends BasicDatabase {
      */
     protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,
 				    int sqlType, String javaType) {
-	TypeSpec spec = new BasicTypeSpec();
+	TypeSpec spec = new TypeSpec(this);
 	spec.type = TypeSpec.UNKNOWN;
 	if (size == null)
 	    spec.native_representation = name;
@@ -1014,6 +1014,16 @@ public class JDBCDatabase extends BasicDatabase {
 	    }
 	}
 	return spec;
+    }
+
+    /**
+     * This method is defined so that subclasses can do db-specific magic to
+     * populate the database-specific type name. At this moment, only MySQL
+     * needs this (to detect distinguish BINARY and VARBINARY from plain
+     * CHAR and VARCHAR, and to get the details for ENUM and SET types.
+     */
+    protected void fixDbTypes(String qualifiedName, ArrayList dbTypes) {
+	// No-op
     }
 
     public Object runQuery(String query, boolean asynchronous,
@@ -1246,7 +1256,7 @@ public class JDBCDatabase extends BasicDatabase {
 	    while (rs.next()) {
 		Object[] row = new Object[columns];
 		for (int i = 0; i < columns; i++)
-		    row[i] = db2nav(rs.getObject(i + 1), bd.getTypeSpec(i));
+		    row[i] = db2nav(bd.getTypeSpec(i), rs.getObject(i + 1));
 		data.add(row);
 	    }
 
@@ -1463,6 +1473,7 @@ public class JDBCDatabase extends BasicDatabase {
 
 		typeSpecs = new TypeSpec[cols];
 		String[] javaTypes = JDBCDatabase.this.getJavaTypes(qualifiedName);
+		fixDbTypes(qualifiedName, dbTypesList);
 		for (int i = 0; i < cols; i++) {
 		    String dbType = (String) dbTypesList.get(i);
 		    Integer size = (Integer) columnSizesList.get(i);
@@ -2075,7 +2086,7 @@ public class JDBCDatabase extends BasicDatabase {
 		    }
 		    Object[] row = new Object[columns];
 		    for (int i = 0; i < columns; i++)
-			row[i] = db2nav(rs.getObject(i+1), data.getTypeSpec(i));
+			row[i] = db2nav(data.getTypeSpec(i), rs.getObject(i+1));
 		    data.addRow(row);
 		}
 	    } catch (SQLException e) {

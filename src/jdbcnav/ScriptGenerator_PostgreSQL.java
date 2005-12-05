@@ -107,6 +107,9 @@ public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
 	    case TypeSpec.INTERVAL_DS: {
 		return "interval(" + td.scale + ")";
 	    }
+	    case TypeSpec.INTERVAL_YS: {
+		return "interval(" + td.size + ")";
+	    }
 	    default: {
 		// TODO - Warning (internal error); should never get here
 		return td.native_representation;
@@ -189,9 +192,7 @@ public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
 		int c = ba[i];
 		if (c < 0)
 		    c += 256;
-		if (c == '\'')
-		    buf.append("''");
-		else if (c >= 32 && c <= 126)
+		else if (c >= 32 && c <= 126 && c != '\'' && c != '\\')
 		    buf.append((char) c);
 		else {
 		    buf.append("\\\\");

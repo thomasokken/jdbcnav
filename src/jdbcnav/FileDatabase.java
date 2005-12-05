@@ -296,6 +296,7 @@ public class FileDatabase extends BasicDatabase {
 	xml.openTag("type_spec");
 	xml.wholeTag("type", Integer.toString(spec.type));
 	if (spec.type != TypeSpec.UNKNOWN
+		&& spec.type != TypeSpec.DATE
 		&& spec.type != TypeSpec.LONGVARCHAR
 		&& spec.type != TypeSpec.LONGVARNCHAR
 		&& spec.type != TypeSpec.LONGVARRAW) {
@@ -304,10 +305,10 @@ public class FileDatabase extends BasicDatabase {
 		xml.wholeTag("size_in_bits", spec.size_in_bits ? "true" : "false");
 	}
 	if (spec.type == TypeSpec.FIXED
-		|| spec.type == TypeSpec.INTERVAL_DS
-		|| spec.type == TypeSpec.INTERVAL_YS) {
+		|| spec.type == TypeSpec.INTERVAL_DS) {
 	    xml.wholeTag("scale", Integer.toString(spec.scale));
-	    xml.wholeTag("scale_in_bits", spec.scale_in_bits ? "true" : "false");
+	    if (spec.type == TypeSpec.FIXED)
+		xml.wholeTag("scale_in_bits", spec.scale_in_bits ? "true" : "false");
 	}
 	if (spec.type == TypeSpec.FLOAT) {
 	    xml.wholeTag("min_exp", Integer.toString(spec.min_exp));
@@ -486,7 +487,7 @@ public class FileDatabase extends BasicDatabase {
 		indexes.clear();
 		inTypeSpec = false;
 	    } else if (name.equals("type_spec")) {
-		spec = new BasicTypeSpec();
+		spec = new TypeSpec(FileDatabase.this);
 		inTypeSpec = true;
 	    } else if (name.equals("primary_key")) {
 		pk = new BasicPrimaryKey();
@@ -781,7 +782,7 @@ public class FileDatabase extends BasicDatabase {
      * database-specific datatypes that somehow survive the transition
      * into a FileDatabase, but have no useful toString() method.
      */
-    protected String objectToString(TypeSpec spec, Object o) {
+    public String objectToString(TypeSpec spec, Object o) {
 	if (o == null)
 	    return super.objectToString(spec, o);
 	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMP")) {
