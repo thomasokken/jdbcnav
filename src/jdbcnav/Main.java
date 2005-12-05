@@ -26,7 +26,7 @@ public class Main extends JFrame {
     private static BufferedImage splash;
     private static String version;
     private static String copyright =
-		"(C) 2001-2005 Thomas Okken -- thomas_okken@hotmail.com";
+		"(C) 2001-2005 Thomas Okken -- thomas_okken@yahoo.com";
     private static String website =
 		"http://home.planet.nl/~demun000/thomas_projects/jdbcnav/";
 
