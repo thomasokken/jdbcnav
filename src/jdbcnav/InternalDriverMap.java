@@ -84,14 +84,12 @@ public class InternalDriverMap {
     static {
 	scriptGeneratorClassMap = new TreeMap();
 	scriptGeneratorClassMap.put("Generic", "jdbcnav.ScriptGenerator");
+	scriptGeneratorClassMap.put("MySQL", "jdbcnav.ScriptGenerator_MySQL");
 	scriptGeneratorClassMap.put("Oracle 8", "jdbcnav.ScriptGenerator_Oracle8");
 	scriptGeneratorClassMap.put("Oracle 9", "jdbcnav.ScriptGenerator_Oracle9");
 	scriptGeneratorClassMap.put("Oracle 10", "jdbcnav.ScriptGenerator_Oracle");
 	scriptGeneratorClassMap.put("PostgreSQL", "jdbcnav.ScriptGenerator_PostgreSQL");
 	scriptGeneratorClassMap.put("SmallSQL", "jdbcnav.ScriptGenerator_SmallSQL");
-	//Don't show Transbase yet, since its script generator doesn't actually
-	//do anything useful yet.
-	//scriptGeneratorClassMap.put("Transbase", "jdbcnav.ScriptGenerator");
     }
 
     public static String getScriptGeneratorClassName(String driverName) {
