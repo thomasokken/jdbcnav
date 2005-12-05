@@ -37,6 +37,7 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
 		|| dbType.equalsIgnoreCase("smallint")
 		|| dbType.equalsIgnoreCase("int")
 		|| dbType.equalsIgnoreCase("integer")
+		|| dbType.equalsIgnoreCase("mediumint")
 		|| dbType.equalsIgnoreCase("bigint")) {
 	    spec.type = TypeSpec.FIXED;
 	    spec.size = size.intValue();

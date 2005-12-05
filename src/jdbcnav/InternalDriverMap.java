@@ -63,41 +63,42 @@ public class InternalDriverMap {
 	}
     }
 
-    private static TreeMap databaseClassMap;
+    private static TreeMap databaseMap;
     static {
-	databaseClassMap = new TreeMap();
-	databaseClassMap.put("Generic", "jdbcnav.JDBCDatabase");
-	databaseClassMap.put("MySQL", "jdbcnav.JDBCDatabase_MySQL");
-	databaseClassMap.put("Oracle 8", "jdbcnav.JDBCDatabase_Oracle");
-	databaseClassMap.put("Oracle 9", "jdbcnav.JDBCDatabase_Oracle");
-	databaseClassMap.put("Oracle 10", "jdbcnav.JDBCDatabase_Oracle");
-	databaseClassMap.put("PostgreSQL", "jdbcnav.JDBCDatabase_PostgreSQL");
-	databaseClassMap.put("SmallSQL", "jdbcnav.JDBCDatabase_SmallSQL");
-	databaseClassMap.put("Transbase", "jdbcnav.JDBCDatabase_Transbase");
+	databaseMap = new TreeMap();
+	databaseMap.put("Generic", "jdbcnav.JDBCDatabase");
+	databaseMap.put("MySQL", "jdbcnav.JDBCDatabase_MySQL");
+	databaseMap.put("Oracle 8", "jdbcnav.JDBCDatabase_Oracle");
+	databaseMap.put("Oracle 9", "jdbcnav.JDBCDatabase_Oracle");
+	databaseMap.put("Oracle 10", "jdbcnav.JDBCDatabase_Oracle");
+	databaseMap.put("PostgreSQL", "jdbcnav.JDBCDatabase_PostgreSQL");
+	databaseMap.put("SmallSQL", "jdbcnav.JDBCDatabase_SmallSQL");
+	databaseMap.put("Transbase", "jdbcnav.JDBCDatabase_Transbase");
     }
 
     public static String getDatabaseClassName(String driverName) {
-	return (String) databaseClassMap.get(driverName);
+	return (String) databaseMap.get(driverName);
     }
 
-    private static TreeMap scriptGeneratorClassMap;
+    private static TreeMap scriptGenMap;
     static {
-	scriptGeneratorClassMap = new TreeMap();
-	scriptGeneratorClassMap.put("Generic", "jdbcnav.ScriptGenerator");
-	scriptGeneratorClassMap.put("MySQL", "jdbcnav.ScriptGenerator_MySQL");
-	scriptGeneratorClassMap.put("Oracle 8", "jdbcnav.ScriptGenerator_Oracle8");
-	scriptGeneratorClassMap.put("Oracle 9", "jdbcnav.ScriptGenerator_Oracle9");
-	scriptGeneratorClassMap.put("Oracle 10", "jdbcnav.ScriptGenerator_Oracle");
-	scriptGeneratorClassMap.put("PostgreSQL", "jdbcnav.ScriptGenerator_PostgreSQL");
-	scriptGeneratorClassMap.put("SmallSQL", "jdbcnav.ScriptGenerator_SmallSQL");
+	scriptGenMap = new TreeMap();
+	scriptGenMap.put("Generic", "jdbcnav.ScriptGenerator");
+	scriptGenMap.put("MySQL", "jdbcnav.ScriptGenerator_MySQL");
+	scriptGenMap.put("Oracle 8", "jdbcnav.ScriptGenerator_Oracle8");
+	scriptGenMap.put("Oracle 9", "jdbcnav.ScriptGenerator_Oracle9");
+	scriptGenMap.put("Oracle 10", "jdbcnav.ScriptGenerator_Oracle");
+	scriptGenMap.put("PostgreSQL", "jdbcnav.ScriptGenerator_PostgreSQL");
+	scriptGenMap.put("SmallSQL", "jdbcnav.ScriptGenerator_SmallSQL");
+	scriptGenMap.put("Transbase", "jdbcnav.ScriptGenerator_Transbase");
     }
 
     public static String getScriptGeneratorClassName(String driverName) {
-	return (String) scriptGeneratorClassMap.get(driverName);
+	return (String) scriptGenMap.get(driverName);
     }
 
     public static String[] getScriptGeneratorNames() {
-	ArrayList list = new ArrayList(scriptGeneratorClassMap.keySet());
+	ArrayList list = new ArrayList(scriptGenMap.keySet());
 	list.remove("Generic");
 	list.add(0, "Generic");
 	return (String[]) list.toArray(new String[list.size()]);
