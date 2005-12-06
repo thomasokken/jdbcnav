@@ -1,3 +1,12 @@
+?? ???? ????: build ????
+*) Added Transbase support. Not complete yet: inserting/updating BITS and
+TIMESPAN does not work yet. I probably need to contact the Transbase developers
+since I can't find any documentation on the TBBits and TBTimespan classes;
+also, there seem to be some nasty bugs in Transbase itself (e.g. setting a
+TIMESPAN to null using a plain "set ts=null where..." causes the entire app to
+freeze.
+*) MySQL: BINARY and VARBINARY now recognized correctly.
+
 5 December 2005: build 2395
 *) Added MySQL support.
 *) Improved the code for handling INTERVAL types in SQL script generation. If
