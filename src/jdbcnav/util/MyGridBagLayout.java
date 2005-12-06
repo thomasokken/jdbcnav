@@ -7,6 +7,16 @@
  * Use is subject to license terms.
  * 
  */
+
+// This is a modified version of java.awt.GridBagLayout; the difference is the
+// behavior when the available size is less than the preferred size.
+// The original GridBagLayout will size components to their minimum size when
+// there is not enough room to display them at their preferred size; in some
+// cases, however, the minimum size is too small to be useful (e.g. JTextField
+// has a minimum width of 0).
+// This modified version will shrink components more gently, so layouts can be
+// squeezed much more before becoming unusable.
+
 //package java.awt;
 package jdbcnav.util;
 import java.awt.*;

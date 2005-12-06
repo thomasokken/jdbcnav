@@ -6,6 +6,7 @@ also, there seem to be some nasty bugs in Transbase itself (e.g. setting a
 TIMESPAN to null using a plain "set ts=null where..." causes the entire app to
 freeze).
 *) MySQL: BINARY and VARBINARY now recognized correctly.
+*) Released the source code under the GNU General Public License.
 
 5 December 2005: build 2395
 *) Added MySQL support.
