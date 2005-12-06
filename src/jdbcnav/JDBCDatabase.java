@@ -1018,11 +1018,10 @@ public class JDBCDatabase extends BasicDatabase {
 
     /**
      * This method is defined so that subclasses can do db-specific magic to
-     * populate the database-specific type name. At this moment, only MySQL
-     * needs this (to detect distinguish BINARY and VARBINARY from plain
-     * CHAR and VARCHAR, and to get the details for ENUM and SET types.
+     * populate the database-specific type name (because some JDBC drivers do
+     * not provide sufficient information in DatabaseMetaData.getColumns()).
      */
-    protected void fixDbTypes(String qualifiedName, ArrayList dbTypes) {
+    protected void fixTypeSpecs(String qualifiedName, TypeSpec[] specs) {
 	// No-op
     }
 
@@ -1473,7 +1472,6 @@ public class JDBCDatabase extends BasicDatabase {
 
 		typeSpecs = new TypeSpec[cols];
 		String[] javaTypes = JDBCDatabase.this.getJavaTypes(qualifiedName);
-		fixDbTypes(qualifiedName, dbTypesList);
 		for (int i = 0; i < cols; i++) {
 		    String dbType = (String) dbTypesList.get(i);
 		    Integer size = (Integer) columnSizesList.get(i);
@@ -1481,6 +1479,7 @@ public class JDBCDatabase extends BasicDatabase {
 		    int sqlType = ((Integer) sqlTypesList.get(i)).intValue();
 		    typeSpecs[i] = makeTypeSpec(dbType, size, scale, sqlType, javaTypes[i]);
 		}
+		fixTypeSpecs(qualifiedName, typeSpecs);
 
 		isNullable = (String[]) isNullableList.toArray(new String[cols]);
 

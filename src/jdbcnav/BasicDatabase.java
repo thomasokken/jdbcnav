@@ -1047,7 +1047,8 @@ public abstract class BasicDatabase implements Database {
 	}
 
 	if (klass == new byte[1].getClass()
-		|| spec.jdbcJavaType.equals("byte[]"))
+		|| spec.jdbcJavaType.equals("byte[]")
+		|| o instanceof byte[])
 	    return FileUtils.byteArrayToHex((byte[]) o);
 
 	if (Clob.class.isAssignableFrom(klass)) {

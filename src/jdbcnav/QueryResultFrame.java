@@ -798,11 +798,12 @@ public class QueryResultFrame extends MyFrame
 	    String name = getTitle() + " [" + row + ", " + column + "]";
 	    Object o = model.getValueAt(row, column);
 	    TypeSpec spec = model.getTypeSpec(column);
-	    Class k = model.getTypeSpec(column).jdbcJavaClass;
+	    Class k = spec.jdbcJavaClass;
 	    
 	    if (o instanceof Blob)
 		o = MiscUtils.loadBlob((Blob) o);
 	    if (k == new byte[1].getClass()
+		    || spec.jdbcJavaType.equals("transbase.tbx.types.TBBits")
 		    || o instanceof byte[]
 		    || o == null && Blob.class.isAssignableFrom(k)) {
 		byte[] data = (byte[]) o;

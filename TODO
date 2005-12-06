@@ -1,3 +1,7 @@
+Revisit BLOB/BINARY handling: does it work correctly with MySQL and Transbase?
+Also, revisit the BIT (bit array) type in PostgreSQL. Would be nice if that
+were handled in a manner compatible with Transbase's BITS/BITS2 types.
+
 When opening multiple table editing windows at the same time, and one or more
 of them are for tables containing Oracle LONG or LONG RAW columns, the
 exception "Stream has already been closed" may occur, or the application may
@@ -31,7 +35,7 @@ style "hourglass+arrow" cursor for QueryResultFrame while query is in progess.
 
 Progress dialog for Generate Script.
 
-Support for additional database products (Transbase, DB2).
+Add DB2 support.
 
 BFILE: it would be nice if we could use Edit Cell to look at the contents of
 the referenced file. Note that you cannot save data *to* a BFILE, so there

@@ -197,7 +197,7 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
 	return spec;
     }
 
-    protected void fixDbTypes(String qualifiedName, ArrayList dbTypes) {
+    protected void fixTypeSpecs(String qualifiedName, TypeSpec[] specs) {
 	Statement stmt = null;
 	ResultSet rs = null;
 	try {
@@ -205,20 +205,25 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
 	    rs = stmt.executeQuery("describe " + qualifiedName);
 	    int col = 0;
 	    while (rs.next()) {
-		if (col >= dbTypes.size())
+		if (col >= specs.length)
 		    break;
 		String type = rs.getString("Type");
 		String tl = type.toLowerCase();
 		if (tl.endsWith(" binary")) {
 		    if (tl.startsWith("character(")
-			    || tl.startsWith("char("))
-			dbTypes.set(col, "binary");
-		    else if (tl.startsWith("character varying(")
-			    || tl.startsWith("varchar("))
-			dbTypes.set(col, "varbinary");
+			    || tl.startsWith("char(")) {
+			specs[col].type = TypeSpec.RAW;
+			specs[col].jdbcDbType = "binary";
+			specs[col].native_representation = "binary(" + specs[col].size + ")";
+		    } else if (tl.startsWith("character varying(")
+			    || tl.startsWith("varchar(")) {
+			specs[col].type = TypeSpec.VARRAW;
+			specs[col].jdbcDbType = "varbinary";
+			specs[col].native_representation = "varbinary(" + specs[col].size + ")";
+		    }
 		} else if (tl.startsWith("enum(")
 			    || tl.startsWith("set("))
-		    dbTypes.set(col, type);
+		    specs[col].jdbcDbType = type;
 		col++;
 	    }
 	} catch (SQLException e) {}

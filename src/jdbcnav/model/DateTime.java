@@ -127,7 +127,7 @@ public class DateTime {
 	return toString(spec.type, spec.size, zoneStyle);
     }
 
-    private String toString(int type, int size, int zoneStyle) {
+    public String toString(int type, int size, int zoneStyle) {
 	GregorianCalendar cal = new GregorianCalendar(
 				    tz == null ? TimeZone.getDefault() : tz);
 	cal.setTimeInMillis(time);
