@@ -1,4 +1,4 @@
-?? ???? ????: build ????
+6 December 2005: build 2428
 *) Added Transbase support. Not complete yet: inserting/updating BITS and
 TIMESPAN does not work yet. I probably need to contact the Transbase developers
 since I can't find any documentation on the TBBits and TBTimespan classes;
