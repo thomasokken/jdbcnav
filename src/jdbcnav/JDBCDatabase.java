@@ -1010,17 +1010,16 @@ public class JDBCDatabase extends BasicDatabase {
 	TypeSpec spec = new TypeSpec(this);
 	spec.type = TypeSpec.UNKNOWN;
 	if (size == null)
-	    spec.native_representation = name;
+	    spec.native_representation = dbType;
 	else if (scale == null)
-	    spec.native_representation = name + "(" + size + ")";
+	    spec.native_representation = dbType + "(" + size + ")";
 	else
-	    spec.native_representation = name + "(" + size + ", " + scale + ")";
+	    spec.native_representation = dbType + "(" + size + ", " + scale + ")";
 	spec.jdbcDbType = dbType;
 	spec.jdbcSize = size;
 	spec.jdbcScale = scale;
 	spec.jdbcSqlType = sqlType;
 	if (javaType == null) {
-	    // Transbase
 	    spec.jdbcJavaType = "java.lang.Object";
 	    spec.jdbcJavaClass = Object.class;
 	} else {

@@ -39,6 +39,12 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 	// So, I create a query that is guaranteed to return no rows at all,
 	// and run that. Hopefully this'll be reasonably efficient, too!
 
+	// TODO: Recent versions of the PostgreSQL driver
+	// (i.e., postgresql-8.2dev-500.jdbc3.jar) do implement
+	// PrepraredStatement.getMetaData(), so I could make this method
+	// conditional (forward to super.getJavaTypes() if the version is
+	// sufficiently recent).
+
 	Statement stmt = null;
 	ResultSet rs = null;
 	try {

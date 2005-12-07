@@ -35,8 +35,6 @@ style "hourglass+arrow" cursor for QueryResultFrame while query is in progess.
 
 Progress dialog for Generate Script.
 
-Add DB2 support.
-
 BFILE: it would be nice if we could use Edit Cell to look at the contents of
 the referenced file. Note that you cannot save data *to* a BFILE, so there
 should be no "Apply to table" option in this case.

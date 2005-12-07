@@ -1,3 +1,6 @@
+7 December 2005: build 2450
+*) Added DB2 support.
+
 6 December 2005: build 2428
 *) Added Transbase support. Not complete yet: inserting/updating BITS and
 TIMESPAN does not work yet. I probably need to contact the Transbase developers

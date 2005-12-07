@@ -27,16 +27,6 @@ public class JDBCDatabase_SmallSQL extends JDBCDatabase {
 	super(name, driver, con);
     }
 
-    /**
-     * The SmallSQL JDBC Driver does not return anything in
-     * ResultSetMetaData.getCatalogName(), getSchemaName(), and getTableName(),
-     * which makes it impossible (without parsing SQL ourselves, anyway) to
-     * support allowTable=true in Database.runQuery().
-     */
-    protected boolean resultSetContainsTableInfo() {
-	return false;
-    }
-
     protected boolean showCatalogs() {
 	return false;
     }
