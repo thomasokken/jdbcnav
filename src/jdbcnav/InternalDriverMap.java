@@ -40,6 +40,8 @@ public class InternalDriverMap {
     public static String getDriverName(String driverClassName, Connection con) {
 	if (driverClassName == null) {
 	    return "Generic";
+	} else if (driverClassName.endsWith(".DB2Driver")) {
+	    return "DB2";
 	} else if (driverClassName.equals("com.mysql.jdbc.Driver")) {
 	    return "MySQL";
 	} else if (driverClassName.equals("oracle.jdbc.driver.OracleDriver")) {
@@ -85,6 +87,7 @@ public class InternalDriverMap {
     static {
 	databaseMap = new TreeMap();
 	databaseMap.put("Generic", "jdbcnav.JDBCDatabase");
+	databaseMap.put("DB2", "jdbcnav.JDBCDatabase_DB2");
 	databaseMap.put("MySQL", "jdbcnav.JDBCDatabase_MySQL");
 	databaseMap.put("Oracle 8", "jdbcnav.JDBCDatabase_Oracle");
 	databaseMap.put("Oracle 9", "jdbcnav.JDBCDatabase_Oracle");
@@ -102,6 +105,7 @@ public class InternalDriverMap {
     static {
 	scriptGenMap = new TreeMap();
 	scriptGenMap.put("Generic", "jdbcnav.ScriptGenerator");
+	scriptGenMap.put("DB2", "jdbcnav.ScriptGenerator_DB2");
 	scriptGenMap.put("MySQL", "jdbcnav.ScriptGenerator_MySQL");
 	scriptGenMap.put("Oracle 8", "jdbcnav.ScriptGenerator_Oracle8");
 	scriptGenMap.put("Oracle 9", "jdbcnav.ScriptGenerator_Oracle9");
