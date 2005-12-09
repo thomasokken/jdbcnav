@@ -1180,10 +1180,15 @@ public class JDBCDatabase extends BasicDatabase {
 		columnNames[i] = rsmd.getColumnName(i + 1);
 
 		String dbType = rsmd.getColumnTypeName(i + 1);
-		int size = rsmd.getPrecision(i + 1);
 		int scale = rsmd.getScale(i + 1);
 		int sqlType = rsmd.getColumnType(i + 1);
 		String javaType = rsmd.getColumnClassName(i + 1);
+		int size;
+		if ("oracle.sql.BLOB".equals(javaType)
+			|| "oracle.sql.CLOB".equals(javaType))
+		    size = Integer.MAX_VALUE;
+		else
+		    size = rsmd.getPrecision(i + 1);
 		typeSpecs[i] = makeTypeSpec(dbType, new Integer(size),
 					new Integer(scale), sqlType, javaType);
 
