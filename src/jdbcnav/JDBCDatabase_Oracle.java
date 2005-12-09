@@ -30,28 +30,12 @@ import jdbcnav.util.*;
 public class JDBCDatabase_Oracle extends JDBCDatabase {
     public JDBCDatabase_Oracle(String name, String driver, Connection con) {
 	super(name, driver, con);
-	/* The following code won't work because reflection won't let
-	 * me call OracleConnection.setSessionTimeZone(), despite the fact
-	 * that that is a public method. Go figure.
-	 * So, I have to access the class explicitly, which means you
-	 * can no longer compile this code without having the Oracle
-	 * JDBC driver in the classpath. Sigh.
 	try {
-	    Method m = con.getClass().getMethod("setSessionTimeZone",
-			    new Class[] { String.class });
+	    Method m = Class.forName("oracle.jdbc.OracleConnection").getMethod(
+			    "setSessionTimeZone", new Class[] { String.class });
 	    m.invoke(con, new Object[] { TimeZone.getDefault().getID() });
 	} catch (Exception e) {
 	    e.printStackTrace();
-	}
-	*/
-	try {
-	    ((oracle.jdbc.OracleConnection) con).setSessionTimeZone(
-					    TimeZone.getDefault().getID());
-	} catch (SQLException e) {
-	    e.printStackTrace();
-	} catch (NoSuchMethodError e) {
-	    // Older version, which does not support TIMESTAMPLTZ anyway,
-	    // so we don't care.
 	}
     }
 

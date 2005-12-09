@@ -1,3 +1,16 @@
+?? ????? ????: build ????
+*) Added code to work around the bug that affects
+ResultSetMetaData.getPrecision() in some recent versions of Oracle; this bug
+can cause a NumberFormatException to be thrown, and, worse, it can cause the
+Connection to get fatally hosed. This seems to happen when the precision of a
+BLOB or CLOB is reported to be 4294967296 (0xFFFFFFFF), which is too large for
+a Java "int". What all this means is that the problems caused by trying to load
+or "Edit" tables with Oracle LOB columns should be a thing of the past now.
+*) Fixed the code that calls setSessionTimeZone() on an OracleConnection; this
+now works using the reflection API (again) so that it is once again not
+necessary to have the Oracle JDBC driver in the CLASSPATH when compiling the
+JDBC Navigator source code.
+
 7 December 2005: build 2450
 *) Added DB2 support.
 
