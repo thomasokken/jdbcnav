@@ -1,3 +1,6 @@
+Script generation from file data source is broken: column types are printed as
+'null'. Something missing in the XML files?
+
 Revisit BLOB/BINARY handling: does it work correctly with MySQL and Transbase?
 Also, revisit the BIT (bit array) type in PostgreSQL. Would be nice if that
 were handled in a manner compatible with Transbase's BITS/BITS2 types.
