@@ -3,10 +3,7 @@ warning dialog, it should also pause in-progress table loads. Without this, the
 low-memory warning may be useless, because a table loading thread may overflow
 memory before the user even has time to react to the low-memory warning.
 (For now, at least MemoryMonitor could be useful for diagnosing whether certain
-problems (flaky table loads?) are due to memory shortages or not.
-
-Script generation from file data source is broken: column types are printed as
-'null'. Something missing in the XML files?
+problems (flaky table loads?) are due to memory shortages or not).
 
 Revisit BLOB/BINARY handling: does it work correctly with MySQL and Transbase?
 Also, revisit the BIT (bit array) type in PostgreSQL. Would be nice if that

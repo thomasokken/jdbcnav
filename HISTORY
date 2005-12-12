@@ -1,4 +1,4 @@
-12 December 2005: build 2530
+12 December 2005: build 2531
 *) QueryResultFrame: Cut, Copy, and Paste now use the usual accelerators
 (Ctrl-X, Ctrl-C, Ctrl-V) instread of Alt-X etc.; jdbcnav now attempts to keep
 its own clipboard and the system's clipboard in sync, and as far as the user is
