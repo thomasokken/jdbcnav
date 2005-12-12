@@ -66,6 +66,7 @@ public class MemoryMonitor implements Runnable {
 		    try {
 			Thread.sleep(5000);
 		    } catch (InterruptedException e) {}
+		    rt.gc();
 		    space = rt.freeMemory() + rt.maxMemory() - rt.totalMemory();
 		    System.err.println("space = " + space);
 		} while (space < 2 * RESERVE_BYTES);
