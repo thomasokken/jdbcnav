@@ -6,7 +6,7 @@ concerned, there is only one clipboard now.
 *) Added code to work around the bug that affects
 ResultSetMetaData.getPrecision() in some recent versions of Oracle; this bug
 can cause a NumberFormatException to be thrown. This seems to happen when the
-precision of a BLOB or CLOB is reported to be 4294967296 (0xFFFFFFFF), which is
+precision of a BLOB or CLOB is reported to be 4294967295 (0xFFFFFFFF), which is
 too large for a Java "int".
 *) Fixed the code that calls setSessionTimeZone() on an OracleConnection; this
 now works using the reflection API (again) so that it is once again not
