@@ -117,11 +117,16 @@ public class Main extends JFrame {
 	} catch (UnsupportedLookAndFeelException e) {
 	    //
 	}
-	Main nav = new Main();
-	nav.setVisible(true);
 
+	Main nav = new Main();
+
+	// This must be done *after* constructing the Main object, because
+	// the Main() constructor causes the preferences to be read
 	MyTable.setTypeColor(1, prefs.getPkHighlightColor());
 	MyTable.setTypeColor(2, prefs.getFkHighlightColor());
+
+	nav.setVisible(true);
+	new MemoryMonitor();
     }
 
     private static ArrayList callbacks = new ArrayList();
