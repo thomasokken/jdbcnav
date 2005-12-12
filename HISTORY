@@ -1,15 +1,13 @@
-?? ????? ????: build ????
+12 December 2005: build 2530
 *) QueryResultFrame: Cut, Copy, and Paste now use the usual accelerators
 (Ctrl-X, Ctrl-C, Ctrl-V) instread of Alt-X etc.; jdbcnav now attempts to keep
 its own clipboard and the system's clipboard in sync, and as far as the user is
 concerned, there is only one clipboard now.
 *) Added code to work around the bug that affects
 ResultSetMetaData.getPrecision() in some recent versions of Oracle; this bug
-can cause a NumberFormatException to be thrown, and, worse, it can cause the
-Connection to get fatally hosed. This seems to happen when the precision of a
-BLOB or CLOB is reported to be 4294967296 (0xFFFFFFFF), which is too large for
-a Java "int". What all this means is that the problems caused by trying to load
-or "Edit" tables with Oracle LOB columns should be a thing of the past now.
+can cause a NumberFormatException to be thrown. This seems to happen when the
+precision of a BLOB or CLOB is reported to be 4294967296 (0xFFFFFFFF), which is
+too large for a Java "int".
 *) Fixed the code that calls setSessionTimeZone() on an OracleConnection; this
 now works using the reflection API (again) so that it is once again not
 necessary to have the Oracle JDBC driver in the CLASSPATH when compiling the
