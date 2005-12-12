@@ -31,6 +31,7 @@ import javax.swing.tree.*;
 import javax.swing.undo.*;
 
 import jdbcnav.util.FileUtils;
+import jdbcnav.util.MyTextArea;
 
 
 public class TextEditorFrame extends MyFrame {
@@ -83,7 +84,7 @@ public class TextEditorFrame extends MyFrame {
 	
 	Container c = getContentPane();
 	c.setLayout(new GridLayout(1, 1));
-	textA = new JTextArea(text, 24, 80);
+	textA = new MyTextArea(text, 24, 80);
 	if (wantToHandleReturn()) {
 	    InputMap im = textA.getInputMap();
 	    KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);

@@ -1,9 +1,22 @@
+When MemoryMonitor notices that memory is getting low, in addition to showing a
+warning dialog, it should also pause in-progress table loads. Without this, the
+low-memory warning may be useless, because a table loading thread may overflow
+memory before the user even has time to react to the low-memory warning.
+(For now, at least MemoryMonitor could be useful for diagnosing whether certain
+problems (flaky table loads?) are due to memory shortages or not.
+
 Script generation from file data source is broken: column types are printed as
 'null'. Something missing in the XML files?
 
 Revisit BLOB/BINARY handling: does it work correctly with MySQL and Transbase?
 Also, revisit the BIT (bit array) type in PostgreSQL. Would be nice if that
 were handled in a manner compatible with Transbase's BITS/BITS2 types.
+
+It would be nice to get rid of the JDBC Navigator clipboard, and use the system
+clipboard throughout. Since the system clipboard does not support content
+change notifications, only flavor change notifications, this means some work
+wrt updating the enabled/disabled state of "Paste" commands. Also, it begs the
+question how to support "grid" data for import/export.
 
 When opening multiple table editing windows at the same time, and one or more
 of them are for tables containing Oracle LONG or LONG RAW columns, the

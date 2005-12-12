@@ -1,4 +1,8 @@
 ?? ????? ????: build ????
+*) QueryResultFrame: Cut, Copy, and Paste now use the usual accelerators
+(Ctrl-X, Ctrl-C, Ctrl-V) instread of Alt-X etc.; jdbcnav now attempts to keep
+its own clipboard and the system's clipboard in sync, and as far as the user is
+concerned, there is only one clipboard now.
 *) Added code to work around the bug that affects
 ResultSetMetaData.getPrecision() in some recent versions of Oracle; this bug
 can cause a NumberFormatException to be thrown, and, worse, it can cause the
@@ -10,6 +14,12 @@ or "Edit" tables with Oracle LOB columns should be a thing of the past now.
 now works using the reflection API (again) so that it is once again not
 necessary to have the Oracle JDBC driver in the CLASSPATH when compiling the
 JDBC Navigator source code.
+*) FileDatabase fixes: now loads the "native_representation" TypeSpec property
+when opening a File Data Source, so generating a SQL script with matching
+source and destination DB types now generates the proper column type -- and not
+"null". Also, fixed a bug where for some database types binary columns were
+written to the XML file as a hex string, instead of being Base64 encoded, which
+would cause an exception when trying to read the file back in.
 
 7 December 2005: build 2450
 *) Added DB2 support.

@@ -27,7 +27,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import jdbcnav.model.TypeSpec;
-import jdbcnav.util.MenuLayout;
+import jdbcnav.util.*;
 
 
 public class MyTable extends JTable {
@@ -38,6 +38,7 @@ public class MyTable extends JTable {
     private ArrayList userInteractionListeners = new ArrayList();
     private boolean[] notNull;
     private ArrayList columnTypeMap;
+    private EditHandler editHandler = null;
 
     public MyTable(TableModel dm) {
 	super();
@@ -70,6 +71,10 @@ public class MyTable extends JTable {
 			    new DateEditor(java.sql.Date.class));
 	setDefaultEditor(java.sql.Timestamp.class,
 			    new DateEditor(java.sql.Timestamp.class));
+	GenericEditor ge = new GenericEditor();
+	setDefaultEditor(Object.class, ge);
+	setDefaultEditor(Boolean.class, ge);
+	setDefaultEditor(Number.class, new NumberEditor());
 	setDefaultEditor(jdbcnav.model.DateTime.class, dboe);
 	setDefaultEditor(jdbcnav.model.Interval.class, dboe);
 	setDefaultEditor(TypeSpec.class, dboe);
@@ -190,6 +195,47 @@ public class MyTable extends JTable {
 	}
     }
 
+    public interface EditHandler {
+	void cut();
+	void copy();
+	void paste();
+    }
+
+    public void setEditHandler(EditHandler eh) {
+	editHandler = eh;
+	KeyStroke ctrl_x = KeyStroke.getKeyStroke('X', InputEvent.CTRL_MASK);
+	KeyStroke ctrl_c = KeyStroke.getKeyStroke('C', InputEvent.CTRL_MASK);
+	KeyStroke ctrl_v = KeyStroke.getKeyStroke('V', InputEvent.CTRL_MASK);
+	InputMap im = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+	Object cut_id = im.get(ctrl_x);
+	Object copy_id = im.get(ctrl_c);
+	Object paste_id = im.get(ctrl_v);
+	ActionMap am = getActionMap();
+	if (editHandler == null) {
+	    am.remove(cut_id);
+	    am.remove(copy_id);
+	    am.remove(paste_id);
+	} else {
+	    am.put(cut_id,
+		    new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+			    editHandler.cut();
+			}
+		    });
+	    am.put(copy_id,
+		    new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+			    editHandler.copy();
+			}
+		    });
+	    am.put(paste_id,
+		    new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+			    editHandler.paste();
+			}
+		    });
+	}
+    }
 
     public void setColumnNotNull(int column, boolean notNull) {
 	this.notNull[column] = notNull;
@@ -358,7 +404,6 @@ public class MyTable extends JTable {
 	}
     }
 
-
     public void stopEditing() {
 	if (!isEditing())
 	    return;
@@ -481,13 +526,87 @@ public class MyTable extends JTable {
 	}
     }
 
+    // I define my own GenericEditor and NumberEditor, cloned from JTable, so
+    // that I can make sure they use a MyTextField instead of a JTextField.
+    // This is necessary to support integration with the JDBC Navigator
+    // clipboard.
+
+    private static class GenericEditor extends DefaultCellEditor {
+
+	Class[] argTypes = new Class[]{String.class};
+	java.lang.reflect.Constructor constructor;
+	Object value;
+
+	public GenericEditor() {
+            super(new MyTextField());
+            getComponent().setName("Table.editor");
+        }
+
+	public boolean stopCellEditing() {
+	    String s = (String)super.getCellEditorValue();
+	    // Here we are dealing with the case where a user
+	    // has deleted the string value in a cell, possibly
+	    // after a failed validation. Return null, so that
+	    // they have the option to replace the value with
+	    // null or use escape to restore the original.
+	    // For Strings, return "" for backward compatibility.
+	    if ("".equals(s)) {
+		if (constructor.getDeclaringClass() == String.class) {
+		    value = s;
+		}
+		super.stopCellEditing();
+	    }
+
+	    try {
+		value = constructor.newInstance(new Object[]{s});
+	    }
+	    catch (Exception e) {
+		((JComponent)getComponent()).setBorder(new LineBorder(Color.red));
+		return false;
+	    }
+	    return super.stopCellEditing();
+	}
+
+	public Component getTableCellEditorComponent(JTable table, Object value,
+						 boolean isSelected,
+						 int row, int column) {
+	    this.value = null;
+            ((JComponent)getComponent()).setBorder(new LineBorder(Color.black));
+	    try {
+		Class type = table.getColumnClass(column);
+		// Since our obligation is to produce a value which is
+		// assignable for the required type it is OK to use the
+		// String constructor for columns which are declared
+		// to contain Objects. A String is an Object.
+		if (type == Object.class) {
+		    type = String.class;
+		}
+		constructor = type.getConstructor(argTypes);
+	    }
+	    catch (Exception e) {
+		return null;
+	    }
+	    return super.getTableCellEditorComponent(table, value, isSelected, row, column);
+	}
+
+	public Object getCellEditorValue() {
+	    return value;
+	}
+    }
+
+    private static class NumberEditor extends GenericEditor {
+	public NumberEditor() {
+	    ((JTextField)getComponent()).setHorizontalAlignment(JTextField.RIGHT);
+	}
+    }
+
     private static class DateEditor extends DefaultCellEditor {
 
 	private Class klass;
 	private Object value;
 
 	public DateEditor(Class klass) {
-	    super(new JTextField());
+	    super(new MyTextField());
 	    this.klass = klass;
 	}
 
@@ -520,7 +639,7 @@ public class MyTable extends JTable {
 	private Object value;
 
 	public DatabaseObjectEditor() {
-	    super(new JTextField());
+	    super(new MyTextField());
 	}
 
 	public boolean stopCellEditing() {

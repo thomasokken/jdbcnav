@@ -400,7 +400,7 @@ public class FileDatabase extends BasicDatabase {
 	TypeSpec[] specs = new TypeSpec[columns];
 	for (int i = 0; i < columns; i++)
 	    specs[i] = data.getTypeSpec(i);
-	Class byteArrayClass = new Byte[1].getClass();
+	Class byteArrayClass = new byte[1].getClass();
 
 	xml.openTag("data");
 	for (int i = 0; i < rows; i++) {
@@ -728,6 +728,8 @@ public class FileDatabase extends BasicDatabase {
 		} catch (ClassNotFoundException e) {
 		    spec.jdbcJavaClass = Object.class;
 		}
+	    } else if (name.equals("native_representation")) {
+		spec.native_representation = data;
 	    } else if (name.equals("type_spec")) {
 		arrayBuffer.add(spec);
 	    } else if (name.equals("type_specs")) {

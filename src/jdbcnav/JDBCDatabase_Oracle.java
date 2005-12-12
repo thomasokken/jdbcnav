@@ -73,6 +73,7 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	// So, I create a query that is guaranteed to return no rows at all,
 	// and run that. Hopefully this'll be reasonably efficient, too!
 
+	//Main.log("JDBCDatabase_Oracle.getJavaTypes(\"" + qualifiedName + "\")");
 	Statement stmt = null;
 	ResultSet rs = null;
 	try {
@@ -118,6 +119,7 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
      * rid of this information is 'ANALYZE TABLE <table> DELETE STATISTICS'.
      */
     protected Index[] getIndexes(Table t) throws NavigatorException {
+	//Main.log("JDBCDatabase_Oracle.getIndexes(\"" + t.getQualifiedName() + "\")");
 	JDBCTable table = (JDBCTable) t;
 	PreparedStatement stmt = null;
 	ResultSet rs = null;
@@ -369,9 +371,6 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 
 	TypeSpec spec = super.makeTypeSpec(dbType, size, scale, sqlType,
 								javaType);
-
-	if (spec.jdbcJavaType.equals("byte[]"))
-	    spec.jdbcJavaClass = new byte[1].getClass();
 
 	if (dbType.equals("CHAR")) {
 	    spec.type = TypeSpec.CHAR;

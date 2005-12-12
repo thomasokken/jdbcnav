@@ -18,48 +18,38 @@
 
 package jdbcnav.util;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
 import javax.swing.*;
 import javax.swing.text.Document;
 
 
-public class NonTabJTextArea extends MyTextArea {
-    private static TreeSet forwardSet;
-    private static TreeSet backwardSet;
-    static {
-	forwardSet = new TreeSet();
-	forwardSet.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, 0));
-	backwardSet = new TreeSet();
-	backwardSet.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB,
-						    InputEvent.SHIFT_MASK));
-    }
-
-    public NonTabJTextArea() {
+public class MyTextArea extends JTextArea {
+    public MyTextArea() {
 	super();
-	init();
     }
 
-    public NonTabJTextArea(String s) {
+    public MyTextArea(int width, int height) {
+	super(width, height);
+    }
+
+    public MyTextArea(String s) {
 	super(s);
-	init();
     }
 
-    public NonTabJTextArea(String s, int width, int height) {
+    public MyTextArea(String s, int width, int height) {
 	super(s, width, height);
-	init();
     }
 
-    public NonTabJTextArea(Document doc, String s, int width, int height) {
+    public MyTextArea(Document doc, String s, int width, int height) {
 	super(doc, s, width, height);
-	init();
     }
 
-    private void init() {
-	setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-			      forwardSet);
-	setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
-			      backwardSet);
+    public void copy() {
+	super.copy();
+	jdbcnav.Main.getClipboard().sys2nav();
+    }
+
+    public void cut() {
+	super.cut();
+	jdbcnav.Main.getClipboard().sys2nav();
     }
 }

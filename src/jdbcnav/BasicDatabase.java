@@ -426,6 +426,7 @@ public abstract class BasicDatabase implements Database {
     }
 
     private void reloadTree() {
+	//Main.log("BasicDatabase.reloadTree()");
 	Collection tables;
 	try {
 	    tables = getTables();
@@ -436,6 +437,7 @@ public abstract class BasicDatabase implements Database {
 	rootNode.markDeadRecursively();
 	for (Iterator iter = tables.iterator(); iter.hasNext();) {
 	    TableSpec ts = (TableSpec) iter.next();
+	    //Main.log("catalog=\"" + ts.catalog + "\" schema=\"" + ts.schema + "\" type=\"" + ts.type + "\" name=\"" + ts.name + "\"");
 	    MyNode n = rootNode;
 
 	    if (showCatalogs()) {
@@ -756,6 +758,7 @@ public abstract class BasicDatabase implements Database {
     protected abstract boolean showTableTypes();
 
     private MyNode findTableNode(String qualifiedName) {
+	//Main.log("BasicDatabase.findTableNode(\"" + qualifiedName + "\")");
 	int dots;
 	if ((dots = qualifiedName.indexOf("...")) != -1) {
 	    // Names containing three consecutive dots are used to distinguish
@@ -1065,7 +1068,7 @@ public abstract class BasicDatabase implements Database {
 	}
 
 	if (klass == new byte[1].getClass()
-		|| spec.jdbcJavaType.equals("byte[]")
+		|| spec.jdbcJavaType.equals("[B")
 		|| o instanceof byte[])
 	    return FileUtils.byteArrayToHex((byte[]) o);
 

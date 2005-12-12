@@ -618,6 +618,7 @@ public class JDBCDatabase extends BasicDatabase {
     }
 
     private PrimaryKey getPrimaryKey(String qname) throws NavigatorException {
+	//Main.log("JDBCDatabase.getPrimaryKey(\"" + qname + "\")");
 	String[] parts = parseQualifiedName(qname);
 	ResultSet rs = null;
         try {
@@ -656,6 +657,7 @@ public class JDBCDatabase extends BasicDatabase {
     }
 
     protected Index[] getIndexes(Table table) throws NavigatorException {
+	//Main.log("JDBCDatabase.getIndexes(\"" + table.getQualifiedName() + "\")");
 	PrimaryKey pk = table.getPrimaryKey();
 	ResultSet rs = null;
 	try {
@@ -704,6 +706,7 @@ public class JDBCDatabase extends BasicDatabase {
 
     private ForeignKey[] getFK(String qualifiedName, boolean imported)
 						    throws NavigatorException {
+	//Main.log("JDBCDatabase.getFK(\"" + qualifiedName + "\", " + (imported ? "imported" : "exported") + ")");
 	String[] parts = parseQualifiedName(qualifiedName);
 	String catalog = parts[0];
 	String schema = parts[1];
@@ -1023,6 +1026,8 @@ public class JDBCDatabase extends BasicDatabase {
 	    spec.jdbcJavaType = "java.lang.Object";
 	    spec.jdbcJavaClass = Object.class;
 	} else {
+	    if (javaType.equals("byte[]"))
+		javaType = "[B";
 	    spec.jdbcJavaType = javaType;
 	    try {
 		spec.jdbcJavaClass = Class.forName(javaType);
@@ -1045,6 +1050,7 @@ public class JDBCDatabase extends BasicDatabase {
     public Object runQuery(String query, boolean asynchronous,
 			   boolean allowTable) throws NavigatorException {
 
+	//Main.log("JDBCDatabase.runQuery(\"" + query + "\")");
 	Table table = null;
 
 	if (allowTable && !resultSetContainsTableInfo()) {
@@ -1164,9 +1170,11 @@ public class JDBCDatabase extends BasicDatabase {
 	Statement s = null;
 	ResultSet rs = null;
 	try {
+	    //Main.log("executing query...");
 	    s = con.createStatement();
 	    rs = s.executeQuery(query);
 
+	    //Main.log("reading metadata...");
 	    ResultSetMetaData rsmd = rs.getMetaData();
 	    int columns = rsmd.getColumnCount();
 	    String[] columnNames = new String[columns];
@@ -1405,6 +1413,7 @@ public class JDBCDatabase extends BasicDatabase {
 	public void updateDetails() throws NavigatorException {
 	    // Create backups of everything, in case we need to roll back
 	    // after catching an exception
+	    //Main.log("JDBCDatabase.JDBCTable(\"" + qualifiedName + "\").updateDetails()");
 	    String oldCatalog = catalog;
 	    String oldSchema = schema;
 	    String oldName = name;
@@ -1628,13 +1637,13 @@ public class JDBCDatabase extends BasicDatabase {
 	    gbc.gridwidth = 3;
 	    gbc.anchor = MyGridBagConstraints.WEST;
 	    p1.add(configNameCB, gbc);
-	    driverTF = new JTextField(20);
+	    driverTF = new MyTextField(20);
 	    gbc.gridy++;
 	    p1.add(driverTF, gbc);
-	    urlTF = new JTextField(40);
+	    urlTF = new MyTextField(40);
 	    gbc.gridy++;
 	    p1.add(urlTF, gbc);
-	    usernameTF = new JTextField(10);
+	    usernameTF = new MyTextField(10);
 	    gbc.gridy++;
 	    gbc.gridwidth = 1;
 	    p1.add(usernameTF, gbc);

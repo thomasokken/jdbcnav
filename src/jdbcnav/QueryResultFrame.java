@@ -164,7 +164,7 @@ public class QueryResultFrame extends MyFrame
 		undoMI.setText(undo);
 	    else
 		undoMI.setEnabled(false);
-	    undoMI.setAccelerator(KeyStroke.getKeyStroke('Z', Event.ALT_MASK));
+	    undoMI.setAccelerator(KeyStroke.getKeyStroke('Z', Event.CTRL_MASK));
 	    editMenu.add(undoMI);
 	    redoMI = new JMenuItem("Redo");
 	    redoMI.addActionListener(new ActionListener() {
@@ -177,7 +177,7 @@ public class QueryResultFrame extends MyFrame
 		redoMI.setText(redo);
 	    else
 		redoMI.setEnabled(false);
-	    redoMI.setAccelerator(KeyStroke.getKeyStroke('Y', Event.ALT_MASK));
+	    redoMI.setAccelerator(KeyStroke.getKeyStroke('Y', Event.CTRL_MASK));
 	    editMenu.add(redoMI);
 	    editMenu.addSeparator();
 	    cutMI = new JMenuItem("Cut");
@@ -187,7 +187,7 @@ public class QueryResultFrame extends MyFrame
 				    }
 				});
 	    cutMI.setEnabled(false);
-	    cutMI.setAccelerator(KeyStroke.getKeyStroke('X', Event.ALT_MASK));
+	    cutMI.setAccelerator(KeyStroke.getKeyStroke('X', Event.CTRL_MASK));
 	    editMenu.add(cutMI);
 	}
 	copyMI = new JMenuItem("Copy");
@@ -197,7 +197,7 @@ public class QueryResultFrame extends MyFrame
 				}
 			    });
 	copyMI.setEnabled(false);
-	copyMI.setAccelerator(KeyStroke.getKeyStroke('C', Event.ALT_MASK));
+	copyMI.setAccelerator(KeyStroke.getKeyStroke('C', Event.CTRL_MASK));
 	editMenu.add(copyMI);
 	if (editable) {
 	    pasteMI = new JMenuItem("Paste");
@@ -206,7 +206,7 @@ public class QueryResultFrame extends MyFrame
 					paste();
 				    }
 				});
-	    pasteMI.setAccelerator(KeyStroke.getKeyStroke('V', Event.ALT_MASK));
+	    pasteMI.setAccelerator(KeyStroke.getKeyStroke('V', Event.CTRL_MASK));
 	    pasteMI.setEnabled(Main.getClipboard().get() != Clipboard.EMPTY);
 	    editMenu.add(pasteMI);
 	    editMenu.addSeparator();
@@ -289,6 +289,17 @@ public class QueryResultFrame extends MyFrame
 	Container c = getContentPane();
 	c.setLayout(new GridLayout(1, 1));
 	table = new MyTable(model);
+	table.setEditHandler(new MyTable.EditHandler() {
+		    public void cut() {
+			QueryResultFrame.this.cut();
+		    }
+		    public void copy() {
+			QueryResultFrame.this.copy();
+		    }
+		    public void paste() {
+			QueryResultFrame.this.paste();
+		    }
+		});
 	model.setTable(table);
 	sortAfterLoading = true;
 	
@@ -636,6 +647,10 @@ public class QueryResultFrame extends MyFrame
     }
 
     private void cut() {
+	if (table.isEditing()) {
+	    ((JTextField) table.getEditorComponent()).cut();
+	    return;
+	}
 	if (table.getSelectedRows().length == 1) {
 	    if (rowOrCellDialog != null)
 		rowOrCellDialog.dispose();
@@ -679,6 +694,10 @@ public class QueryResultFrame extends MyFrame
     }
 
     private void copy() {
+	if (table.isEditing()) {
+	    ((JTextField) table.getEditorComponent()).copy();
+	    return;
+	}
 	if (table.getSelectedRows().length == 1) {
 	    if (rowOrCellDialog != null)
 		rowOrCellDialog.dispose();
@@ -730,6 +749,10 @@ public class QueryResultFrame extends MyFrame
     }
 
     private void paste() {
+	if (table.isEditing()) {
+	    ((JTextField) table.getEditorComponent()).paste();
+	    return;
+	}
 	Object clipdata = Main.getClipboard().get();
 	if (clipdata == Clipboard.EMPTY)
 	    return;

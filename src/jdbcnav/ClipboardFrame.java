@@ -22,7 +22,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-import jdbcnav.util.ArrayTableModel;
+import jdbcnav.util.*;
 
 
 public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
@@ -62,7 +62,7 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 			    dispose();
 			}
 		    });
-	mi.setAccelerator(KeyStroke.getKeyStroke('W', Event.CTRL_MASK));
+	mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, Event.CTRL_MASK));
 	m.add(mi);
 	mb.add(m);
 	setJMenuBar(mb);
@@ -83,7 +83,7 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 	    table.setNiceSize();
 	    scrollPane.setViewportView(table);
 	} else if (data instanceof byte[]) {
-	    jta = new JTextArea();
+	    jta = new MyTextArea();
 	    jta.setEditable(false);
 	    jta.setLineWrap(wrapLinesMI.getState());
 	    StringBuffer buf = new StringBuffer();
@@ -106,7 +106,7 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 	    clearMI.setEnabled(true);
 	    scrollPane.setViewportView(jta);
 	} else {
-	    jta = new JTextArea();
+	    jta = new MyTextArea();
 	    jta.setEditable(false);
 	    jta.setLineWrap(wrapLinesMI.getState());
 	    jta.setText(String.valueOf(data));

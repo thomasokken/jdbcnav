@@ -118,6 +118,20 @@ public class Main extends JFrame {
 	    //
 	}
 
+	/*
+	try {
+	    ps = new PrintStream(new BufferedOutputStream(new FileOutputStream("log.txt")));
+	    java.sql.DriverManager.setLogStream(ps);
+	    oracle.jdbc.driver.OracleLog.setLogStream(ps);
+	    oracle.jdbc.driver.OracleLog.setLogVolume(3);
+	    oracle.jdbc.driver.OracleLog.startLogging();
+	} catch (FileNotFoundException e) {
+	    e.printStackTrace();
+	}
+	*/
+
+	//Runtime.getRuntime().traceMethodCalls(true);
+
 	Main nav = new Main();
 
 	// This must be done *after* constructing the Main object, because
@@ -128,6 +142,17 @@ public class Main extends JFrame {
 	nav.setVisible(true);
 	new MemoryMonitor();
     }
+
+    /*
+    private static PrintStream ps;
+    public static void log(String s) {
+	if (ps != null) {
+	    ps.flush();
+	    ps.println(new java.util.Date().toString() + ": " + s);
+	    ps.flush();
+	}
+    }
+    */
 
     private static ArrayList callbacks = new ArrayList();
     public static void callWhenDesktopReady(Runnable r) {
@@ -296,6 +321,33 @@ public class Main extends JFrame {
 				}
 			    });
 	m.add(mi);
+	/*
+	m.addSeparator();
+	mi = new JMenuItem("Eat 1 Megabyte");
+	mi.addActionListener(new ActionListener() {
+			    public void actionPerformed(ActionEvent e) {
+				eat1mb();
+			    }
+			});
+	mi.setAccelerator(KeyStroke.getKeyStroke('E', Event.ALT_MASK));
+	m.add(mi);
+	mi = new JMenuItem("Release 1 Megabyte");
+	mi.addActionListener(new ActionListener() {
+			    public void actionPerformed(ActionEvent e) {
+				release1mb();
+			    }
+			});
+	mi.setAccelerator(KeyStroke.getKeyStroke('R', Event.ALT_MASK));
+	m.add(mi);
+	mi = new JMenuItem("Run GC");
+	mi.addActionListener(new ActionListener() {
+			    public void actionPerformed(ActionEvent e) {
+				System.gc();
+			    }
+			});
+	mi.setAccelerator(KeyStroke.getKeyStroke('G', Event.ALT_MASK));
+	m.add(mi);
+	*/
 	mb.add(m);
 	
 	windowsMenu = new JMenu("Windows");
@@ -458,6 +510,21 @@ public class Main extends JFrame {
 	    bef.showStaggered();
 	}
     }
+
+    /*
+    ArrayList memoryWaster = null;
+
+    private void eat1mb() {
+	if (memoryWaster == null)
+	    memoryWaster = new ArrayList();
+	memoryWaster.add(new byte[1048576]);
+    }
+
+    private void release1mb() {
+	if (memoryWaster != null && memoryWaster.size() > 0)
+	    memoryWaster.remove(memoryWaster.size() - 1);
+    }
+    */
 
     private void setPassword() {
 	Preferences prefs = Preferences.getPreferences();
