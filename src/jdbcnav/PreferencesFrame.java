@@ -35,6 +35,9 @@ public class PreferencesFrame extends MyFrame {
     private JLabel pkHighColL;
     private JLabel fkHighColL;
     private JTextArea systemPropsTA;
+    private JCheckBox showSplashCB;
+    private JTextField logFileNameTF;
+    private JComboBox logLevelCB;
 
     JTable classPathTable;
     ClassPathTableModel classPathModel;
@@ -69,6 +72,7 @@ public class PreferencesFrame extends MyFrame {
 	gbc.gridy = 0;
 	gbc.anchor = MyGridBagConstraints.WEST;
 	gbc.gridwidth = 3;
+	gbc.weightx = 1;
 	JPanel p2 = new JPanel();
 	p2.setLayout(new BoxLayout(p2, BoxLayout.X_AXIS));
 	p2.add(new JLabel("Swing Look-and-Feel Name: "));
@@ -84,6 +88,7 @@ public class PreferencesFrame extends MyFrame {
 	gbc.gridx = 0;
 	gbc.gridy = 1;
 	gbc.gridwidth = 1;
+	gbc.weightx = 0;
 	p.add(new JLabel("PK Highlight Color:"), gbc);
 
 	gbc.gridx = 1;
@@ -124,7 +129,72 @@ public class PreferencesFrame extends MyFrame {
 
 	gbc.gridx = 0;
 	gbc.gridy = 0;
-	gbc.anchor = MyGridBagConstraints.WEST;
+	gbc.fill = MyGridBagConstraints.HORIZONTAL;
+	c.add(p, gbc);
+
+
+	///////////////////////////////////////
+	///// Some miscellaneous settings /////
+	///////////////////////////////////////
+
+	p = new JPanel(new MyGridBagLayout());
+	p.setBorder(BorderFactory.createTitledBorder("Miscellaneous"));
+
+	MyGridBagConstraints gbc2 = new MyGridBagConstraints();
+
+	gbc2.gridx = 0;
+	gbc2.gridy = 0;
+	gbc2.anchor = MyGridBagConstraints.WEST;
+	gbc2.fill = MyGridBagConstraints.NONE;
+	gbc2.gridwidth = 2;
+	showSplashCB = new JCheckBox("Show splash screen on startup");
+	showSplashCB.setSelected(prefs.getShowSplash());
+	p.add(showSplashCB, gbc2);
+
+
+	gbc2.gridy = 1;
+	gbc2.gridwidth = 1;
+	p.add(new JLabel("Log File: "), gbc2);
+
+	gbc2.gridy = 2;
+	p.add(new JLabel("Log Level: "), gbc2);
+
+	gbc2.gridx = 1;
+	gbc2.gridy = 1;
+	gbc2.weightx = 1;
+	gbc2.fill = MyGridBagConstraints.HORIZONTAL;
+	logFileNameTF = new JTextField();
+	String s = prefs.getLogFileName();
+	if (s != null)
+	    logFileNameTF.setText(s);
+	p.add(logFileNameTF, gbc2);
+	
+	gbc2.gridy = 2;
+	gbc2.fill = MyGridBagConstraints.NONE;
+	logLevelCB = new JComboBox(new Object[] { "None", "Low", "Medium", "High" });
+	logLevelCB.setSelectedIndex(prefs.getLogLevel());
+	p.add(logLevelCB, gbc2);
+
+	gbc.gridy++;
+	c.add(p, gbc);
+	
+
+	///////////////////////////////////
+	///// System Properties panel /////
+	///////////////////////////////////
+
+	p = new JPanel();
+	p.setLayout(new GridLayout(1, 1));
+	p.setBorder(BorderFactory.createTitledBorder("System Properties"));
+
+	systemPropsTA = new NonTabJTextArea(prefs.getSystemPropertiesAsText(), 4, 30);
+	JScrollPane scroll = new JScrollPane(systemPropsTA);
+	p.add(scroll);
+
+	gbc.weightx = 1;
+	gbc.weighty = 1;
+	gbc.fill = MyGridBagConstraints.BOTH;
+	gbc.gridy++;
 	c.add(p, gbc);
 
 
@@ -157,8 +227,8 @@ public class PreferencesFrame extends MyFrame {
 			}
 		    }
 		});
-	    JScrollPane scroll = new JScrollPane(classPathTable);
-	    scroll.setPreferredSize(new Dimension(300, 100));
+	    scroll = new JScrollPane(classPathTable);
+	    scroll.setPreferredSize(new Dimension(300, 200));
 	    p.add(scroll);
 	    p2 = new JPanel();
 	    p2.setLayout(new BoxLayout(p2, BoxLayout.X_AXIS));
@@ -240,32 +310,21 @@ public class PreferencesFrame extends MyFrame {
 	    gbc.fill = MyGridBagConstraints.HORIZONTAL;
 	    gbc.anchor = MyGridBagConstraints.NORTH;
 	    gbc.gridx = 1;
-	    gbc.gridheight = 2;
+	    int y = gbc.gridy;
+	    gbc.gridy = 0;
+	    gbc.gridheight = y + 1;
 	    c.add(p, gbc);
 
 	    gbc.gridx = 0;
 	    gbc.gridheight = 1;
+	    gbc.gridy = y;
 	    totalwidth = 2;
 	}
 
 
-	///////////////////////////////////
-	///// System Properties panel /////
-	///////////////////////////////////
-
-	p = new JPanel();
-	p.setLayout(new GridLayout(1, 1));
-	p.setBorder(BorderFactory.createTitledBorder("System Properties"));
-
-	systemPropsTA = new NonTabJTextArea(prefs.getSystemPropertiesAsText(), 4, 30);
-	JScrollPane scroll = new JScrollPane(systemPropsTA);
-	p.add(scroll);
-
-	gbc.weightx = 1;
-	gbc.weighty = 1;
-	gbc.fill = MyGridBagConstraints.BOTH;
-	gbc.gridy++;
-	c.add(p, gbc);
+	///////////////////////
+	///// OK & Cancel /////
+	///////////////////////
 
 	p = new JPanel();
 	p.setLayout(new GridLayout(1, 2));
@@ -293,6 +352,7 @@ public class PreferencesFrame extends MyFrame {
 	gbc.anchor = MyGridBagConstraints.CENTER;
 	gbc.gridwidth = totalwidth;
 	c.add(p, gbc);
+
 
 	pack();
     }
@@ -382,6 +442,9 @@ public class PreferencesFrame extends MyFrame {
 	prefs.setFkHighlightColor(fkHighC);
 	prefs.setSystemPropertiesAsText(systemPropsTA.getText());
 	prefs.setClassPath(classPathModel.getItems());
+	prefs.setShowSplash(showSplashCB.isSelected());
+	prefs.setLogFileName(logFileNameTF.getText());
+	prefs.setLogLevel(logLevelCB.getSelectedIndex());
 	prefs.write();
 	dispose();
     }

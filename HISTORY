@@ -1,3 +1,11 @@
+20 December 2005: build 2545
+*) Added option in Preferences to disable the "splash" screen that is usually
+displayed when the application starts up.
+*) Added logging support. Should usually be disabled because it can slow things
+down quite a bit (particularly with Oracle), but can be useful in generating
+the kind of information Yours Truly needs when trying to debug problems he
+can't reproduce.
+
 12 December 2005: build 2531
 *) QueryResultFrame: Cut, Copy, and Paste now use the usual accelerators
 (Ctrl-X, Ctrl-C, Ctrl-V) instread of Alt-X etc.; jdbcnav now attempts to keep

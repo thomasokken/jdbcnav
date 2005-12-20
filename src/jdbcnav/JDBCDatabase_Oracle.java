@@ -66,14 +66,14 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
      */
     protected String[] getJavaTypes(String qualifiedName)
 						    throws NavigatorException {
-	// This is a bit icky. What I would *like* to do it use
+	// This is a bit icky. What I would *like* to do is to use
 	// PreparedStatement.getMetaData() to find out about a table's Java
 	// type mapping without having to execute a statement, but the Oracle
 	// 8i JDBC driver freaks out when I try to do that.
 	// So, I create a query that is guaranteed to return no rows at all,
 	// and run that. Hopefully this'll be reasonably efficient, too!
 
-	//Main.log("JDBCDatabase_Oracle.getJavaTypes(\"" + qualifiedName + "\")");
+	Main.log(3, "JDBCDatabase_Oracle.getJavaTypes(\"" + qualifiedName + "\")");
 	Statement stmt = null;
 	ResultSet rs = null;
 	try {
@@ -119,7 +119,7 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
      * rid of this information is 'ANALYZE TABLE <table> DELETE STATISTICS'.
      */
     protected Index[] getIndexes(Table t) throws NavigatorException {
-	//Main.log("JDBCDatabase_Oracle.getIndexes(\"" + t.getQualifiedName() + "\")");
+	Main.log(3, "JDBCDatabase_Oracle.getIndexes(\"" + t.getQualifiedName() + "\")");
 	JDBCTable table = (JDBCTable) t;
 	PreparedStatement stmt = null;
 	ResultSet rs = null;

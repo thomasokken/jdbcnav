@@ -118,41 +118,27 @@ public class Main extends JFrame {
 	    //
 	}
 
-	/*
-	try {
-	    ps = new PrintStream(new BufferedOutputStream(new FileOutputStream("log.txt")));
-	    java.sql.DriverManager.setLogStream(ps);
-	    oracle.jdbc.driver.OracleLog.setLogStream(ps);
-	    oracle.jdbc.driver.OracleLog.setLogVolume(3);
-	    oracle.jdbc.driver.OracleLog.startLogging();
-	} catch (FileNotFoundException e) {
-	    e.printStackTrace();
-	}
-	*/
+	Main.log(1, "java.class.path = \"" + System.getProperty("java.class.path") + "\"");
+	for (Iterator iter = prefs.getClassPath().iterator(); iter.hasNext();)
+	    Main.log(1, "jdbcnav classpath item \"" + iter.next() + "\"");
 
-	//Runtime.getRuntime().traceMethodCalls(true);
-
-	Main nav = new Main();
-
-	// This must be done *after* constructing the Main object, because
-	// the Main() constructor causes the preferences to be read
 	MyTable.setTypeColor(1, prefs.getPkHighlightColor());
 	MyTable.setTypeColor(2, prefs.getFkHighlightColor());
 
+	Main nav = new Main();
 	nav.setVisible(true);
 	new MemoryMonitor();
     }
 
-    /*
     private static PrintStream ps;
-    public static void log(String s) {
-	if (ps != null) {
-	    ps.flush();
+    public static void log(int level, String s) {
+	Preferences prefs = Preferences.getPreferences();
+	if (level > prefs.getLogLevel())
+	    return;
+	PrintStream ps = prefs.getLogStream();
+	if (ps != null)
 	    ps.println(new java.util.Date().toString() + ": " + s);
-	    ps.flush();
-	}
     }
-    */
 
     private static ArrayList callbacks = new ArrayList();
     public static void callWhenDesktopReady(Runnable r) {
@@ -197,7 +183,8 @@ public class Main extends JFrame {
 	if (splash != null) {
 	    AboutGlassPane about = new AboutGlassPane();
 	    setGlassPane(about);
-	    about.showAbout();
+	    if (prefs.getShowSplash())
+		about.showAbout();
 	}
 
 	setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);

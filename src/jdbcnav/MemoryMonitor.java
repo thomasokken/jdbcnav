@@ -41,14 +41,14 @@ public class MemoryMonitor implements Runnable {
 		try {
 		    rq.remove();
 		    cleared = true;
-		    //System.err.println("*** Reserve cleared ***");
+		    Main.log(3, "*** Reserve cleared ***");
 		} catch (InterruptedException e) {}
 	    } while (!cleared);
 	    Runtime rt = Runtime.getRuntime();
 	    rt.gc();
 	    long space = rt.freeMemory() + rt.maxMemory() - rt.totalMemory();
 	    if (space < 2 * RESERVE_BYTES) {
-		//System.err.println("*** Memory low ***");
+		Main.log(3, "*** Memory low ***");
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 			    JOptionPane.showInternalMessageDialog(
@@ -68,9 +68,9 @@ public class MemoryMonitor implements Runnable {
 		    } catch (InterruptedException e) {}
 		    rt.gc();
 		    space = rt.freeMemory() + rt.maxMemory() - rt.totalMemory();
-		    //System.err.println("space = " + space);
+		    Main.log(3, "space = " + space);
 		} while (space < 2 * RESERVE_BYTES);
-		//System.err.println("*** Memory OK ***");
+		Main.log(3, "*** Memory OK ***");
 	    }
 	}
     }

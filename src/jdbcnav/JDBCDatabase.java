@@ -618,7 +618,7 @@ public class JDBCDatabase extends BasicDatabase {
     }
 
     private PrimaryKey getPrimaryKey(String qname) throws NavigatorException {
-	//Main.log("JDBCDatabase.getPrimaryKey(\"" + qname + "\")");
+	Main.log(3, "JDBCDatabase.getPrimaryKey(\"" + qname + "\")");
 	String[] parts = parseQualifiedName(qname);
 	ResultSet rs = null;
         try {
@@ -657,7 +657,7 @@ public class JDBCDatabase extends BasicDatabase {
     }
 
     protected Index[] getIndexes(Table table) throws NavigatorException {
-	//Main.log("JDBCDatabase.getIndexes(\"" + table.getQualifiedName() + "\")");
+	Main.log(3, "JDBCDatabase.getIndexes(\"" + table.getQualifiedName() + "\")");
 	PrimaryKey pk = table.getPrimaryKey();
 	ResultSet rs = null;
 	try {
@@ -706,7 +706,7 @@ public class JDBCDatabase extends BasicDatabase {
 
     private ForeignKey[] getFK(String qualifiedName, boolean imported)
 						    throws NavigatorException {
-	//Main.log("JDBCDatabase.getFK(\"" + qualifiedName + "\", " + (imported ? "imported" : "exported") + ")");
+	Main.log(3, "JDBCDatabase.getFK(\"" + qualifiedName + "\", " + (imported ? "imported" : "exported") + ")");
 	String[] parts = parseQualifiedName(qualifiedName);
 	String catalog = parts[0];
 	String schema = parts[1];
@@ -1050,7 +1050,7 @@ public class JDBCDatabase extends BasicDatabase {
     public Object runQuery(String query, boolean asynchronous,
 			   boolean allowTable) throws NavigatorException {
 
-	//Main.log("JDBCDatabase.runQuery(\"" + query + "\")");
+	Main.log(3, "JDBCDatabase.runQuery(\"" + query + "\")");
 	Table table = null;
 
 	if (allowTable && !resultSetContainsTableInfo()) {
@@ -1170,11 +1170,11 @@ public class JDBCDatabase extends BasicDatabase {
 	Statement s = null;
 	ResultSet rs = null;
 	try {
-	    //Main.log("executing query...");
+	    Main.log(3, "executing query...");
 	    s = con.createStatement();
 	    rs = s.executeQuery(query);
 
-	    //Main.log("reading metadata...");
+	    Main.log(3, "reading metadata...");
 	    ResultSetMetaData rsmd = rs.getMetaData();
 	    int columns = rsmd.getColumnCount();
 	    String[] columnNames = new String[columns];
@@ -1413,7 +1413,7 @@ public class JDBCDatabase extends BasicDatabase {
 	public void updateDetails() throws NavigatorException {
 	    // Create backups of everything, in case we need to roll back
 	    // after catching an exception
-	    //Main.log("JDBCDatabase.JDBCTable(\"" + qualifiedName + "\").updateDetails()");
+	    Main.log(3, "JDBCDatabase.JDBCTable(\"" + qualifiedName + "\").updateDetails()");
 	    String oldCatalog = catalog;
 	    String oldSchema = schema;
 	    String oldName = name;

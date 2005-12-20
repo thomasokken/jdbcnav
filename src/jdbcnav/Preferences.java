@@ -101,6 +101,14 @@ public class Preferences {
     // Password for encrypting connection configs in the .jdbcnavrc file
     private SecretKeySpec key;
 
+    // Logging
+    private int logLevel;
+    private String logFileName;
+    private PrintStream logStream;
+
+    // Show splash screen on startup?
+    private boolean showSplash = true;
+
 
     private static Preferences instance = new Preferences();
     private static Method addClassPathItemMethod;
@@ -283,6 +291,88 @@ public class Preferences {
 		addClassPathItem(item);
 	    }
 	}
+    }
+
+
+    public int getLogLevel() {
+	return logLevel;
+    }
+
+    public void setLogLevel(int newLevel) {
+	if (newLevel < 0)
+	    newLevel = 0;
+	else if (newLevel > 3)
+	    newLevel = 3;
+	if (logLevel == newLevel)
+	    return;
+	if (newLevel == 0) {
+	    // Closing log writer
+	    logLevel = newLevel;
+	    java.sql.DriverManager.setLogStream(null);
+	    try {
+		Class c = Class.forName("oracle.jdbc.driver.OracleLog");
+		Method m = c.getMethod("setLogStream", new Class[] { PrintStream.class });
+		m.invoke(null, new Object[] { null });
+	    } catch (Exception e) {}
+	    if (logStream != null) {
+		logStream.flush();
+		logStream.close();
+		logStream = null;
+	    }
+	} else {
+	    if (logStream == null && logFileName != null) {
+		// Opening log writer
+		try {
+		    logStream = new PrintStream(new BufferedOutputStream(new FileOutputStream(logFileName)), true);
+		} catch (IOException e) {
+		    MessageBox.show("Could not open log file.", e);
+		    return;
+		}
+		java.sql.DriverManager.setLogStream(logStream);
+		try {
+		    Class c = Class.forName("oracle.jdbc.driver.OracleLog");
+		    Method m = c.getMethod("setLogStream", new Class[] { PrintStream.class });
+		    m.invoke(null, new Object[] { logStream });
+		} catch (Exception e) {}
+	    }
+	    try {
+		Class c = Class.forName("oracle.jdbc.driver.OracleLog");
+		Method m = c.getMethod("setLogVolume", new Class[] { int.class });
+		m.invoke(null, new Object[] { new Integer(newLevel) });
+	    } catch (Exception e) {}
+	    logLevel = newLevel;
+	}
+    }
+
+    public String getLogFileName() {
+	return logFileName;
+    }
+
+    public void setLogFileName(String newFileName) {
+	if ("".equals(newFileName))
+	    newFileName = null;
+	if (newFileName == null ? logFileName == null : newFileName.equals(logFileName))
+	    return;
+	logFileName = newFileName;
+	if (logLevel != 0) {
+	    // Close existing log & open new one
+	    int oldLogLevel = logLevel;
+	    setLogLevel(0);
+	    setLogLevel(oldLogLevel);
+	}
+    }
+
+    public PrintStream getLogStream() {
+	return logStream;
+    }
+
+
+    public boolean getShowSplash() {
+	return showSplash;
+    }
+
+    public void setShowSplash(boolean showSplash) {
+	this.showSplash = showSplash;
     }
 
 
@@ -534,6 +624,15 @@ public class Preferences {
 		}
 		byte[] ec = bos.toByteArray();
 		encryptedConfigs.add(ec);
+	    } else if (name.equals("log-level")) {
+		try {
+		    setLogLevel(Integer.parseInt(value));
+		} catch (NumberFormatException e) {}
+	    } else if (name.equals("log-file-name")) {
+		setLogFileName(value);
+	    } else if (name.equals("show-splash")) {
+		showSplash = value.equalsIgnoreCase("true")
+			     || value.equalsIgnoreCase("yes");
 	    }
 	}
     }
@@ -761,6 +860,22 @@ public class Preferences {
 	    xml.wholeTag("item", item);
 	}
 	xml.closeTag();
+
+	xml.newLine();
+	xml.writeComment("Log Level and File:");
+	xml.writeComment("Specifies the file to write log messages to; the");
+	xml.writeComment("log level is an integer between 0 and 3, where 0");
+	xml.writeComment("means no logging, and higher numbers indicate   ");
+	xml.writeComment("increasing levels of verbosity.                 ");
+	xml.wholeTag("log-level", Integer.toString(logLevel));
+	if (logFileName != null)
+	    xml.wholeTag("log-file-name", logFileName);
+
+	if (!showSplash) {
+	    xml.newLine();
+	    xml.writeComment("Show splash screen on startup?");
+	    xml.wholeTag("show-splash", showSplash ? "true" : "false");
+	}
 
 	xml.newLine();
 	xml.closeTag();

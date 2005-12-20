@@ -35,14 +35,6 @@ encypted connection configs) -- because that means it's a new password, and
 there's otherwise the danger that the user could accidentally encrypt all his
 connection configs using a mistyped password.
 
-Loading large queries can cause OutOfMemoryError. These should be caught and a
-message displayed to the user. (Currently, all that happens is a message being
-printed on standard error by the JVM, where most users will never see it; this
-means that the user can't tell the difference between an operation that failed
-because it ran out of memory and an operation that is simply taking very long.)
-Apart from better user feedback, another reason for catching this error is to
-prevent the AWT event thread from dying.
-
 Hourglass cursor for slow operations that block the UI. Maybe also use Windows-
 style "hourglass+arrow" cursor for QueryResultFrame while query is in progess.
 
@@ -55,5 +47,3 @@ should be no "Apply to table" option in this case.
 Make "Reload Tree", "Clear Cache", and "Remove Orphans" scriptable, so that
 you can mix the SQL embedding and the JDBCNav functionality in one script --
 this could be useful for testing etc.
-
-Add option to Preferences to suppress the splash screen on startup.
