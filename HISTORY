@@ -1,4 +1,4 @@
-?? ???? ????: build ????
+21 December 2005: build 2549
 *) More logging: now logs all system properties on startup, and jdbcnav's
 version string. Also, now logs all messages displayed by MessageBox.show().
 
