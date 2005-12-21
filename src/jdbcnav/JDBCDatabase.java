@@ -1050,7 +1050,8 @@ public class JDBCDatabase extends BasicDatabase {
     public Object runQuery(String query, boolean asynchronous,
 			   boolean allowTable) throws NavigatorException {
 
-	Main.log(3, "JDBCDatabase.runQuery(\"" + query + "\")");
+	Main.log(3, "JDBCDatabase.runQuery(\"" + query + "\", "
+			    + (asynchronous ? "async" : "sync") + ")");
 	Table table = null;
 
 	if (allowTable && !resultSetContainsTableInfo()) {
@@ -1261,6 +1262,7 @@ public class JDBCDatabase extends BasicDatabase {
 	    }
 
 	    if (asynchronous) {
+		Main.log(3, "creating background loader");
 		BackgroundLoadData bld = new BackgroundLoadData(columnNames,
 								typeSpecs);
 		Thread ldr = new Thread(new BackgroundLoader(bld, s, rs));
@@ -2103,6 +2105,7 @@ public class JDBCDatabase extends BasicDatabase {
 	}
 
 	public void run() {
+	    Main.log(3, "background loader started");
 	    try {
 		int columns = data.getColumnCount();
 		while (rs.next()) {
@@ -2123,6 +2126,7 @@ public class JDBCDatabase extends BasicDatabase {
 		MessageBox.show("An exception occurred while "
 				+ "loading a query result:", e);
 	    }
+	    Main.log(3, Integer.toString(data.getRowCount()) + " rows loaded");
 
 	    if (rs != null)
 		try {

@@ -85,14 +85,15 @@ public class MessageBox {
 	}
 
 	pw.flush();
+	String s = bos.toString();
+	Main.log(1, s);
 	if (SwingUtilities.isEventDispatchThread())
-	    show(bos.toString());
+	    show(s);
 	else
-	    SwingUtilities.invokeLater(new LaterShower(bos.toString()));
+	    SwingUtilities.invokeLater(new LaterShower(s));
     }
 
     private static void show(String message) {
-	Main.log(1, message);
 	MyFrame f = new MyFrame("Message");
 	Container c = f.getContentPane();
 	c.setLayout(new GridLayout(1, 1));
