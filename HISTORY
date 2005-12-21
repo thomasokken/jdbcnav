@@ -1,3 +1,7 @@
+?? ???? ????: build ????
+*) More logging: now logs all system properties on startup, and jdbcnav's
+version string. Also, now logs all messages displayed by MessageBox.show().
+
 20 December 2005: build 2545
 *) Added option in Preferences to disable the "splash" screen that is usually
 displayed when the application starts up.

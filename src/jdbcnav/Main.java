@@ -24,6 +24,7 @@ import java.awt.font.*;
 import java.awt.geom.*;
 import java.awt.image.*;
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -118,9 +119,16 @@ public class Main extends JFrame {
 	    //
 	}
 
-	Main.log(1, "java.class.path = \"" + System.getProperty("java.class.path") + "\"");
+
+	Main.log(1, "jdbcnav version: " + version);
 	for (Iterator iter = prefs.getClassPath().iterator(); iter.hasNext();)
 	    Main.log(1, "jdbcnav classpath item \"" + iter.next() + "\"");
+	StringBuffer buf = new StringBuffer();
+	Properties props = System.getProperties();
+	for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
+	    Map.Entry entry = (Map.Entry) iter.next();
+	    Main.log(1, "system property " + entry.getKey() + " = \"" + entry.getValue() + "\"");
+	}
 
 	MyTable.setTypeColor(1, prefs.getPkHighlightColor());
 	MyTable.setTypeColor(2, prefs.getFkHighlightColor());
@@ -131,13 +139,15 @@ public class Main extends JFrame {
     }
 
     private static PrintStream ps;
+    private static final SimpleDateFormat timestampFormat =
+	new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     public static void log(int level, String s) {
 	Preferences prefs = Preferences.getPreferences();
 	if (level > prefs.getLogLevel())
 	    return;
 	PrintStream ps = prefs.getLogStream();
 	if (ps != null)
-	    ps.println(new java.util.Date().toString() + ": " + s);
+	    ps.println(timestampFormat.format(new java.util.Date()) + ": " + s);
     }
 
     private static ArrayList callbacks = new ArrayList();

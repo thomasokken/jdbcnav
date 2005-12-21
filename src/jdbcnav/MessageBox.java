@@ -92,6 +92,7 @@ public class MessageBox {
     }
 
     private static void show(String message) {
+	Main.log(1, message);
 	MyFrame f = new MyFrame("Message");
 	Container c = f.getContentPane();
 	c.setLayout(new GridLayout(1, 1));
