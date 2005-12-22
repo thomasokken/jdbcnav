@@ -36,7 +36,7 @@
 	   destdir="classes"
 	   debug="on"
 	   debuglevel="source,lines">
-      <compilerarg value="-Xlint:deprecation"/>
+      <!-- <compilerarg value="-Xlint:deprecation"/> -->
       <!-- <compilerarg value="-Xlint:unchecked"/> -->
     </javac>
   </target>
@@ -52,7 +52,7 @@
 	   destdir="classes/foo"
 	   debug="on"
 	   debuglevel="source,lines">
-      <compilerarg value="-Xlint:deprecation"/>
+      <!-- <compilerarg value="-Xlint:deprecation"/> -->
       <!-- <compilerarg value="-Xlint:unchecked"/> -->
     </javac>
   </target>

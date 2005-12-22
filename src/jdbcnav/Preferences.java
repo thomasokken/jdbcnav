@@ -308,10 +308,17 @@ public class Preferences {
 	if (newLevel == 0) {
 	    // Closing log writer
 	    logLevel = newLevel;
-	    java.sql.DriverManager.setLogStream(null);
+	    // Calling DriverManager.setLogStream() via reflection in order
+	    // to avoid the deprecation warning
+	    try {
+		Method m = java.sql.DriverManager.class.getMethod(
+			"setLogStream", new Class[] { PrintStream.class });
+		m.invoke(null, new Object[] { null });
+	    } catch (Exception e) {}
 	    try {
 		Class c = Class.forName("oracle.jdbc.driver.OracleLog");
-		Method m = c.getMethod("setLogStream", new Class[] { PrintStream.class });
+		Method m = c.getMethod(
+			"setLogStream", new Class[] { PrintStream.class });
 		m.invoke(null, new Object[] { null });
 	    } catch (Exception e) {}
 	    if (logStream != null) {
@@ -323,21 +330,29 @@ public class Preferences {
 	    if (logStream == null && logFileName != null) {
 		// Opening log writer
 		try {
-		    logStream = new PrintStream(new BufferedOutputStream(new FileOutputStream(logFileName)), true);
+		    logStream = new PrintStream(new BufferedOutputStream(
+				    new FileOutputStream(logFileName)), true);
 		} catch (IOException e) {
 		    MessageBox.show("Could not open log file.", e);
 		    return;
 		}
-		java.sql.DriverManager.setLogStream(logStream);
+		// Calling DriverManager.setLogStream() via reflection in order
+		// to avoid the deprecation warning
+		try {
+		    Method m = java.sql.DriverManager.class.getMethod(
+			    "setLogStream", new Class[] { PrintStream.class });
+		    m.invoke(null, new Object[] { logStream });
+		} catch (Exception e) {}
 		try {
 		    Class c = Class.forName("oracle.jdbc.driver.OracleLog");
-		    Method m = c.getMethod("setLogStream", new Class[] { PrintStream.class });
+		    Method m = c.getMethod(
+			    "setLogStream", new Class[] { PrintStream.class });
 		    m.invoke(null, new Object[] { logStream });
 		} catch (Exception e) {}
 	    }
 	    try {
 		Class c = Class.forName("oracle.jdbc.driver.OracleLog");
-		Method m = c.getMethod("setLogVolume", new Class[] { int.class });
+		Method m = c.getMethod("setLogVolume", new Class[] {int.class});
 		m.invoke(null, new Object[] { new Integer(newLevel) });
 	    } catch (Exception e) {}
 	    logLevel = newLevel;
@@ -351,7 +366,8 @@ public class Preferences {
     public void setLogFileName(String newFileName) {
 	if ("".equals(newFileName))
 	    newFileName = null;
-	if (newFileName == null ? logFileName == null : newFileName.equals(logFileName))
+	if (newFileName == null ? logFileName == null
+				: newFileName.equals(logFileName))
 	    return;
 	logFileName = newFileName;
 	if (logLevel != 0) {
