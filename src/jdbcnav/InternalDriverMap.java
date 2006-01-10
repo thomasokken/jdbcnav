@@ -42,6 +42,8 @@ public class InternalDriverMap {
 	    return "Generic";
 	} else if (driverClassName.endsWith(".DB2Driver")) {
 	    return "DB2";
+	} else if (driverClassName.startsWith("org.apache.derby.")) {
+	    return "Derby";
 	} else if (driverClassName.equals("com.mysql.jdbc.Driver")) {
 	    return "MySQL";
 	} else if (driverClassName.equals("oracle.jdbc.driver.OracleDriver")) {
@@ -88,6 +90,7 @@ public class InternalDriverMap {
 	databaseMap = new TreeMap();
 	databaseMap.put("Generic", "jdbcnav.JDBCDatabase");
 	databaseMap.put("DB2", "jdbcnav.JDBCDatabase_DB2");
+	databaseMap.put("Derby", "jdbcnav.JDBCDatabase_Derby");
 	databaseMap.put("MySQL", "jdbcnav.JDBCDatabase_MySQL");
 	databaseMap.put("Oracle 8", "jdbcnav.JDBCDatabase_Oracle");
 	databaseMap.put("Oracle 9", "jdbcnav.JDBCDatabase_Oracle");
