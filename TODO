@@ -7,6 +7,14 @@ TODO -- old, some of these may have been fixed already
 
 -------------------------------------------------------------------------------
 
+LOB loading: the current "lazy" implementation does not work with some DBs,
+specifically with Derby. This is because with some DBs, the Blob or Clob object
+is only valid as long as the Statement or ResultSet that produced it is open.
+JDBC Navigator needs to support "proactive" loading (load all LOBs immediately)
+and a different kind of "lazy" loading where the load is performed by running a
+new query. Question: is it sufficient to implement the new-style, robust, lazy
+loading, or do we actually need to support proactive and old-style lazy too?
+
 When MemoryMonitor notices that memory is getting low, in addition to showing a
 warning dialog, it should also pause in-progress table loads. Without this, the
 low-memory warning may be useless, because a table loading thread may overflow
