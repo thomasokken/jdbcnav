@@ -1,3 +1,12 @@
+TODO -- old, some of these may have been fixed already
+
+* Waarom werken updates op timetypes niet in SmallSQL?
+* DateTime.equals() moet worden geïmplementeerd. Helpt dat wellicht met het bovenstaande?
+* DateTime.equals() kan nooit echt goed werken zonder normalisatie. Gebruik van TypeSpec in constructor?
+* Clipboard - copy/paste tussen tabellen met verschillende TypeSpecs
+
+-------------------------------------------------------------------------------
+
 When MemoryMonitor notices that memory is getting low, in addition to showing a
 warning dialog, it should also pause in-progress table loads. Without this, the
 low-memory warning may be useless, because a table loading thread may overflow
