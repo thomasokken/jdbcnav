@@ -1,10 +1,11 @@
-LOB loading: the current "lazy" implementation does not work with some DBs,
-specifically with Derby. This is because with some DBs, the Blob or Clob object
-is only valid as long as the Statement or ResultSet that produced it is open.
-JDBC Navigator needs to support "proactive" loading (load all LOBs immediately)
-and a different kind of "lazy" loading where the load is performed by running a
-new query. Question: is it sufficient to implement the new-style, robust, lazy
-loading, or do we actually need to support proactive and old-style lazy too?
+LOB loading: depending on a new 'lobsOutliveResultSet' property, jdbcnav should
+create wrappers around Blobs and Clobs that take care of running a new query to
+load the LOB. This is needed for DBs like Derby where LOBs are only valid as
+long as the ResultSet that they came from remains open.
+In cases where it isn't possible to run a new query later, that is, when
+runQuery() can't figure out which table the object came from (or, if the table
+does not have a primary key?), we could load the LOB immediately; this should
+be governed by a Preferences setting.
 
 Updates on timetypes don't work with SmallSQL. It looks like jdbcnav does
 generate the right statements and sets the right objects, so I suspect a
