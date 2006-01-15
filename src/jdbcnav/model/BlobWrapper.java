@@ -16,26 +16,26 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ///////////////////////////////////////////////////////////////////////////////
 
-package jdbcnav;
+package jdbcnav.model;
 
-import java.sql.*;
-import jdbcnav.model.TypeSpec;
+import jdbcnav.util.NavigatorException;
 
 
-public class JDBCDatabase_Derby extends JDBCDatabase {
-    public JDBCDatabase_Derby(String name, String driver, Connection con) {
-	super(name, driver, con);
-    }
+/**
+ * The <code>BlobWrapper</code> interface is a DB-neutral wrapper around BLOBs.
+ * It is used to hide the details of loading BLOBs, in order to help support
+ * DBs where BLOBs become invalid after the ResultSet that produced them is
+ * closed.
+ */
+public interface BlobWrapper {
+    /**
+     * This method returns the representation to be displayed in a table view.
+     */
+    String toString();
 
-    protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,
-				    int sqlType, String javaType) {
-	if (dbType.equals("BLOB"))
-	    javaType = "java.sql.Blob";
-
-	return super.makeTypeSpec(dbType, size, scale, sqlType, javaType);
-    }
-
-    protected boolean lobsOutliveResultSets() {
-	return false;
-    }
+    /**
+     * This method loads the actual data; if it returns successfully, the
+     * LazyData object should be replaced with this return value.
+     */
+    byte[] load();
 }

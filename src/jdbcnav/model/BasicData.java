@@ -18,8 +18,6 @@
 
 package jdbcnav.model;
 
-import java.sql.Blob;
-import java.sql.Clob;
 import java.util.*;
 import jdbcnav.util.MiscUtils;
 
@@ -47,10 +45,10 @@ public class BasicData implements Data {
 	    Object[] row = new Object[cols];
 	    for (int j = 0; j < cols; j++) {
 		Object o = src.getValueAt(i, j);
-		if (o instanceof Blob)
-		    o = MiscUtils.loadBlob((Blob) o);
-		else if (o instanceof Clob)
-		    o = MiscUtils.loadClob((Clob) o);
+		if (o instanceof BlobWrapper)
+		    o = ((BlobWrapper) o).load();
+		else if (o instanceof ClobWrapper)
+		    o = ((ClobWrapper) o).load();
 		row[j] = o;
 	    }
 	    data.add(row);

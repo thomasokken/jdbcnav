@@ -188,10 +188,10 @@ public class ScriptGenerator_SmallSQL extends ScriptGenerator {
 	} else if (spec.type == TypeSpec.INTERVAL_YS) {
 	    Interval inter = (Interval) obj;
 	    return Long.toString(inter.months * 2629746000000000L + inter.nanos);
-	} else if (obj instanceof java.sql.Blob || obj instanceof byte[]) {
+	} else if (obj instanceof BlobWrapper || obj instanceof byte[]) {
 	    byte[] ba;
-	    if (obj instanceof java.sql.Blob)
-		ba = MiscUtils.loadBlob((java.sql.Blob) obj);
+	    if (obj instanceof BlobWrapper)
+		ba = ((BlobWrapper) obj).load();
 	    else
 		ba = (byte[]) obj;
 	    return "0x" + FileUtils.byteArrayToHex(ba);

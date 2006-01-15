@@ -677,8 +677,8 @@ public class ScriptGenerator {
 	    long nanos = inter.months * 2629746000000000L + inter.nanos;
 	    inter = new Interval(0, nanos);
 	    return quote(inter.toString(TypeSpec.INTERVAL_DS, spec.size));
-	} else if (obj instanceof java.sql.Clob) {
-	    return quote(MiscUtils.loadClob((java.sql.Clob) obj));
+	} else if (obj instanceof ClobWrapper) {
+	    return quote(((ClobWrapper) obj).load());
 	} else if (spec.type == TypeSpec.FIXED
 		|| spec.type == TypeSpec.FLOAT
 		|| obj instanceof Number) {

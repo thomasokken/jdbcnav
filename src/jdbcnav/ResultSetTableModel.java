@@ -21,22 +21,12 @@ package jdbcnav;
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.*;
-import java.sql.Blob;
-import java.sql.Clob;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
-import jdbcnav.model.BasicData;
-import jdbcnav.model.Data;
-import jdbcnav.model.PrimaryKey;
-import jdbcnav.model.Table;
-import jdbcnav.model.TypeSpec;
-import jdbcnav.util.ArrayCollection;
-import jdbcnav.util.CSVTokenizer;
-import jdbcnav.util.FileUtils;
-import jdbcnav.util.MiscUtils;
-import jdbcnav.util.NavigatorException;
+import jdbcnav.model.*;
+import jdbcnav.util.*;
 
 
 // TODO: when deleting or updating primary key values in a table that
@@ -263,7 +253,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	if (!editable)
 	    return false;
 	Object o = getValueAt(row, column);
-	return !(o instanceof Blob) && !(o instanceof Clob)
+	return !(o instanceof BlobWrapper) && !(o instanceof ClobWrapper)
 	    && !(o instanceof byte[]);
     }
 
@@ -690,17 +680,17 @@ public class ResultSetTableModel extends AbstractTableModel
 		    for (int j = 0; j < columns; j++) {
 			Object o = getValueAt(i, j);
 			if (o != null) {
-			    if (o instanceof Blob)
-				o = MiscUtils.loadBlob((Blob) o);
-			    else if (o instanceof Clob)
-				o = MiscUtils.loadClob((Clob) o);
+			    if (o instanceof BlobWrapper)
+				o = ((BlobWrapper) o).load();
+			    else if (o instanceof ClobWrapper)
+				o = ((ClobWrapper) o).load();
 			    Class k = specs[j].jdbcJavaClass;
 			    String s;
 			    if (k == String.class
-				    || Clob.class.isAssignableFrom(k))
+				    || java.sql.Clob.class.isAssignableFrom(k))
 				s = quote((String) o);
 			    else if (k == byteArrayClass
-				    || Blob.class.isAssignableFrom(k))
+				    || java.sql.Blob.class.isAssignableFrom(k))
 				s = FileUtils.byteArrayToBase64((byte[]) o);
 			    else {
 				s = specs[j].objectToString(o);
@@ -830,10 +820,10 @@ public class ResultSetTableModel extends AbstractTableModel
 			continue;
 		    Class k = specs[i].jdbcJavaClass;
 		    if (k == String.class
-			    || Clob.class.isAssignableFrom(k))
+			    || java.sql.Clob.class.isAssignableFrom(k))
 			row[i] = s;
 		    else if (k == byteArrayClass
-			    || Blob.class.isAssignableFrom(k))
+			    || java.sql.Blob.class.isAssignableFrom(k))
 			row[i] = FileUtils.base64ToByteArray(s);
 		    else
 			try {

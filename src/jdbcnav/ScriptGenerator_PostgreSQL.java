@@ -198,10 +198,10 @@ public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
 	    buf.append('\'');
 	    return buf.toString();
 	}
-	if (obj instanceof java.sql.Blob || obj instanceof byte[]) {
+	if (obj instanceof BlobWrapper || obj instanceof byte[]) {
 	    byte[] ba;
-	    if (obj instanceof java.sql.Blob)
-		ba = MiscUtils.loadBlob((java.sql.Blob) obj);
+	    if (obj instanceof BlobWrapper)
+		ba = ((BlobWrapper) obj).load();
 	    else
 		ba = (byte[]) obj;
 	    StringBuffer buf = new StringBuffer();

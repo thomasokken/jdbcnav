@@ -266,10 +266,10 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 	    // TODO: handle fractional seconds
 	    return "to_date('" + dateTimeFormat.format((java.util.Date) obj)
 			       + "', 'YYYY-MM-DD HH24:MI:SS')";
-	} else if (obj instanceof java.sql.Blob || obj instanceof byte[]) {
+	} else if (obj instanceof BlobWrapper || obj instanceof byte[]) {
 	    byte[] ba;
-	    if (obj instanceof java.sql.Blob)
-		ba = MiscUtils.loadBlob((java.sql.Blob) obj);
+	    if (obj instanceof BlobWrapper)
+		ba = ((BlobWrapper) obj).load();
 	    else
 		ba = (byte[]) obj;
 	    return "hextoraw('" + FileUtils.byteArrayToHex(ba) + "')";

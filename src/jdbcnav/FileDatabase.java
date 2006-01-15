@@ -20,9 +20,6 @@ package jdbcnav;
 
 import java.io.*;
 import java.lang.reflect.*;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Timestamp;
 import java.util.*;
 import javax.swing.*;
 import javax.xml.parsers.*;
@@ -411,9 +408,11 @@ public class FileDatabase extends BasicDatabase {
 		if (o == null)
 		    continue;
 		Class k = specs[j].jdbcJavaClass;
-		if (k == String.class || Clob.class.isAssignableFrom(k))
+		if (k == String.class
+			|| java.sql.Clob.class.isAssignableFrom(k))
 		    s = FileUtils.encodeEntities((String) o);
-		else if (k == byteArrayClass || Blob.class.isAssignableFrom(k))
+		else if (k == byteArrayClass
+			|| java.sql.Blob.class.isAssignableFrom(k))
 		    s = FileUtils.byteArrayToBase64((byte[]) o);
 		else
 		    s = specs[j].objectToString(o);
@@ -631,9 +630,11 @@ public class FileDatabase extends BasicDatabase {
 		    TypeSpec spec = tr.getTypeSpec(i);
 		    Class k = spec.jdbcJavaClass;
 		    try {
-			if (k == String.class || Clob.class.isAssignableFrom(k))
+			if (k == String.class
+				|| java.sql.Clob.class.isAssignableFrom(k))
 			    oa[i] = FileUtils.decodeEntities(s);
-			else if (k == byteArrayClass || Blob.class.isAssignableFrom(k))
+			else if (k == byteArrayClass
+				|| java.sql.Blob.class.isAssignableFrom(k))
 			    oa[i] = FileUtils.base64ToByteArray(s);
 			else
 			    try {
@@ -808,7 +809,7 @@ public class FileDatabase extends BasicDatabase {
 	if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMP")) {
 	    try {
 		Method m = spec.jdbcJavaClass.getMethod("timestampValue", null);
-		Timestamp ts = (Timestamp) m.invoke(o, null);
+		java.sql.Timestamp ts = (java.sql.Timestamp) m.invoke(o, null);
 		return ts.toString();
 	    } catch (Exception e) {}
 	}

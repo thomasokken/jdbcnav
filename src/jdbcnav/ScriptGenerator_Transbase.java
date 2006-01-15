@@ -264,10 +264,10 @@ public class ScriptGenerator_Transbase extends ScriptGenerator {
 	    s = s.substring(1);
 	    return sign + "TIMESPAN" + range.format(s);
 	}
-	if (obj instanceof java.sql.Blob || obj instanceof byte[]) {
+	if (obj instanceof BlobWrapper || obj instanceof byte[]) {
 	    byte[] ba;
-	    if (obj instanceof java.sql.Blob)
-		ba = MiscUtils.loadBlob((java.sql.Blob) obj);
+	    if (obj instanceof BlobWrapper)
+		ba = ((BlobWrapper) obj).load();
 	    else
 		ba = (byte[]) obj;
 	    return "0x" + FileUtils.byteArrayToHex(ba);

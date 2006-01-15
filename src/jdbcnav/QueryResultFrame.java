@@ -21,9 +21,6 @@ package jdbcnav;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.SQLException;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -841,12 +838,12 @@ public class QueryResultFrame extends MyFrame
 	    TypeSpec spec = model.getTypeSpec(column);
 	    Class k = spec.jdbcJavaClass;
 	    
-	    if (o instanceof Blob)
-		o = MiscUtils.loadBlob((Blob) o);
+	    if (o instanceof BlobWrapper)
+		o = ((BlobWrapper) o).load();
 	    if (k == new byte[1].getClass()
 		    || spec.jdbcJavaType.equals("transbase.tbx.types.TBBits")
 		    || o instanceof byte[]
-		    || o == null && Blob.class.isAssignableFrom(k)) {
+		    || o == null && java.sql.Blob.class.isAssignableFrom(k)) {
 		byte[] data = (byte[]) o;
 		BinaryEditorFrame bef;
 		ResultSetTableModel p_model = editable ? model : null;
@@ -857,8 +854,8 @@ public class QueryResultFrame extends MyFrame
 	    }
 
 	    String text;
-	    if (o instanceof Clob)
-		text = MiscUtils.loadClob((Clob) o);
+	    if (o instanceof ClobWrapper)
+		text = ((ClobWrapper) o).load();
 	    else
 		text = spec.objectToString(o);
 	    TextEditorFrame tef;

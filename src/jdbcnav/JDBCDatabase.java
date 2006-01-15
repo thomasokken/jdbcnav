@@ -657,7 +657,8 @@ public class JDBCDatabase extends BasicDatabase {
     }
 
     protected Index[] getIndexes(Table table) throws NavigatorException {
-	Main.log(3, "JDBCDatabase.getIndexes(\"" + table.getQualifiedName() + "\")");
+	Main.log(3, "JDBCDatabase.getIndexes(\"" + table.getQualifiedName()
+								+ "\")");
 	PrimaryKey pk = table.getPrimaryKey();
 	ResultSet rs = null;
 	try {
@@ -706,7 +707,8 @@ public class JDBCDatabase extends BasicDatabase {
 
     private ForeignKey[] getFK(String qualifiedName, boolean imported)
 						    throws NavigatorException {
-	Main.log(3, "JDBCDatabase.getFK(\"" + qualifiedName + "\", " + (imported ? "imported" : "exported") + ")");
+	Main.log(3, "JDBCDatabase.getFK(\"" + qualifiedName + "\", "
+			    + (imported ? "imported" : "exported") + ")");
 	String[] parts = parseQualifiedName(qualifiedName);
 	String catalog = parts[0];
 	String schema = parts[1];
@@ -1017,7 +1019,7 @@ public class JDBCDatabase extends BasicDatabase {
 	else if (scale == null)
 	    spec.native_representation = dbType + "(" + size + ")";
 	else
-	    spec.native_representation = dbType + "(" + size + ", " + scale + ")";
+	    spec.native_representation = dbType + "(" + size + ", " + scale+")";
 	spec.jdbcDbType = dbType;
 	spec.jdbcSize = size;
 	spec.jdbcScale = scale;
@@ -1263,9 +1265,10 @@ public class JDBCDatabase extends BasicDatabase {
 
 	    if (asynchronous) {
 		Main.log(3, "creating background loader");
-		BackgroundLoadData bld = new BackgroundLoadData(columnNames,
-								typeSpecs);
-		Thread ldr = new Thread(new BackgroundLoader(bld, s, rs));
+		BackgroundLoadData bld =
+			    new BackgroundLoadData(columnNames, typeSpecs);
+		Thread ldr = new Thread(
+			new BackgroundLoader(bld, s, rs, table, columnNames));
 		ldr.setPriority(Thread.MIN_PRIORITY);
 		ldr.setDaemon(true);
 		ldr.start();
@@ -1284,10 +1287,19 @@ public class JDBCDatabase extends BasicDatabase {
 	    bd.setTypeSpecs(typeSpecs);
 
 	    ArrayList data = new ArrayList();
+	    boolean noClone = lobsOutliveResultSets() || table == null;
 	    while (rs.next()) {
 		Object[] row = new Object[columns];
 		for (int i = 0; i < columns; i++)
-		    row[i] = db2nav(bd.getTypeSpec(i), rs.getObject(i + 1));
+		    row[i] = rs.getObject(i + 1);
+		Object[] orig_row = noClone ? null : (Object[]) row.clone();
+		for (int i = 0; i < columns; i++) {
+		    Object o = row[i];
+		    if ((o instanceof Blob) || (o instanceof Clob))
+			row[i] = wrapLob(table, columnNames, orig_row, i, o);
+		    else
+			row[i] = db2nav(bd.getTypeSpec(i), o);
+		}
 		data.add(row);
 	    }
 
@@ -1415,7 +1427,8 @@ public class JDBCDatabase extends BasicDatabase {
 	public void updateDetails() throws NavigatorException {
 	    // Create backups of everything, in case we need to roll back
 	    // after catching an exception
-	    Main.log(3, "JDBCDatabase.JDBCTable(\"" + qualifiedName + "\").updateDetails()");
+	    Main.log(3, "JDBCDatabase.JDBCTable(\"" + qualifiedName
+						+ "\").updateDetails()");
 	    String oldCatalog = catalog;
 	    String oldSchema = schema;
 	    String oldName = name;
@@ -1501,20 +1514,23 @@ public class JDBCDatabase extends BasicDatabase {
 			} catch (SQLException e) {}
 		}
 
-		columnNames = (String[]) columnNamesList.toArray(new String[cols]);
+		columnNames = (String[]) columnNamesList.toArray(
+							    new String[cols]);
 
 		typeSpecs = new TypeSpec[cols];
-		String[] javaTypes = JDBCDatabase.this.getJavaTypes(qualifiedName);
+		String[] javaTypes = JDBCDatabase.this.getJavaTypes(
+							    qualifiedName);
 		for (int i = 0; i < cols; i++) {
 		    String dbType = (String) dbTypesList.get(i);
 		    Integer size = (Integer) columnSizesList.get(i);
 		    Integer scale = (Integer) columnScalesList.get(i);
 		    int sqlType = ((Integer) sqlTypesList.get(i)).intValue();
-		    typeSpecs[i] = makeTypeSpec(dbType, size, scale, sqlType, javaTypes[i]);
+		    typeSpecs[i] = makeTypeSpec(dbType, size, scale, sqlType,
+								javaTypes[i]);
 		}
 		fixTypeSpecs(qualifiedName, typeSpecs);
 
-		isNullable = (String[]) isNullableList.toArray(new String[cols]);
+		isNullable= (String[]) isNullableList.toArray(new String[cols]);
 
 		pk = JDBCDatabase.this.getPrimaryKey(qualifiedName);
 		fks = JDBCDatabase.this.getFK(qualifiedName, true);
@@ -1533,7 +1549,8 @@ public class JDBCDatabase extends BasicDatabase {
 		    for (int j = 0; j < n; j++)
 			keyColumns.add(fk.getThisColumnName(j));
 		}
-		TreeSet indexColumns = new TreeSet(String.CASE_INSENSITIVE_ORDER);
+		TreeSet indexColumns = new TreeSet(
+						String.CASE_INSENSITIVE_ORDER);
 		for (int i = 0; i < indexes.length; i++) {
 		    Index idx = indexes[i];
 		    int n = idx.getColumnCount();
@@ -1994,6 +2011,269 @@ public class JDBCDatabase extends BasicDatabase {
     }
 
 
+    ///////////////////////
+    ///// LOB support /////
+    ///////////////////////
+
+    protected Object wrapLob(Table table, String[] cnames,
+			     Object[] values, int index, Object o) {
+	boolean simple = lobsOutliveResultSets() || table == null;
+	if (o instanceof Blob) {
+	    Blob blob = (Blob) o;
+	    if (simple)
+		return new SimpleBlobWrapper(blob);
+	    else
+		return new QueryBlobWrapper(table, cnames, values, index, blob);
+	} else {
+	    Clob clob = (Clob) o;
+	    if (simple)
+		return new SimpleClobWrapper(clob);
+	    else
+		return new QueryClobWrapper(table, cnames, values, index, clob);
+	}
+    }
+
+    private static String lobString(Object o) {
+	StringBuffer buf = new StringBuffer();
+	if (o instanceof Blob)
+	    buf.append("Blob");
+	else
+	    buf.append("Clob");
+	buf.append(" (length = ");
+	try {
+	    if (o instanceof Blob)
+		buf.append(((Blob) o).length());
+	    else
+		buf.append(((Clob) o).length());
+	} catch (SQLException e) {
+	    buf.append("?");
+	}
+	buf.append(")");
+	return buf.toString();
+    }
+
+    private static class SimpleBlobWrapper implements BlobWrapper {
+	private Blob blob;
+	private String s;
+	public SimpleBlobWrapper(Blob blob) {
+	    this.blob = blob;
+	    s = lobString(blob);
+	}
+	public String toString() {
+	    return s;
+	}
+	public byte[] load() {
+	    return loadBlob(blob);
+	}
+    }
+
+    private static class SimpleClobWrapper implements ClobWrapper {
+	private Clob clob;
+	private String s;
+	public SimpleClobWrapper(Clob clob) {
+	    this.clob = clob;
+	    s = lobString(clob);
+	}
+	public String toString() {
+	    return s;
+	}
+	public String load() {
+	    return loadClob(clob);
+	}
+    }
+
+    private class QueryLobWrapper {
+	private Table table;
+	private String[] columnNames;
+	private Object[] values;
+	int index;
+	private String s;
+	public QueryLobWrapper(Table table, String[] columnNames,
+			       Object[] values, int index, Object o) {
+	    this.table = table;
+	    this.columnNames = columnNames;
+	    this.values = values;
+	    this.index = index;
+	    s = lobString(o);
+	}
+	public String toString() {
+	    return s;
+	}
+	protected Object load2() {
+	    // NOTE: This method assumes that columnNames contains all the
+	    // table's primary key columns. If the table does not have a PK,
+	    // all the table's columns should be present.
+	    // This relies on runQuery() to only populate 'table' if those
+	    // conditions are met; it has to do that anyway in order to be able
+	    // to decide whether to return the result in a Data or Table object.
+	    StringBuffer buf = new StringBuffer();
+	    buf.append("select ");
+	    buf.append(columnNames[index]);
+	    buf.append(" from ");
+	    buf.append(table.getQualifiedName());
+	    buf.append(" where ");
+
+	    PrimaryKey pk = table.getPrimaryKey();
+	    String[] pkColNames;
+	    if (pk == null) {
+		int n = pk.getColumnCount();
+		pkColNames = new String[n];
+		for (int i = 0; i < n; i++)
+		    pkColNames[i] = pk.getColumnName(i);
+	    } else
+		pkColNames = table.getColumnNames();
+
+	    ArrayList keyIndexInTable = new ArrayList();
+	    ArrayList keyIndexInData = new ArrayList();
+	    TypeSpec[] specs = table.getTypeSpecs();
+	    boolean first = true;
+	    String[] colNames = table.getColumnNames();
+
+	    for (int i = 0; i < pkColNames.length; i++) {
+		String name = pkColNames[i];
+		int j = 0;
+		while (j < specs.length)
+		    if (name.equalsIgnoreCase(colNames[j]))
+			break;
+		    else
+			j++;
+		if (j == specs.length)
+		    continue;
+
+		TypeSpec spec = specs[j];
+		if (spec.type == TypeSpec.LONGVARCHAR
+			|| spec.type == TypeSpec.LONGVARNCHAR
+			|| spec.type == TypeSpec.LONGVARRAW)
+		    continue;
+
+		if (first)
+		    first = false;
+		else
+		    buf.append(" and ");
+		buf.append(name);
+		Object obj = values[j];
+		if (obj == null && needsIsNull())
+		    buf.append(" is null");
+		else {
+		    buf.append(" = ?");
+		    keyIndexInTable.add(new Integer(i));
+		    keyIndexInData.add(new Integer(j));
+		}
+		break;
+	    }
+
+	    PreparedStatement stmt = null;
+	    ResultSet rs = null;
+	    try {
+		stmt = con.prepareStatement(buf.toString());
+		for (int i = 0; i < keyIndexInTable.size(); i++) {
+		    int ti = ((Integer) keyIndexInTable.get(i)).intValue();
+		    int di = ((Integer) keyIndexInData.get(i)).intValue();
+		    setObject(stmt, ti + 1, di, values[di], table);
+		}
+		rs = stmt.executeQuery();
+		if (rs.next()) {
+		    Object o = rs.getObject(1);
+		    if (o instanceof Blob)
+			return loadBlob((Blob) o);
+		    else if (o instanceof Clob)
+			return loadClob((Clob) o);
+		    else
+			return o;
+		} else {
+		    MessageBox.show(
+			    new Exception("LOB's table row was deleted."));
+		    return null;
+		}
+	    } catch (SQLException e) {
+		MessageBox.show("Could not load LOB.", e);
+		return null;
+	    } finally {
+		if (rs != null)
+		    try {
+			rs.close();
+		    } catch (SQLException e) {}
+		if (stmt != null)
+		    try {
+			stmt.close();
+		    } catch (SQLException e) {}
+	    }
+	}
+    }
+
+    private class QueryBlobWrapper extends QueryLobWrapper
+				   implements BlobWrapper {
+	public QueryBlobWrapper(Table table, String[] columnNames,
+			       Object[] values, int index, Blob blob) {
+	    super(table, columnNames, values, index, blob);
+	}
+	public byte[] load() {
+	    return (byte[]) load2();
+	}
+    }
+
+    private class QueryClobWrapper extends QueryLobWrapper
+				   implements ClobWrapper {
+	public QueryClobWrapper(Table table, String[] columnNames,
+			       Object[] values, int index, Clob clob) {
+	    super(table, columnNames, values, index, clob);
+	}
+	public String load() {
+	    return (String) load2();
+	}
+    }
+
+    private static byte[] loadBlob(Blob blob) {
+	InputStream is = null;
+	try {
+	    is = blob.getBinaryStream();
+	    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	    byte[] buf = new byte[16384];
+	    try {
+		int bytesRead;
+		while ((bytesRead = is.read(buf)) > 0)
+		    bos.write(buf, 0, bytesRead);
+	    } catch (IOException e) {
+		MessageBox.show("I/O error while reading Blob value!", e);
+	    }
+	    return bos.toByteArray();
+	} catch (SQLException e) {
+	    MessageBox.show("Reading Blob value failed!", e);
+	    return new byte[0];
+	} finally {
+	    if (is != null)
+		try {
+		    is.close();
+		} catch (IOException e) {}
+	}
+    }
+
+    private static String loadClob(Clob clob) {
+	Reader r = null;
+	try {
+	    r = clob.getCharacterStream();
+	    StringBuffer sbuf = new StringBuffer();
+	    char[] cbuf = new char[4096];
+	    try {
+		int n;
+		while ((n = r.read(cbuf)) != -1)
+		    sbuf.append(cbuf, 0, n);
+	    } catch (IOException e) {
+		MessageBox.show("I/O error while reading Clob value!", e);
+	    }
+	    return sbuf.toString();
+	} catch (SQLException e) {
+	    MessageBox.show("Reading Clob value failed!", e);
+	    return "";
+	} finally {
+	    if (r != null)
+		try {
+		    r.close();
+		} catch (IOException e) {}
+	}
+    }
+
+
     /////////////////////////////////////////////////////////////////////
     ///// Miscellaneous stuff; formerly InteractiveMetaDriver stuff /////
     /////////////////////////////////////////////////////////////////////
@@ -2007,6 +2287,10 @@ public class JDBCDatabase extends BasicDatabase {
     }
 
     protected boolean resultSetContainsTableInfo() {
+	return true;
+    }
+
+    protected boolean lobsOutliveResultSets() {
 	return true;
     }
 
@@ -2093,13 +2377,18 @@ public class JDBCDatabase extends BasicDatabase {
 	private BackgroundLoadData data;
 	private Statement stmt;
 	private ResultSet rs;
+	private Table table;
+	private String[] columnNames;
 	private int state;
 
 	public BackgroundLoader(BackgroundLoadData data,
-				Statement stmt, ResultSet rs) {
+				Statement stmt, ResultSet rs,
+				Table table, String[] columnNames) {
 	    this.data = data;
 	    this.stmt = stmt;
 	    this.rs = rs;
+	    this.table = table;
+	    this.columnNames = columnNames;
 	    state = Data.LOADING;
 	    data.addStateListener(this);
 	}
@@ -2108,6 +2397,7 @@ public class JDBCDatabase extends BasicDatabase {
 	    Main.log(3, "background loader started");
 	    try {
 		int columns = data.getColumnCount();
+		boolean noClone = lobsOutliveResultSets() || table == null;
 		while (rs.next()) {
 		    synchronized (this) {
 			while (state == Data.PAUSED)
@@ -2119,7 +2409,15 @@ public class JDBCDatabase extends BasicDatabase {
 		    }
 		    Object[] row = new Object[columns];
 		    for (int i = 0; i < columns; i++)
-			row[i] = db2nav(data.getTypeSpec(i), rs.getObject(i+1));
+			row[i] = rs.getObject(i + 1);
+		    Object[] orig_row = noClone ? null : (Object[]) row.clone();
+		    for (int i = 0; i < columns; i++) {
+			Object o = row[i];
+			if ((o instanceof Blob) || (o instanceof Clob))
+			    row[i] = wrapLob(table, columnNames, orig_row, i,o);
+			else
+			    row[i] = db2nav(data.getTypeSpec(i), o);
+		    }
 		    data.addRow(row);
 		}
 	    } catch (SQLException e) {

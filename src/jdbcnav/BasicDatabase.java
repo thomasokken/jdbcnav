@@ -21,9 +21,6 @@ package jdbcnav;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.SQLException;
 import javax.swing.*;
 
 import jdbcnav.model.*;
@@ -1052,36 +1049,17 @@ public abstract class BasicDatabase implements Database {
 	    return new java.sql.Timestamp(time).toString();
 	}
 
-	if (Blob.class.isAssignableFrom(klass)) {
-	    if (o instanceof Blob) {
-		Blob blob = (Blob) o;
-		try {
-		    return "Blob (length = " + blob.length() + ")";
-		} catch (SQLException e) {
-		    return "Blob (length = ?)";
-		}
-	    } else {
-		// Assuming byte[]; this can happen when a Blob value has been
-		// edited in QueryResultFrame.
-		klass = new byte[1].getClass();
-	    }
+	if (java.sql.Blob.class.isAssignableFrom(klass)
+		&& !(o instanceof BlobWrapper)) {
+	    // Assuming byte[]; this can happen when a Blob value has been
+	    // edited in QueryResultFrame.
+	    klass = new byte[1].getClass();
 	}
 
 	if (klass == new byte[1].getClass()
 		|| spec.jdbcJavaType.equals("[B")
 		|| o instanceof byte[])
 	    return FileUtils.byteArrayToHex((byte[]) o);
-
-	if (Clob.class.isAssignableFrom(klass)) {
-	    if (o instanceof Clob) {
-		Clob clob = (Clob) o;
-		try {
-		    return "Clob (length = " + clob.length() + ")";
-		} catch (SQLException e) {
-		    return "Clob (length = ?)";
-		}
-	    }
-	}
 
 	return o.toString();
     }

@@ -150,10 +150,10 @@ public class ScriptGenerator_DB2 extends ScriptGenerator {
 		|| spec.type == TypeSpec.TIMESTAMP_TZ)
 	    return "'" + ((DateTime) obj).toString(TypeSpec.TIMESTAMP, 6,
 						   DateTime.ZONE_NONE) + "'";
-	if (obj instanceof java.sql.Blob || obj instanceof byte[]) {
+	if (obj instanceof BlobWrapper || obj instanceof byte[]) {
 	    byte[] ba;
-	    if (obj instanceof java.sql.Blob)
-		ba = MiscUtils.loadBlob((java.sql.Blob) obj);
+	    if (obj instanceof BlobWrapper)
+		ba = ((BlobWrapper) obj).load();
 	    else
 		ba = (byte[]) obj;
 	    String s = "x'" + FileUtils.byteArrayToHex(ba) + "'";

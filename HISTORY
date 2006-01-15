@@ -1,3 +1,10 @@
+?? ???? ????: build ????
+*) Pushed LOB loading into JDBCDatabase class; added support for DBs where Blob
+and Clob objects become invalid when the ResultSet that produced them is
+closed. Currently, this support is only activated in the Derby driver. (Note:
+this does not mean that Derby is fully supported yet; that will happen in
+another release in the near future.)
+
 21 December 2005: build 2549
 *) More logging: now logs all system properties on startup, and jdbcnav's
 version string. Also, now logs all messages displayed by MessageBox.show().

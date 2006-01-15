@@ -663,7 +663,8 @@ public class MyTable extends JTable {
 	    this.value = spec.objectToString(value);
 	    JTextField tf = (JTextField) getComponent();
 	    tf.setBorder(new LineBorder(Color.black));
-	    tf.setHorizontalAlignment(Number.class.isAssignableFrom(spec.jdbcJavaClass)
+	    tf.setHorizontalAlignment(
+		    Number.class.isAssignableFrom(spec.jdbcJavaClass)
 					? JTextField.RIGHT : JTextField.LEFT);
 	    return super.getTableCellEditorComponent(table, this.value,
 						     isSelected, row, column);
