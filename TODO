@@ -1,7 +1,3 @@
-QueryLobWrapper works when running a query in a SQL window, but not when
-opening a window from a browser. This is because the allowTable parameter is
-'false' in the latter case. How to deal?
-
 Derby support.
 
 Updates on timetypes don't work with SmallSQL. It looks like jdbcnav does
