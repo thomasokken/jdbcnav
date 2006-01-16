@@ -1,3 +1,6 @@
+?? ???? ????: build ????
+*) Added Derby support.
+
 16 January 2006: build 2561
 *) Pushed LOB loading into JDBCDatabase class; added support for DBs where Blob
 and Clob objects become invalid when the ResultSet that produced them is

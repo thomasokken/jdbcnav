@@ -109,6 +109,7 @@ public class InternalDriverMap {
 	scriptGenMap = new TreeMap();
 	scriptGenMap.put("Generic", "jdbcnav.ScriptGenerator");
 	scriptGenMap.put("DB2", "jdbcnav.ScriptGenerator_DB2");
+	scriptGenMap.put("Derby", "jdbcnav.ScriptGenerator_Derby");
 	scriptGenMap.put("MySQL", "jdbcnav.ScriptGenerator_MySQL");
 	scriptGenMap.put("Oracle 8", "jdbcnav.ScriptGenerator_Oracle8");
 	scriptGenMap.put("Oracle 9", "jdbcnav.ScriptGenerator_Oracle9");

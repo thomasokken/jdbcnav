@@ -1,5 +1,3 @@
-Derby support. (And how about Cloudscape?)
-
 Updates on timetypes don't work with SmallSQL 0.02. Looks like a SmallSQL bug.
 
 When MemoryMonitor notices that memory is getting low, in addition to showing a
