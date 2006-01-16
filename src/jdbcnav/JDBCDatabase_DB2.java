@@ -34,17 +34,33 @@ public class JDBCDatabase_DB2 extends JDBCDatabase {
 	return super.makeQualifiedName(catalog, schema, name);
     }
 
+    /**
+     * Attempt to find a table's fully qualified name, given only its
+     * bare name. With DB2 databases, we should be OK by prepending
+     * the session user.
+     */
     protected String qualifyName(String name) {
-	// TODO: You can qualify a name by prepending the current user ID;
-	// unfortunately, I don't know how to get it. (Oracle has a USER
-	// function but I haven't found anything like that in the DB2 SQL
-	// docs.) I could get it done by recording the username in the
-	// JDBCDatabase object; that being done, the Oracle implementation
-	// of qualifyName() could be simplified also.
-	// Update: what I'm looking for is the CURRENT_USER function.
-	// Next question: what's the DB2 equivalent of Oracle's
-	// SELECT <foo> FROM DUAL?
-	return name;
+	Statement stmt = null;
+	ResultSet rs = null;
+	try {
+	    stmt = con.createStatement();
+	    rs = stmt.executeQuery("select current_user from sysibm.sysdummy1");
+	    if (rs.next())
+		return rs.getString(1) + "." + name;
+	    else
+		return name;
+	} catch (SQLException e) {
+	    return name;
+	} finally {
+	    if (rs != null)
+		try {
+		    rs.close();
+		} catch (SQLException e) {}
+	    if (stmt != null)
+		try {
+		    stmt.close();
+		} catch (SQLException e) {}
+	}
     }
 
     protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,

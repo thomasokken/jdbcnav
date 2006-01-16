@@ -1,8 +1,6 @@
-Derby support.
+Derby support. (And how about Cloudscape?)
 
-Updates on timetypes don't work with SmallSQL. It looks like jdbcnav does
-generate the right statements and sets the right objects, so I suspect a
-SmallSQL bug. Must get the latest release and try again.
+Updates on timetypes don't work with SmallSQL 0.02. Looks like a SmallSQL bug.
 
 When MemoryMonitor notices that memory is getting low, in addition to showing a
 warning dialog, it should also pause in-progress table loads. Without this, the

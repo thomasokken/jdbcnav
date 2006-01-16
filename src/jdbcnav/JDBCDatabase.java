@@ -1218,7 +1218,13 @@ public class JDBCDatabase extends BasicDatabase {
 
 	    if (canDoTable) {
 		String qname = makeQualifiedName(catalog, schema, name);
-		table = getTable(qname);
+		try {
+		    table = getTable(qname);
+		} catch (NavigatorException e) {
+		    // Well, we tried. This is not a fatal error; the user
+		    // will just have to make do with a non-editable
+		    // QueryResultFrame.
+		}
 		if (table != null) {
 		    // We check if all the primary key components are present
 		    // in the result set; if there is no primary key, we make
