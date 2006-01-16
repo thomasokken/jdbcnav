@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2005  Thomas Okken
+// Copyright (C) 2001-2006  Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -1056,7 +1056,7 @@ public class JDBCDatabase extends BasicDatabase {
 			    + (asynchronous ? "async" : "sync") + ")");
 	Table table = null;
 
-	if (allowTable && !resultSetContainsTableInfo()) {
+	if (!resultSetContainsTableInfo()) {
 	    // Great. We're dealing with a JDBC driver that doesn't implement
 	    // ResultSetMetaData.getCatalogName(), getSchemaName(), and
 	    // getTableName().
@@ -1071,11 +1071,6 @@ public class JDBCDatabase extends BasicDatabase {
 	    //
 	    //     select * from <table> where [...]
 	    //     select foo.* from [...] <table> foo [...] where [...]
-
-	    // First of all, set 'allowTable' to false; this disables the code
-	    // later on that attempts to use the aforementioned
-	    // ResultSetMetaData methods...
-	    allowTable = false;
 
 	    StringTokenizer tok = new StringTokenizer(query, " \t\n\r,", true);
 	    int state = 0;
@@ -1186,6 +1181,7 @@ public class JDBCDatabase extends BasicDatabase {
 	    String catalog = null;
 	    String schema = null;
 	    String name = null;
+	    boolean canDoTable = resultSetContainsTableInfo();
 
 	    for (int i = 0; i < columns; i++) {
 		columnNames[i] = rsmd.getColumnName(i + 1);
@@ -1203,7 +1199,7 @@ public class JDBCDatabase extends BasicDatabase {
 		typeSpecs[i] = makeTypeSpec(dbType, new Integer(size),
 					new Integer(scale), sqlType, javaType);
 
-		if (allowTable) {
+		if (resultSetContainsTableInfo()) {
 		    String catalog2 = rsmd.getCatalogName(i + 1);
 		    String schema2 = rsmd.getSchemaName(i + 1);
 		    String name2 = rsmd.getTableName(i + 1);
@@ -1215,12 +1211,12 @@ public class JDBCDatabase extends BasicDatabase {
 			if (!MiscUtils.strEq(catalog, catalog2)
 				|| !MiscUtils.strEq(schema, schema2)
 				|| !MiscUtils.strEq(name, name2))
-			    allowTable = false;
+			    canDoTable = false;
 		    }
 		}
 	    }
 
-	    if (allowTable) {
+	    if (canDoTable) {
 		String qname = makeQualifiedName(catalog, schema, name);
 		table = getTable(qname);
 		if (table != null) {
@@ -1276,7 +1272,7 @@ public class JDBCDatabase extends BasicDatabase {
 		// Prevent 'finally' clause from closing Statement & ResultSet
 		s = null;
 		rs = null;
-		if (table != null)
+		if (allowTable && table != null)
 		    return newPartialTable(query, table, bld);
 		else
 		    return bld;
@@ -1305,7 +1301,7 @@ public class JDBCDatabase extends BasicDatabase {
 
 	    bd.setData(data);
 
-	    if (table != null)
+	    if (allowTable && table != null)
 		return newPartialTable(query, table, bd);
 	    else
 		return bd;

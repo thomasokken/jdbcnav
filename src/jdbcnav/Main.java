@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2005  Thomas Okken
+// Copyright (C) 2001-2006  Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -45,7 +45,7 @@ public class Main extends JFrame {
     private static BufferedImage splash;
     private static String version;
     private static String copyright =
-		"(C) 2001-2005 Thomas Okken -- thomas_okken@yahoo.com";
+		"(C) 2001-2006 Thomas Okken -- thomas_okken@yahoo.com";
     private static String website =
 		"http://home.planet.nl/~demun000/thomas_projects/jdbcnav/";
 
