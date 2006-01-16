@@ -139,7 +139,9 @@ public class JDBCDatabase_Derby extends JDBCDatabase {
 	    spec.type = TypeSpec.UNKNOWN;
 	}
 
-	if (dbType.equals("DECIMAL")) {
+	if (dbType.equals("DEC")
+		|| dbType.equals("DECIIMAL")
+		|| dbType.equals("NUMERIC")) {
 	    // 'size' and 'scale' both relevant
 	} else if (spec.type == TypeSpec.CHAR
 		|| spec.type == TypeSpec.VARCHAR
