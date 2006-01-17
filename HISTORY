@@ -1,3 +1,6 @@
+?? ???? ????: build ????
+*) Derby driver: fixed TypeSpec generation for NUMERIC columns.
+
 16 January 2006: build 2565
 *) Added Derby support.
 

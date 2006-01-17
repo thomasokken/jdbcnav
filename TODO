@@ -49,3 +49,9 @@ should be no "Apply to table" option in this case.
 Make "Reload Tree", "Clear Cache", and "Remove Orphans" scriptable, so that
 you can mix the SQL embedding and the JDBCNav functionality in one script --
 this could be useful for testing etc.
+
+TypeSpec should distinguish between LONG and LOB types; also, it should
+maintain a 'size' property for such types. These changes are mostly relevant
+for accurate cross-DB SQL script generation, but the 'size' property could also
+be used to enforce the constraint when editing cells (not that any such
+constraints are currently enforced when editing strings and numbers...).
