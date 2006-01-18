@@ -278,7 +278,7 @@ public class MyGridBagLayout implements LayoutManager2,
      *
      * @serial
      * @see #getConstraints(Component)
-     * @see #setConstraints(Component, GridBagConstraints)
+     * @see #setConstraints(Component, MyGridBagConstraints)
      * @see #lookupConstraints(Component)
      */
   protected MyGridBagConstraints defaultConstraints;
@@ -294,7 +294,7 @@ public class MyGridBagLayout implements LayoutManager2,
      * not yet been validated.
      *
      * @serial
-     * @see #GetLayoutInfo(Container, int)
+     * @see #GetLayoutInfo(Container)
      */
   protected MyGridBagLayoutInfo layoutInfo;
 
@@ -567,7 +567,7 @@ public class MyGridBagLayout implements LayoutManager2,
      * container using this grid bag layout.
      * <p>
      * Most applications do not call this method directly.
-     * @param     target   the container in which to do the layout.
+     * @param     parent   the container in which to do the layout.
      * @see       java.awt.Container#getPreferredSize
    */
   public Dimension preferredLayoutSize(Container parent) {
@@ -580,7 +580,7 @@ public class MyGridBagLayout implements LayoutManager2,
      * using this grid bag layout.
      * <p>
      * Most applications do not call this method directly.
-     * @param     target   the container in which to do the layout.
+     * @param     parent   the container in which to do the layout.
      * @see       java.awt.Container#doLayout
    */
   public Dimension minimumLayoutSize(Container parent) {

@@ -361,7 +361,7 @@ public class FileUtils {
     /**
      * Translates the specified Base64 string into a byte array.
      * 
-     * @throw IllegalArgumentException if <tt>s</tt> is not a valid Base64
+     * @throws IllegalArgumentException if <tt>s</tt> is not a valid Base64
      *        string.
      */
     public static byte[] base64ToByteArray(String s) {

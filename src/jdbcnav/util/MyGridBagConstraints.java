@@ -1,5 +1,5 @@
 /*
- * @(#)GridBagConstraints.java	1.26 00/02/02
+ * @(#)MyGridBagConstraints.java	1.26 00/02/02
  *
  * Copyright 1995-2000 Sun Microsystems, Inc. All Rights Reserved.
  * 
@@ -12,13 +12,13 @@ package jdbcnav.util;
 import java.awt.*;
 
 /**
- * The <code>GridBagConstraints</code> class specifies constraints 
+ * The <code>MyGridBagConstraints</code> class specifies constraints 
  * for components that are laid out using the 
- * <code>GridBagLayout</code> class.
+ * <code>MyGridBagLayout</code> class.
  *
  * @version 	1.26, 02/02/00
  * @author Doug Stein
- * @see java.awt.GridBagLayout
+ * @see jdbcnav.util.MyGridBagLayout
  * @since JDK1.0
  */
 public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
@@ -28,10 +28,10 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
      * column or row (<code>gridwidth</code>, <code>gridheight</code>), 
      * or that this component be placed next to the previously added 
      * component (<code>gridx</code>, <code>gridy</code>). 
-     * @see      java.awt.GridBagConstraints#gridwidth
-     * @see      java.awt.GridBagConstraints#gridheight
-     * @see      java.awt.GridBagConstraints#gridx
-     * @see      java.awt.GridBagConstraints#gridy
+     * @see      #gridwidth
+     * @see      #gridheight
+     * @see      #gridx
+     * @see      #gridy
      */
   public static final int RELATIVE = -1;
 
@@ -121,7 +121,7 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
      * gridx should be a non-negative value.
      * @serial
      * @see #clone()
-     * @see java.awt.GridBagConstraints#gridy
+     * @see #gridy
      */
   public int gridx;
 
@@ -136,7 +136,7 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
      * gridy should be a non-negative value.
      * @serial
      * @see #clone() 
-     * @see java.awt.GridBagConstraints#gridx
+     * @see #gridx
      */
   public int gridy;
 
@@ -151,7 +151,7 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
      * gridwidth should be non-negative and the default value is 1.
      * @serial
      * @see #clone() 
-     * @see java.awt.GridBagConstraints#gridheight
+     * @see #gridheight
      */
   public int gridwidth;
 
@@ -166,7 +166,7 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
      * gridheight should be a non-negative value and the default value is 1.
      * @serial
      * @see #clone()
-     * @see java.awt.GridBagConstraints#gridwidth
+     * @see #gridwidth
      */
   public int gridheight;
 
@@ -187,7 +187,7 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
      * weightx should be a non-negative value.
      * @serial
      * @see #clone() 
-     * @see java.awt.GridBagConstraints#weighty
+     * @see #weighty
      */
   public double weightx;
 
@@ -208,7 +208,7 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
      * weighty should be a non-negative value.
      * @serial
      * @see #clone()
-     * @see java.awt.GridBagConstraints#weightx
+     * @see #weightx
      */
   public double weighty;
 
@@ -272,7 +272,7 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
      * The default value is <code>0</code>. 
      * @serial
      * @see #clone()
-     * @see java.awt.GridBagConstraints#ipady
+     * @see #ipady
      */
   public int ipadx;
 
@@ -285,7 +285,7 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
      * The default value is 0. 
      * @serial
      * @see #clone()
-     * @see java.awt.GridBagConstraints#ipadx
+     * @see #ipadx
      */
   public int ipady;
 
@@ -313,28 +313,28 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
      * The minimum width of the component.  It is used to calculate
      * <code>ipady</code>, where the default will be 0.
      * @serial
-     * @see ipady
+     * @see #ipady
      */
   int minWidth;
    /**
      * The minimum height of the component. It is used to calculate
      * <code>ipadx</code>, where the default will be 0.
      * @serial
-     * @see ipadx
+     * @see #ipadx
      */
   int minHeight;
    /**
      * The minimum width of the component.  It is used to calculate
      * <code>ipady</code>, where the default will be 0.
      * @serial
-     * @see ipady
+     * @see #ipady
      */
   int prefWidth;
    /**
      * The minimum height of the component. It is used to calculate
      * <code>ipadx</code>, where the default will be 0.
      * @serial
-     * @see ipadx
+     * @see #ipadx
      */
   int prefHeight;
 
@@ -344,7 +344,7 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
   private static final long serialVersionUID = -1000070633030801713L;
 
    /**
-     * Creates a <code>GridBagConstraint</code> object with 
+     * Creates a <code>MyGridBagConstraint</code> object with 
      * all of its fields set to their default value. 
      */
   public MyGridBagConstraints () {
@@ -364,7 +364,7 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
   }
 
   /**
-    * Creates a <code>GridBagConstraints</code> object with
+    * Creates a <code>MyGridBagConstraints</code> object with
     * all of its fields set to the passed-in arguments.
     * 
     * Note: Because the use of this constructor hinders readability
@@ -383,17 +383,17 @@ public class MyGridBagConstraints implements Cloneable, java.io.Serializable {
     * @param ipadx	The initial ipadx value.
     * @param ipady	The initial ipady value.
     * 
-    * @see java.awt.GridBagConstraints#gridx
-    * @see java.awt.GridBagConstraints#gridy
-    * @see java.awt.GridBagConstraints#gridwidth
-    * @see java.awt.GridBagConstraints#gridheight
-    * @see java.awt.GridBagConstraints#weightx
-    * @see java.awt.GridBagConstraints#weighty
-    * @see java.awt.GridBagConstraints#anchor
-    * @see java.awt.GridBagConstraints#fill
-    * @see java.awt.GridBagConstraints#insets
-    * @see java.awt.GridBagConstraints#ipadx
-    * @see java.awt.GridBagConstraints#ipady
+    * @see #gridx
+    * @see #gridy
+    * @see #gridwidth
+    * @see #gridheight
+    * @see #weightx
+    * @see #weighty
+    * @see #anchor
+    * @see #fill
+    * @see #insets
+    * @see #ipadx
+    * @see #ipady
     * 
     * @since 1.2
     */
