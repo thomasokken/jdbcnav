@@ -80,7 +80,7 @@
 	     source="1.4"
 	     destdir="javadoc"
 	     windowtitle="JDBC Navigator">
-      <link href="file:///opt/java/jdk1.5.0_05/docs/api"/>
+      <link href="file:///opt/java/jdk1.5.0_06/docs/api"/>
       <link href="file:///home/thomas/rhino1_5R5/docs/apidocs"/>
     </javadoc>
   </target>
