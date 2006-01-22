@@ -531,12 +531,16 @@ public class MyTable extends JTable {
 
     private static class GenericEditor extends DefaultCellEditor {
 
-	Class[] argTypes = new Class[]{String.class};
-	java.lang.reflect.Constructor constructor;
-	Object value;
+	private Class[] argTypes = new Class[]{String.class};
+	private java.lang.reflect.Constructor constructor;
+	protected Object value;
 
 	public GenericEditor() {
-            super(new MyTextField());
+            this(new MyTextField());
+        }
+
+	public GenericEditor(MyTextField tf) {
+	    super(tf);
             getComponent().setName("Table.editor");
         }
 
@@ -598,10 +602,9 @@ public class MyTable extends JTable {
 	}
     }
 
-    private static class DateEditor extends DefaultCellEditor {
+    private static class DateEditor extends GenericEditor {
 
 	private Class klass;
-	private Object value;
 
 	public DateEditor(Class klass) {
 	    super(new MyTextField());
@@ -629,16 +632,11 @@ public class MyTable extends JTable {
 	    }
 	    return super.stopCellEditing();
 	}
-
-	public Object getCellEditorValue() {
-	    return value;
-	}
     }
 
-    private static class DatabaseObjectEditor extends DefaultCellEditor {
+    private static class DatabaseObjectEditor extends GenericEditor {
 
 	private TypeSpec spec;
-	private Object value;
 
 	public DatabaseObjectEditor() {
 	    super(new MyTextField());
@@ -670,10 +668,6 @@ public class MyTable extends JTable {
 					? JTextField.RIGHT : JTextField.LEFT);
 	    return super.getTableCellEditorComponent(table, this.value,
 						     isSelected, row, column);
-	}
-
-	public Object getCellEditorValue() {
-	    return value;
 	}
     }
 
