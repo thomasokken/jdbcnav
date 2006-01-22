@@ -19,8 +19,6 @@
 package jdbcnav.model;
 
 import jdbcnav.ResultSetTableModel;
-import jdbcnav.TableFrame;
-import jdbcnav.TableDetailsFrame;
 import jdbcnav.util.NavigatorException;
 
 public interface Table extends Comparable {

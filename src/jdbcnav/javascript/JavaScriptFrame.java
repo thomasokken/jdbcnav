@@ -18,10 +18,7 @@
 
 package jdbcnav.javascript;
 
-import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
-import java.util.*;
 import javax.swing.*;
 import javax.swing.text.*;
 import org.mozilla.javascript.*;
@@ -131,8 +128,8 @@ public class JavaScriptFrame extends TextEditorFrame {
 		    global.setOut(pipe);
 		    Object resObj = ctx.evaluateString(global, cmd,
 						       "<stdin>", 0, null);
-		    if (resObj != ctx.getUndefinedValue())
-			pipe.println(ctx.toString(resObj));
+		    if (resObj != Context.getUndefinedValue())
+			pipe.println(Context.toString(resObj));
 		} catch (JavaScriptException e) {
 		    // Probably won't happen any more; JavaScriptException is
 		    // flagged as 'deprecated' in Rhino 1.5r5, and it doesn't
@@ -144,7 +141,7 @@ public class JavaScriptFrame extends TextEditorFrame {
 		    // is also an EvaluatorException as of 8/23/2004.
 		    pipe.println("JavaScriptException:");
 		    pipe.println(MiscUtils.throwableToString(e));
-		    pipe.println("Value: " + ctx.toString(e.getValue()));
+		    pipe.println("Value: " + Context.toString(e.getValue()));
 		} catch (JSInterruptedException e) {
 		    // This happens when we throw the JSIE from the
 		    // observeInstructionCount() method -- the exception is
@@ -155,7 +152,7 @@ public class JavaScriptFrame extends TextEditorFrame {
 		    MessageBox.show("Exception in JavaScript interpreter", e);
 		    pipe.println("Exception.");
 		}
-		ctx.exit();
+		Context.exit();
 
 		int end = pipe.getPos() + 1;
 		outputSelectionStart = start;

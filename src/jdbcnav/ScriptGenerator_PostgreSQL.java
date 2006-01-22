@@ -20,7 +20,6 @@ package jdbcnav;
 
 import java.text.DecimalFormat;
 import jdbcnav.model.*;
-import jdbcnav.util.MiscUtils;
 
 public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
     protected String printType(TypeSpec td) {

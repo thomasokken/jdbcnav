@@ -23,7 +23,6 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 
-import jdbcnav.model.Database;
 import jdbcnav.model.ForeignKey;
 import jdbcnav.model.Table;
 import jdbcnav.util.MyGridBagConstraints;
@@ -176,7 +175,6 @@ public class MultiCommitDialog extends MyFrame {
 
     private void selectRelated() {
 	ArrayList list = new ArrayList();
-	boolean[] done = new boolean[dirty.length];
 	boolean[] checked = new boolean[dirty.length];
 	HashMap tableMap = new HashMap();
 

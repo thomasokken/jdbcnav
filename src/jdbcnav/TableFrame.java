@@ -23,7 +23,6 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 
-import jdbcnav.model.BasicData;
 import jdbcnav.model.Data;
 import jdbcnav.model.Database;
 import jdbcnav.model.ForeignKey;
@@ -351,7 +350,6 @@ public class TableFrame extends QueryResultFrame {
     private void fkValueSelected(int row, String[] names, Object[] values) {
 	int ncols = model.getColumnCount();
 	for (int i = 0; i < ncols; i++) {
-	    String colName = model.getColumnName(i);
 	    int col = MiscUtils.arrayLinearSearch(names, model.getColumnName(i));
 	    if (col != -1)
 		model.setValueAt(values[col], row, i);

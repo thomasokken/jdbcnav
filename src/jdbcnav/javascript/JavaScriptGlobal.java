@@ -18,7 +18,6 @@
 
 package jdbcnav.javascript;
 
-import java.io.*;
 import org.mozilla.javascript.*;
 
 import jdbcnav.MessageBox;
@@ -54,7 +53,7 @@ public class JavaScriptGlobal extends ScriptableObject {
 	for (int i = 0; i < args.length; i++) {
 	    if (i > 0)
 		pipe.print(" ");
-	    pipe.print(ctx.toString(args[i]));
+	    pipe.print(Context.toString(args[i]));
 	}
     }
 
@@ -64,7 +63,7 @@ public class JavaScriptGlobal extends ScriptableObject {
 	for (int i = 0; i < args.length; i++) {
 	    if (i > 0)
 		pipe.print(" ");
-	    pipe.print(ctx.toString(args[i]));
+	    pipe.print(Context.toString(args[i]));
 	}
 	pipe.println();
     }

@@ -19,7 +19,6 @@
 package jdbcnav;
 
 import java.awt.*;
-import java.lang.reflect.*; // See dispose()
 import java.util.*;
 import javax.swing.*;
 

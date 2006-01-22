@@ -123,7 +123,6 @@ public class Main extends JFrame {
 	Main.log(1, "jdbcnav version: " + version);
 	for (Iterator iter = prefs.getClassPath().iterator(); iter.hasNext();)
 	    Main.log(1, "jdbcnav classpath item \"" + iter.next() + "\"");
-	StringBuffer buf = new StringBuffer();
 	Properties props = System.getProperties();
 	for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
 	    Map.Entry entry = (Map.Entry) iter.next();
@@ -138,7 +137,6 @@ public class Main extends JFrame {
 	new MemoryMonitor();
     }
 
-    private static PrintStream ps;
     private static final SimpleDateFormat timestampFormat =
 	new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     public static void log(int level, String s) {
@@ -164,7 +162,7 @@ public class Main extends JFrame {
 	global.defineProperty("browsers", new BrowserList(),
 		    ScriptableObject.PERMANENT | ScriptableObject.READONLY);
 	global.defineProperty("global", global, ScriptableObject.PERMANENT);
-	context.exit();
+	Context.exit();
 
 	clipboard = new Clipboard();
 	instance = this;
@@ -749,19 +747,19 @@ public class Main extends JFrame {
     }
 
     public static void addBrowser(Scriptable b) {
-	Context context = Context.enter();
+	Context.enter();
 	BrowserList bl = (BrowserList) instance.global.get("browsers",
 		instance.global);
 	bl.addBrowser(b);
-	context.exit();
+	Context.exit();
     }
 
     public static void removeBrowser(Scriptable b) {
-	Context context = Context.enter();
+	Context.enter();
 	BrowserList bl = (BrowserList) instance.global.get("browsers",
 		instance.global);
 	bl.removeBrowser(b);
-	context.exit();
+	Context.exit();
     }
 
     private static class BrowserList implements Scriptable {

@@ -21,7 +21,6 @@ package jdbcnav;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
 
 import jdbcnav.util.MyGridBagConstraints;
 import jdbcnav.util.MyGridBagLayout;
@@ -32,7 +31,6 @@ public class FindReplaceDialog extends MyFrame {
     private TextEditorFrame target;
     private JTextField findField;
     private JTextField replaceField;
-    private JRadioButton downRB;
     private JCheckBox wholeWordCB;
     private JCheckBox matchCaseCB;
 

@@ -20,8 +20,6 @@ package jdbcnav;
 
 import java.text.*;
 import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
 
 import jdbcnav.model.*;
 import jdbcnav.util.MiscUtils;
@@ -750,7 +748,6 @@ public class ScriptGenerator {
 	    return s;
 	StringBuffer buf = new StringBuffer();
 	StringBuffer wordbuf = new StringBuffer();
-	int slen = s.length();
 	// State: 0 = base, 1 = maybe number (just read '-'), 2 = inside
 	// number, 3 = inside number just after 'e', 4 = inside word,
 	// 5 = inside double-quoted word, 6 = inside string, 7 = maybe inside

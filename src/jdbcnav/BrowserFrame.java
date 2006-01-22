@@ -21,7 +21,6 @@ package jdbcnav;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.lang.ref.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;

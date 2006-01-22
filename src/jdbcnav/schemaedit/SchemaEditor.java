@@ -21,7 +21,6 @@ package jdbcnav.schemaedit;
 import java.util.*;
 import jdbcnav.BrowserFrame;
 import jdbcnav.MyFrame;
-import jdbcnav.model.*;
 
 
 public class SchemaEditor extends MyFrame {

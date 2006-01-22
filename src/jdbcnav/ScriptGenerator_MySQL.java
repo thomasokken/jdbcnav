@@ -22,7 +22,6 @@ import java.text.*;
 import java.util.*;
 import jdbcnav.model.*;
 import jdbcnav.util.FileUtils;
-import jdbcnav.util.MiscUtils;
 
 public class ScriptGenerator_MySQL extends ScriptGenerator {
     protected String printType(TypeSpec td) {

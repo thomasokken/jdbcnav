@@ -19,7 +19,6 @@
 package jdbcnav.util;
 
 import java.util.*;
-import javax.swing.event.*;
 import javax.swing.table.*;
 import jdbcnav.SortedTableModel;
 

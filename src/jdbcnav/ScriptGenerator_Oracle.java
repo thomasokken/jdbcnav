@@ -21,7 +21,6 @@ package jdbcnav;
 import java.lang.reflect.*;
 import jdbcnav.model.*;
 import jdbcnav.util.FileUtils;
-import jdbcnav.util.MiscUtils;
 
 public class ScriptGenerator_Oracle extends ScriptGenerator {
     protected boolean oracle9types = true;

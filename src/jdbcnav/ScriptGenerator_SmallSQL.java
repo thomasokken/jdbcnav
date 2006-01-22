@@ -20,7 +20,6 @@ package jdbcnav;
 
 import jdbcnav.model.*;
 import jdbcnav.util.FileUtils;
-import jdbcnav.util.MiscUtils;
 
 public class ScriptGenerator_SmallSQL extends ScriptGenerator {
     protected String printType(TypeSpec td) {

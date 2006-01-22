@@ -22,7 +22,6 @@ package jdbcnav.util;
 import java.awt.*;
 
 import java.util.Hashtable;
-import java.util.Vector;
 
 class MyGridBagLayoutInfo implements java.io.Serializable {
   int width, height;		/* number of cells horizontally, vertically */
@@ -742,9 +741,9 @@ public class MyGridBagLayout implements LayoutManager2,
     Dimension d;
     Component components[] = parent.getComponents();
 
-    int compindex, i, j, k, px, py, pixels_diff, nextSize;
+    int compindex, i, k, px, py, pixels_diff, nextSize;
     int curX, curY, curWidth, curHeight, curRow, curCol;
-    double weight_diff, weight, start, size;
+    double weight_diff, weight;
     int xMax[], yMax[];
 
     /*

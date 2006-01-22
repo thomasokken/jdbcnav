@@ -21,8 +21,6 @@ package jdbcnav.javascript;
 import java.sql.*;
 import org.mozilla.javascript.*;
 
-import jdbcnav.util.*;
-
 
 public class JavaScriptStatement implements Scriptable {
     private Statement stmt;

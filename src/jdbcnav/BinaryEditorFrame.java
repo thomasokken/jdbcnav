@@ -21,13 +21,11 @@ package jdbcnav;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.lang.ref.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import javax.swing.text.*;
-import javax.swing.tree.*;
 import javax.swing.undo.*;
 
 import jdbcnav.util.FileUtils;
@@ -456,13 +454,7 @@ public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
     }
 
     private static class BinaryDataManager {
-	private static final int ADDR = 0;
-	private static final int HEX = 1;
-	private static final int ASCII = 2;
-
 	private byte[] data;
-
-	private ArrayList undoableEditListeners = new ArrayList();
 
 	private JTextArea addrTA;
 	private JTextArea hexTA;

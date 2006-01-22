@@ -19,7 +19,6 @@
 package jdbcnav.model;
 
 import java.util.*;
-import jdbcnav.util.MiscUtils;
 
 
 public class BasicData implements Data {

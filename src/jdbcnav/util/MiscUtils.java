@@ -21,7 +21,6 @@ package jdbcnav.util;
 import java.io.*;
 import java.sql.Types;
 import java.util.*;
-import jdbcnav.MessageBox;
 
 public class MiscUtils {
     public static final Comparator caseInsensitiveComparator =

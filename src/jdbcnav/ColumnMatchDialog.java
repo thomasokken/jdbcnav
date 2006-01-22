@@ -174,7 +174,6 @@ public class ColumnMatchDialog extends MyFrame {
 	if (c == -1)
 	    return;
 	int[] tt = tableList.getSelectedIndices();
-	String[] s = new String[tt.length];
 	for (int t = 0; t < mapping.length; t++)
 	    if (mapping[t] == clipCols[c])
 		mapping[t] = null;

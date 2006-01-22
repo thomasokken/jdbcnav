@@ -20,7 +20,6 @@ package jdbcnav;
 
 import java.awt.*;
 import java.io.*;
-import java.lang.reflect.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
@@ -41,7 +40,6 @@ public class ResultSetTableModel extends AbstractTableModel
     public static final int RUDE = 1;
     public static final int VICIOUS = 2;
     private static final Object NULL = new Object();
-    private static final Class[] STR_ARGLIST = new Class[] { String.class };
 
     private Table dbTable;
     private Data data;

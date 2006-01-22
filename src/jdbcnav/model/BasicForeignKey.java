@@ -31,7 +31,6 @@ public class BasicForeignKey implements ForeignKey, Scriptable,
     private String thatSchema;
     private String thatName;
     private String thatQualifiedName;
-    private String thatLocator;
     private String thatKeyName;
     private String[] thatColumns;
     private String updateRule;
@@ -59,10 +58,6 @@ public class BasicForeignKey implements ForeignKey, Scriptable,
 
     public void setThatQualifiedName(String thatQualifiedName) {
 	this.thatQualifiedName = thatQualifiedName;
-    }
-
-    public void setThatLocator(String thatLocator) {
-	this.thatLocator = thatLocator;
     }
 
     public void setThatKeyName(String thatKeyName) {

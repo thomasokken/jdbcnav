@@ -634,7 +634,6 @@ public class JDBCDatabase extends BasicDatabase {
 		    colName.add(null);
 		colName.set(i - 1, n);
 	    }
-	    boolean first = true;
 	    for (int i = colName.size() - 1; i >= 0; i--)
 		if (colName.get(i) == null)
 		    colName.remove(i);
@@ -1327,7 +1326,6 @@ public class JDBCDatabase extends BasicDatabase {
 
     public int runUpdate(String query) throws NavigatorException {
 	Statement s = null;
-	int count;
 	try {
 	    s = con.createStatement();
 	    return s.executeUpdate(query);

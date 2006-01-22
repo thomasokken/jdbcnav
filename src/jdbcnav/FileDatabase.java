@@ -427,7 +427,6 @@ public class FileDatabase extends BasicDatabase {
 
     private class FileDatabaseReader extends DefaultHandler {
 	private final String[] STRARRAY = new String[0];
-	private final Class[] STR_ARGLIST = new Class[] { String.class };
 
 	private FileTable table;
 	private int columnCount;

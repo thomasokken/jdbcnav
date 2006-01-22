@@ -18,11 +18,9 @@
 
 package jdbcnav;
 
-import java.awt.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.text.*;
-import org.mozilla.javascript.*;
 
 import jdbcnav.model.Data;
 import jdbcnav.model.Database;
@@ -32,7 +30,6 @@ import jdbcnav.util.NavigatorException;
 
 public class SQLFrame extends TextEditorFrame {
     private BrowserFrame browser;
-    private StringBuffer cmdBuf;
     private int outputSelectionStart = -1;
     private int outputSelectionEnd = -1;
 

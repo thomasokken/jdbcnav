@@ -20,7 +20,6 @@ package jdbcnav;
 
 import java.io.*;
 import java.util.*;
-import java.lang.reflect.*;
 import javax.swing.*;
 
 import jdbcnav.model.*;
@@ -711,8 +710,6 @@ public abstract class BasicDatabase implements Database {
 		al.add(tok.nextToken());
 	} else {
 	    int ql = q.length();
-	    int m = qualifiedName.length() - ql;
-	    int p;
 	    boolean inQuotes = false;
 	    StringBuffer buf = new StringBuffer(qualifiedName);
 	    int i = 0;

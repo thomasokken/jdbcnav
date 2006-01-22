@@ -20,11 +20,9 @@ package jdbcnav;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.reflect.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-import javax.swing.event.*;
 import javax.swing.table.*;
 import jdbcnav.model.TypeSpec;
 import jdbcnav.util.*;
@@ -631,6 +629,10 @@ public class MyTable extends JTable {
 	    }
 	    return super.stopCellEditing();
 	}
+
+	public Object getCellEditorValue() {
+	    return value;
+	}
     }
 
     private static class DatabaseObjectEditor extends DefaultCellEditor {
@@ -736,8 +738,6 @@ public class MyTable extends JTable {
 	private boolean hasFocus;
 	protected boolean leftJustified;
 	private int type;
-
-	private static ArrayList typeColorMap = new ArrayList();
 
 	public FastTableCellRenderer() {
 	    initialize();

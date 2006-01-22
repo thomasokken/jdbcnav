@@ -18,8 +18,6 @@
 
 package jdbcnav.model;
 
-import jdbcnav.util.NavigatorException;
-
 
 /**
  * The <code>ClobWrapper</code> interface is a DB-neutral wrapper around BLOBs.

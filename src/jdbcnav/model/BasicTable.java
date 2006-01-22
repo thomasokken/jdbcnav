@@ -18,11 +18,7 @@
 
 package jdbcnav.model;
 
-import java.beans.*;
 import java.util.*;
-import javax.swing.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
 import org.mozilla.javascript.*;
 
 import jdbcnav.*;

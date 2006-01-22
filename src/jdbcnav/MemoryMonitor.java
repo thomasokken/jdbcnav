@@ -34,7 +34,7 @@ public class MemoryMonitor implements Runnable {
 	while (true) {
 	    byte[] bigArray = new byte[RESERVE_BYTES];
 	    ReferenceQueue rq = new ReferenceQueue();
-	    SoftReference r = new SoftReference(bigArray, rq);
+	    new SoftReference(bigArray, rq);
 	    bigArray = null;
 	    boolean cleared = false;
 	    do {

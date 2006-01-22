@@ -30,7 +30,6 @@ import jdbcnav.util.*;
 
 
 public class TableDetailsFrame extends MyFrame {
-    private BrowserFrame browser;
     private Table dbTable;
     private PrimaryKey pk;
     private ForeignKey[] fks;
@@ -44,7 +43,6 @@ public class TableDetailsFrame extends MyFrame {
 	super(browser.getTitle() + "/" + dbTable.getName() 
 			+ (dbTable.isUpdatableQueryResult() ? " (query)" : "")
 			+ " Details", true, true, true, true);
-	this.browser = browser;
 	this.dbTable = dbTable;
 	pk = dbTable.getPrimaryKey();
 	fks = dbTable.getForeignKeys();
@@ -199,7 +197,6 @@ public class TableDetailsFrame extends MyFrame {
 	    // the <pre> tag. Ugh. Never mind!
 	    StringTokenizer tok = new StringTokenizer(remarks, " \t\n\r", true);
 	    int pos = 0;
-	    boolean space = false;
 	    while (tok.hasMoreTokens()) {
 		String t = tok.nextToken();
 		if (t.equals(" ")) {

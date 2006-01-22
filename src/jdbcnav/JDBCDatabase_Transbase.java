@@ -313,7 +313,6 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 		    Method m = c.getMethod("addSingleBit", new Class[] { int.class });
 		    int pos = 0;
 		    for (int i = 0; i < ba.length; i++) {
-			byte bt = ba[i];
 			for (int j = 0; j < 8; j++) {
 			    if ((j & 128) != 0) {
 				args[0] = new Integer(pos);
@@ -354,7 +353,6 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 		Constructor c = spec.jdbcJavaClass.getConstructor(null);
 		Object tbint = c.newInstance(null);
 		Method m = spec.jdbcJavaClass.getMethod("setField", new Class[] { int.class, long.class });
-		Object[] args = new Object[2];
 		if (spec.type == TypeSpec.INTERVAL_YM) {
 		    long years = inter.months / 12;
 		    long months = inter.months - years * 12;

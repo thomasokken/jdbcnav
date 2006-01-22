@@ -20,7 +20,6 @@ package jdbcnav;
 
 import java.sql.*;
 import java.text.*;
-import java.util.*;
 import jdbcnav.model.TypeSpec;
 
 

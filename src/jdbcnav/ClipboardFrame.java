@@ -26,7 +26,6 @@ import jdbcnav.util.*;
 
 
 public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
-    private Clipboard clipboard;
     private JCheckBoxMenuItem wrapLinesMI;
     private JMenuItem clearMI;
     private JScrollPane scrollPane;
@@ -34,7 +33,6 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 
     public ClipboardFrame(Clipboard clipboard) {
 	super("Clipboard", true, true, true, true);
-	this.clipboard = clipboard;
 	getContentPane().setLayout(new GridLayout(1, 1));
 	scrollPane = new JScrollPane();
 	getContentPane().add(scrollPane);

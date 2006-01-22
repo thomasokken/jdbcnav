@@ -24,7 +24,6 @@ import java.io.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.table.*;
 
 import jdbcnav.model.*;
 import jdbcnav.util.*;
@@ -70,10 +69,9 @@ public class QueryResultFrame extends MyFrame
 	this.dbTable = dbTable;
 	editable = dbTable != null && dbTable.isEditable();
 	
-	if (dbTable == null) {
-	    Database db = browser.getDatabase();
+	if (dbTable == null)
 	    model = new ResultSetTableModel(queryOutput, null);
-	} else
+	else
 	    model = dbTable.createModel();
 
 	setDefaultCloseOperation(JInternalFrame.DO_NOTHING_ON_CLOSE);

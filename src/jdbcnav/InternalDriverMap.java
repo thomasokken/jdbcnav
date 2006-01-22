@@ -52,7 +52,6 @@ public class InternalDriverMap {
 	    try {
 		DatabaseMetaData dbmd = con.getMetaData();
 		String v = dbmd.getDatabaseProductVersion();
-		StringBuffer buf = new StringBuffer();
 		boolean in_num = false;
 		int n = 0;
 		for (int i = 0; i < v.length(); i++) {
