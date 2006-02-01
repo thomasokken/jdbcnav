@@ -510,36 +510,78 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	return spec;
     }
 
-    public String objectToString(TypeSpec spec, Object o) {
-	if (o == null)
-	    return super.objectToString(spec, o);
-
-	String className = spec.jdbcJavaType;
-
-	if (className.equals("oracle.sql.BFILE")) {
+    private static class OracleBfileWrapper implements BfileWrapper {
+	private Object bfile;
+	public OracleBfileWrapper(Object bfile) {
+	    this.bfile = bfile;
+	}
+	public String toString() {
 	    try {
-		Class bfileClass = o.getClass();
+		Class bfileClass = bfile.getClass();
 		Method m = bfileClass.getMethod("getDirAlias", null);
-		String dir = (String) m.invoke(o, null);
+		String dir = (String) m.invoke(bfile, null);
 		m = bfileClass.getMethod("getName", null);
-		String name = (String) m.invoke(o, null);
+		String name = (String) m.invoke(bfile, null);
 		return "Bfile ('" + dir + "', '" + name + "')";
 	    } catch (NoSuchMethodException e) {
 		// From Class.getMethod()
 		// Should not happen
-		return o.toString();
+		return bfile.toString();
 	    } catch (IllegalAccessException e) {
 		// From Method.invoke()
 		// Should not happen
-		return o.toString();
+		return bfile.toString();
 	    } catch (InvocationTargetException e) {
 		// From Method.invoke()
-		// Should be a SQLException from BFILE.getName()
-		return "Bfile (name = ?)";
+		// Should be a SQLException from BFILE.getDirAlias() or
+		// BFILE.getName()
+		return "Bfile (?)";
 	    }
 	}
+	public byte[] load() {
+	    Class c = bfile.getClass();
+	    InputStream is = null;
+	    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	    byte[] buf = new byte[8192];
+	    boolean error = false;
+	    try {
+		Method m = c.getMethod("openFile", null);
+		m.invoke(bfile, null);
+		m = c.getMethod("getBinaryStream", null);
+		is = (InputStream) m.invoke(bfile, null);
+		int n;
+		while ((n = is.read(buf)) != -1)
+		    bos.write(buf, 0, n);
+		bos.flush();
+	    } catch (Exception e) {
+		if (e instanceof InvocationTargetException) {
+		    Throwable ite = (InvocationTargetException) e;
+		    if (ite.getCause() instanceof Exception)
+			e = (Exception) ite.getCause();
+		}
+		MessageBox.show("Error reading BFILE", e);
+		error = true;
+	    } finally {
+		if (is != null)
+		    try {
+			is.close();
+		    } catch (IOException e) {}
+		try {
+		    Method m = c.getMethod("closeFile", null);
+		    m.invoke(bfile, null);
+		} catch (Exception e) {}
+	    }
+	    byte[] data = bos.toByteArray();
+	    return data.length == 0 && error ? null : data;
+	}
+    }
 
-	return super.objectToString(spec, o);
+    protected Object wrapLob(Table table, String[] cnames, Object[] values,
+	                                 int index, TypeSpec spec, Object o) {
+	if (o != null && o.getClass().getName().equals("oracle.sql.BFILE"))
+	    return new OracleBfileWrapper(o);
+	else
+	    return super.wrapLob(table, cnames, values, index, spec, o);
     }
 
     protected Object db2nav(TypeSpec spec, Object o) {

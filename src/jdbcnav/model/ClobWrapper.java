@@ -33,7 +33,7 @@ public interface ClobWrapper {
 
     /**
      * This method loads the actual data; if it returns successfully, the
-     * LazyData object should be replaced with this return value.
+     * ClobWrapper object should be replaced with this return value.
      */
     String load();
 }

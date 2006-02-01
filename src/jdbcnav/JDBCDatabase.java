@@ -1296,10 +1296,8 @@ public class JDBCDatabase extends BasicDatabase {
 		Object[] orig_row = noClone ? null : (Object[]) row.clone();
 		for (int i = 0; i < columns; i++) {
 		    Object o = row[i];
-		    if ((o instanceof Blob) || (o instanceof Clob))
-			row[i] = wrapLob(table, columnNames, orig_row, i, o);
-		    else
-			row[i] = db2nav(bd.getTypeSpec(i), o);
+		    row[i] = wrapLob(table, columnNames, orig_row, i,
+							bd.getTypeSpec(i), o);
 		}
 		data.add(row);
 	    }
@@ -2015,8 +2013,8 @@ public class JDBCDatabase extends BasicDatabase {
     ///// LOB support /////
     ///////////////////////
 
-    protected Object wrapLob(Table table, String[] cnames,
-			     Object[] values, int index, Object o) {
+    protected Object wrapLob(Table table, String[] cnames, Object[] values,
+			     int index, TypeSpec spec, Object o) {
 	boolean simple = lobsOutliveResultSets() || table == null;
 	if (o instanceof Blob) {
 	    Blob blob = (Blob) o;
@@ -2024,13 +2022,14 @@ public class JDBCDatabase extends BasicDatabase {
 		return new SimpleBlobWrapper(blob);
 	    else
 		return new QueryBlobWrapper(table, cnames, values, index, blob);
-	} else {
+	} else if (o instanceof Clob) {
 	    Clob clob = (Clob) o;
 	    if (simple)
 		return new SimpleClobWrapper(clob);
 	    else
 		return new QueryClobWrapper(table, cnames, values, index, clob);
-	}
+	} else
+	    return db2nav(spec, o);
     }
 
     private static String lobString(Object o) {
@@ -2413,10 +2412,8 @@ public class JDBCDatabase extends BasicDatabase {
 		    Object[] orig_row = noClone ? null : (Object[]) row.clone();
 		    for (int i = 0; i < columns; i++) {
 			Object o = row[i];
-			if ((o instanceof Blob) || (o instanceof Clob))
-			    row[i] = wrapLob(table, columnNames, orig_row, i,o);
-			else
-			    row[i] = db2nav(data.getTypeSpec(i), o);
+			row[i] = wrapLob(table, columnNames, orig_row, i,
+							data.getTypeSpec(i), o);
 		    }
 		    data.addRow(row);
 		}

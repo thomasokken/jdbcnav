@@ -250,9 +250,13 @@ public class ResultSetTableModel extends AbstractTableModel
     public synchronized boolean isCellEditable(int row, int column) {
 	if (!editable)
 	    return false;
-	Object o = getValueAt(row, column);
-	return !(o instanceof BlobWrapper) && !(o instanceof ClobWrapper)
-	    && !(o instanceof byte[]);
+	int type = specs[column].type;
+	return type != TypeSpec.LONGVARCHAR
+	    && type != TypeSpec.LONGVARNCHAR
+	    && type != TypeSpec.RAW
+	    && type != TypeSpec.VARRAW
+	    && type != TypeSpec.LONGVARRAW
+	    && type != TypeSpec.UNKNOWN;
     }
 
     public synchronized void setValueAt(Object value, int row, int column) {

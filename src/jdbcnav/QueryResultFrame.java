@@ -851,6 +851,16 @@ public class QueryResultFrame extends MyFrame
 		return;
 	    }
 
+	    if (o instanceof BfileWrapper) {
+		byte[] data = ((BfileWrapper) o).load();
+		if (data != null) {
+		    BinaryEditorFrame bef = new BinaryEditorFrame("BFILE data", data);
+		    bef.setParent(this);
+		    bef.showStaggered();
+		}
+		return;
+	    }
+
 	    String text;
 	    if (o instanceof ClobWrapper)
 		text = ((ClobWrapper) o).load();

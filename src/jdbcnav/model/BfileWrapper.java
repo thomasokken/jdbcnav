@@ -20,20 +20,17 @@ package jdbcnav.model;
 
 
 /**
- * The <code>BlobWrapper</code> interface is a DB-neutral wrapper around BLOBs.
- * It is used to hide the details of loading BLOBs, in order to help support
- * DBs where BLOBs become invalid after the ResultSet that produced them is
- * closed.
+ * The <code>BfileWrapper</code> interface is a DB-neutral wrapper around
+ * Oracle BFILEs. It is used to hide the details of loading BFILEs.
  */
-public interface BlobWrapper {
+public interface BfileWrapper {
     /**
      * This method returns the representation to be displayed in a table view.
      */
     String toString();
 
     /**
-     * This method loads the actual data; if it returns successfully, the
-     * BlobWrapper object should be replaced with this return value.
+     * This method loads the actual BFILE data.
      */
     byte[] load();
 }
