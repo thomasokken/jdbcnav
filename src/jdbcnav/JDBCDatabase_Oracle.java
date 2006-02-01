@@ -538,6 +538,20 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 		return "Bfile (?)";
 	    }
 	}
+	public String sqlString() {
+	    Class bfileClass = bfile.getClass();
+	    String dir = "?";
+	    String name = "?";
+	    try {
+		Method m = bfileClass.getMethod("getDirAlias", null);
+		dir = (String) m.invoke(bfile, null);
+	    } catch (Exception e) {}
+	    try {
+		Method m = bfileClass.getMethod("getName", null);
+		name = (String) m.invoke(bfile, null);
+	    } catch (Exception e) {}
+	    return "bfilename('" + dir + "', '" + name + "')";
+	}
 	public byte[] load() {
 	    Class c = bfile.getClass();
 	    InputStream is = null;

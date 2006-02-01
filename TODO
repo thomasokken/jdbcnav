@@ -40,7 +40,7 @@ will probably have to be something along the lines of a queue.
 
 "Set Password" should make the user type the password twice if it doesn't match
 any of the existing ones (i.e., if it does not successfully decrypt any
-encypted connection configs) -- because that means it's a new password, and
+encrypted connection configs) -- because that means it's a new password, and
 there's otherwise the danger that the user could accidentally encrypt all his
 connection configs using a mistyped password.
 

@@ -286,19 +286,8 @@ public class ScriptGenerator_Oracle extends ScriptGenerator {
 		else // INTERVAL_YS
 		    return Long.toString(inter.months * 2629746000000000L + inter.nanos);
 	    }
-	} else if (obj.getClass().getName().equals("oracle.sql.BFILE")) {
-	    Class bfileClass = obj.getClass();
-	    String dir = "?";
-	    String name = "?";
-	    try {
-		Method m = bfileClass.getMethod("getDirAlias", null);
-		dir = (String) m.invoke(obj, null);
-	    } catch (Exception e) {}
-	    try {
-		Method m = bfileClass.getMethod("getName", null);
-		name = (String) m.invoke(obj, null);
-	    } catch (Exception e) {}
-	    return "bfilename('" + dir + "', '" + name + "')";
+	} else if (obj instanceof BfileWrapper) {
+	    return ((BfileWrapper) obj).sqlString();
 	} else
 	    return super.toSqlString(spec, obj);
     }

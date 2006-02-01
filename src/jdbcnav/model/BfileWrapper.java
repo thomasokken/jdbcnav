@@ -30,6 +30,11 @@ public interface BfileWrapper {
     String toString();
 
     /**
+     * This method returns the SQL representation of the BFILE object.
+     */
+    String sqlString();
+
+    /**
      * This method loads the actual BFILE data.
      */
     byte[] load();
