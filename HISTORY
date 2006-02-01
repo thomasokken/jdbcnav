@@ -1,3 +1,8 @@
+1 February 2006: build 2576
+*) OUCH!!! In the last release, I introduced a bug that made it impossible to
+edit almost all table cell types. Sorry folks -- JDBC Navigator is NOT supposed
+to be a read-only database browser! Fixed now.
+
 17 January 2006: build 2567
 *) Derby driver: fixed TypeSpec generation for NUMERIC columns.
 

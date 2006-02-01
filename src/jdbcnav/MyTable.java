@@ -536,12 +536,7 @@ public class MyTable extends JTable {
 	protected Object value;
 
 	public GenericEditor() {
-            this(new MyTextField());
-        }
-
-	public GenericEditor(MyTextField tf) {
-	    super(tf);
-            getComponent().setName("Table.editor");
+            super(new MyTextField());
         }
 
 	public boolean stopCellEditing() {
@@ -607,7 +602,6 @@ public class MyTable extends JTable {
 	private Class klass;
 
 	public DateEditor(Class klass) {
-	    super(new MyTextField());
 	    this.klass = klass;
 	}
 
@@ -634,9 +628,10 @@ public class MyTable extends JTable {
 	}
     }
 
-    private static class DatabaseObjectEditor extends GenericEditor {
+    private static class DatabaseObjectEditor extends DefaultCellEditor {
 
 	private TypeSpec spec;
+	private Object value;
 
 	public DatabaseObjectEditor() {
 	    super(new MyTextField());
