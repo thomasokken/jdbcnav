@@ -169,34 +169,24 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 	    spec.type = TypeSpec.DATE;
 	} else if (dbType.equals("time")) {
 	    spec.type = TypeSpec.TIME;
-	    // TODO -- the current PostgreSQL driver is lying about 'size'
-	    //spec.size = size.intValue();
-	    spec.size = 9;
+	    spec.size = scale.intValue();
 	} else if (dbType.equals("time with time zone")
 		|| dbType.equals("timetz")) {
 	    spec.type = TypeSpec.TIME_TZ;
-	    // TODO -- the current PostgreSQL driver is lying about 'size'
-	    //spec.size = size.intValue();
-	    spec.size = 9;
+	    spec.size = scale.intValue();
 	} else if (dbType.equals("timestamp")) {
 	    spec.type = TypeSpec.TIMESTAMP;
-	    // TODO -- the current PostgreSQL driver is lying about 'size'
-	    //spec.size = size.intValue();
-	    spec.size = 9;
+	    spec.size = scale.intValue();
 	} else if (dbType.equals("timestamp with time zone")
 		|| dbType.equals("timestamptz")) {
 	    spec.type = TypeSpec.TIMESTAMP_TZ;
-	    // TODO -- the current PostgreSQL driver is lying about 'size'
-	    //spec.size = size.intValue();
-	    spec.size = 9;
+	    spec.size = scale.intValue();
 	} else if (dbType.equals("interval")) {
 	    // Yuck; PostgreSQL does not distinguish between
 	    // INTERVAL YEAR TO MONTH and INTERVAL DAY TO SECOND; it has one
 	    // type that is basically INTERVAL YEAR TO SECOND.
 	    spec.type = TypeSpec.INTERVAL_YS;
-	    // TODO -- the current PostgreSQL driver is lying about 'size'
-	    //spec.size = size.intValue();
-	    spec.size = 9;
+	    spec.size = scale.intValue();
 	} else if (dbType.equals("bytea")) {
 	    spec.type = TypeSpec.LONGVARRAW;
 	} else if (dbType.equals("char")
@@ -229,6 +219,13 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 		scale = null;
 	    } else if (scale.intValue() == 0)
 		scale = null;
+	} else if (dbType.equals("interval")
+		|| dbType.equals("time")
+		|| dbType.equals("timetz")
+		|| dbType.equals("timestamp")
+		|| dbType.equals("timestamptz")) {
+	    size = scale;
+	    scale = null;
 	} else if (dbType.equals("bit varying")
 		|| dbType.equals("varbit")
 		|| dbType.equals("bit")
@@ -236,12 +233,7 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 		|| dbType.equals("varchar")
 		|| dbType.equals("character")
 		|| dbType.equals("char")
-		|| dbType.equals("bpchar")
-		|| dbType.equals("interval")
-		|| dbType.equals("time")
-		|| dbType.equals("timetz")
-		|| dbType.equals("timestamp")
-		|| dbType.equals("timestamptz")) {
+		|| dbType.equals("bpchar")) {
 	    scale = null;
 	} else {
 	    size = null;
