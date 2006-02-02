@@ -1,10 +1,3 @@
-When generating a Drop/Create script for the LT tables in my Derby database,
-the script contains tons of 'alter table' statements to remove and restore
-foreign keys. Why? Generating a script off the same tables in Oracle does what
-it should, namely, it simply sorts the DROP and CREATE statements in such a way
-that no alterations are necessary. Seems like Derby throws the dependency
-checks off somehow.
-
 Updates on timetypes don't work with SmallSQL 0.02. Looks like a SmallSQL bug.
 
 When MemoryMonitor notices that memory is getting low, in addition to showing a

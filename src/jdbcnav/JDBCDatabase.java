@@ -814,8 +814,8 @@ public class JDBCDatabase extends BasicDatabase {
 		currFk.clear();
 		fk.setThisKeyName(rsr.thisKeyName);
 		fk.setThatKeyName(rsr.thatKeyName);
-		fk.setThatCatalog(rsr.thatCatalog);
-		fk.setThatSchema(rsr.thatSchema);
+		fk.setThatCatalog(showCatalogs() ? rsr.thatCatalog : null);
+		fk.setThatSchema(showSchemas() ? rsr.thatSchema : null);
 		fk.setThatName(rsr.thatName);
 		fk.setThatQualifiedName(makeQualifiedName(rsr.thatCatalog,
 							  rsr.thatSchema,
@@ -1444,8 +1444,8 @@ public class JDBCDatabase extends BasicDatabase {
 
 	    try {
 		String[] parts = parseQualifiedName(qualifiedName);
-		catalog = parts[0];
-		schema = parts[1];
+		catalog = showCatalogs() ? parts[0] : null;
+		schema = showSchemas() ? parts[1] : null;
 		name = parts[2];
 
 		ArrayList columnNamesList = new ArrayList();

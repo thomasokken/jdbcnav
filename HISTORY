@@ -3,7 +3,11 @@
 *) The PostgreSQL driver now looks at the 'scale' reported by DBMD and RSMD for
 time, timetz, timestamp, timestamptz, and interval types. Note that you need a
 recent PostgreSQL driver with the relevant DBMD and RSMD patches, or you'll
-still get bogus precision values.
+still get bogus precision/scale values for those types.
+*) When generating Drop/Create scripts from a Derby DB, with a set of related
+tables, a script containing ALTER TABLE commands would be generated, instead
+of the DROP and CREATE statements being ordered properly so as to avoid ALTER
+TABLE statements as much as possible. Fixed.
 
 1 February 2006: build 2576
 *) Some code cleanup to get rid of warnings in Eclipse.
