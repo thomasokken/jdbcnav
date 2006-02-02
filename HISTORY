@@ -1,4 +1,4 @@
-?? ??? ????: build ????
+2 February 2006: build 2586
 *) Oracle BFILEs can now be viewed using the Edit Cell command.
 *) The PostgreSQL driver now looks at the 'scale' reported by DBMD and RSMD for
 time, timetz, timestamp, timestamptz, and interval types. Note that you need a
