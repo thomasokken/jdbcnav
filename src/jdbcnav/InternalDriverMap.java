@@ -75,7 +75,8 @@ public class InternalDriverMap {
 	    }
 	} else if (driverClassName.equals("org.postgresql.Driver")) {
 	    return "PostgreSQL";
-	} else if (driverClassName.equals("smallsql.server.SSDriver")) {
+	} else if (driverClassName.equals("smallsql.server.SSDriver")
+		|| driverClassName.equals("smallsql.database.SSDriver")) {
 	    return "SmallSQL";
 	} else if (driverClassName.equals("transbase.jdbc.Driver")) {
 	    return "Transbase";

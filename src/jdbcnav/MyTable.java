@@ -664,6 +664,10 @@ public class MyTable extends JTable {
 	    return super.getTableCellEditorComponent(table, this.value,
 						     isSelected, row, column);
 	}
+
+	public Object getCellEditorValue() {
+	    return value;
+	}
     }
 
 

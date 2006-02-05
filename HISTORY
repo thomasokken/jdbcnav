@@ -1,3 +1,11 @@
+5 February 2006: build 2590
+*) Fixed a serious bug that broke table cell editing (!).
+*) Added support for SmallSQL 0.10. Note, however, that creating a new database
+from JDBC Navigator does not work at the moment, since JDBC Navigator calls
+DBMD.getTables() on all newly openend Connections, and the SmallSQL 0.10 driver
+throws a NullPointerException when this call is performed on an uninitialized
+database. If the DB is initialized outside jdbcnav, you *can* work with it.
+
 2 February 2006: build 2586
 *) Oracle BFILEs can now be viewed using the Edit Cell command.
 *) The PostgreSQL driver now looks at the 'scale' reported by DBMD and RSMD for
