@@ -60,6 +60,11 @@ Creates a compressed tar file containing a complete snapshot of all source
 files, and excluding all class files and other build targets. Use this to
 create a source distribution.
 
+package:
+Creates a tar file containing all the stuff that Yours Truly needs to update
+his web site: the executable jar file, the tgz file containing all the source
+code, and HTML-ified versions of TODO and HISTORY.
+
 clean:
 Deletes all build targets; restores the project directory to its original
 state.
