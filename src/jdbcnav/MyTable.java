@@ -281,23 +281,31 @@ public class MyTable extends JTable {
      * <code>null</code>.
      */
     public TableCellRenderer getDefaultRenderer(Class columnClass) {
-	if (columnClass == null) {
+	TableCellRenderer tcr = null;
+	if (columnClass != null)
+	    tcr = getDefaultRenderer2(columnClass);
+	if (tcr != null)
+	    return tcr;
+	else
 	    return (TableCellRenderer)
-		defaultRenderersByColumnClass.get(Object.class);
-	} else {
-	    Object renderer = defaultRenderersByColumnClass.get(columnClass);
-	    if (renderer != null) {
-		return (TableCellRenderer) renderer;
-	    } else {
-		Class[] interfaces = columnClass.getInterfaces();
-		for (int i = 0; i < interfaces.length; i++) {
-		    TableCellRenderer tcr = getDefaultRenderer(interfaces[i]);
-		    if (tcr != null)
-			return tcr;
-		}
-		return getDefaultRenderer(columnClass.getSuperclass());
-	    }
+			    defaultRenderersByColumnClass.get(Object.class);
+    }
+
+    private TableCellRenderer getDefaultRenderer2(Class columnClass) {
+	Object renderer = defaultRenderersByColumnClass.get(columnClass);
+	if (renderer != null)
+	    return (TableCellRenderer) renderer;
+	Class[] interfaces = columnClass.getInterfaces();
+	for (int i = 0; i < interfaces.length; i++) {
+	    TableCellRenderer tcr = getDefaultRenderer2(interfaces[i]);
+	    if (tcr != null)
+		return tcr;
 	}
+	Class superclass = columnClass.getSuperclass();
+	if (superclass == null)
+	    return null;
+	else
+	    return getDefaultRenderer2(superclass);
     }
 
     /**
@@ -318,23 +326,31 @@ public class MyTable extends JTable {
      * <code>null</code>.
      */
     public TableCellEditor getDefaultEditor(Class columnClass) {
-	if (columnClass == null) {
+	TableCellEditor tce = null;
+	if (columnClass != null)
+	    tce = getDefaultEditor2(columnClass);
+	if (tce != null)
+	    return tce;
+	else
 	    return (TableCellEditor)
-		defaultEditorsByColumnClass.get(Object.class);
-	} else {
-	    Object editor = defaultEditorsByColumnClass.get(columnClass);
-	    if (editor != null) {
-		return (TableCellEditor) editor;
-	    } else {
-		Class[] interfaces = columnClass.getInterfaces();
-		for (int i = 0; i < interfaces.length; i++) {
-		    TableCellEditor tcr = getDefaultEditor(interfaces[i]);
-		    if (tcr != null)
-			return tcr;
-		}
-		return getDefaultEditor(columnClass.getSuperclass());
-	    }
+			    defaultEditorsByColumnClass.get(Object.class);
+    }
+
+    private TableCellEditor getDefaultEditor2(Class columnClass) {
+	Object editor = defaultEditorsByColumnClass.get(columnClass);
+	if (editor != null)
+	    return (TableCellEditor) editor;
+	Class[] interfaces = columnClass.getInterfaces();
+	for (int i = 0; i < interfaces.length; i++) {
+	    TableCellEditor tce = getDefaultEditor2(interfaces[i]);
+	    if (tce != null)
+		return tce;
 	}
+	Class superclass = columnClass.getSuperclass();
+	if (superclass == null)
+	    return null;
+	else
+	    return getDefaultEditor2(superclass);
     }
 
 
