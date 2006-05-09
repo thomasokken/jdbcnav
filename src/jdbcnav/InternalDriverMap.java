@@ -46,7 +46,8 @@ public class InternalDriverMap {
 	    return "Derby";
 	} else if (driverClassName.equals("com.mysql.jdbc.Driver")) {
 	    return "MySQL";
-	} else if (driverClassName.equals("oracle.jdbc.driver.OracleDriver")) {
+	} else if (driverClassName.equals("oracle.jdbc.driver.OracleDriver")
+		|| driverClassName.equals("oracle.jdbc.OracleDriver")) {
 	    if (con == null)
 		return "Oracle 10";
 	    try {

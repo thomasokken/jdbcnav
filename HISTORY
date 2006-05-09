@@ -1,4 +1,8 @@
-??-????-????: build ????
+9 May 2006: build 2593
+*) In addition to oracle.jdbc.driver.OracleDriver, JDBC Navigator now also
+recognizes oracle.jdbc.OracleDriver as being an Oracle driver class.
+Previously, if you opened a connection using the oracle.jdbc.OracleDriver class
+name, the generic internal driver would get used, and that leads to problems.
 *) MyTable.getDefaultRenderer() and MyTable.getDefaultEditor() did not handle
 interfaces properly. Fortunately, Table Editing windows rely exclusively on the
 TypeSpec class and its associated DatabaseObjectRenderer and DatabaseObject-
