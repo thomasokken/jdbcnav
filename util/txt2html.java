@@ -9,7 +9,7 @@ public class txt2html {
 		+ "<head>\n"
 		+ "<body>\n"
 		+ "  <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n"
-		+ "    <tr><td valign=\"top\" align=\"center\" bgcolor=\"#ff60a0\"><a href=\"../index.html\"><img src=\"../title.png\"></a></td>\n"
+		+ "    <tr><td valign=\"top\" align=\"center\" bgcolor=\"#ff60a0\"><a href=\"../index.html\"><img border=\"0\" src=\"../title.png\"></a></td>\n"
 		+ "    <td><img src=\"../spacer.gif\" width=\"10\"></td><td>\n"
 		+ "<h3>" + args[0] + "</h3>\n"
 		+ "<pre>");
