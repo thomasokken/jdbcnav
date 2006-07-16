@@ -25,7 +25,7 @@ import java.util.*;
  * Theoretically, that would be the job of java.sql.Date, java.sql.Time,
  * and java.sql.Timestamp, but those don't handle time zones properly.
  */
-public class DateTime {
+public class DateTime implements Comparable {
     public static final int ZONE_ID = 0;
     public static final int ZONE_SHORT = 1;
     public static final int ZONE_LONG = 2;
@@ -241,5 +241,19 @@ public class DateTime {
 	DateTime that = (DateTime) o;
 	return time == that.time && nanos == that.nanos
 	    && (tz == null ? that.tz == null : tz.equals(that.tz));
+    }
+
+    public int compareTo(Object o) {
+	DateTime that = (DateTime) o;
+	if (time < that.time)
+	    return -1;
+	else if (time > that.time)
+	    return 1;
+	else if (nanos < that.nanos)
+	    return -1;
+	else if (nanos > that.nanos)
+	    return 1;
+	else
+	    return 0;
     }
 }

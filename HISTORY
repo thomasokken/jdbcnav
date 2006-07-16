@@ -1,3 +1,7 @@
+16 July 2006: build 2596
+*) The DateTime and Interval classes now implement the Comparable interface, so
+that DATE, TIMESTAMP, and INTERVAL columns can now be used for sorting.
+
 9 May 2006: build 2593
 *) In addition to oracle.jdbc.driver.OracleDriver, JDBC Navigator now also
 recognizes oracle.jdbc.OracleDriver as being an Oracle driver class.

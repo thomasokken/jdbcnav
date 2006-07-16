@@ -1,5 +1,3 @@
-Sorting on TIMESTAMP columns (Oracle) not working?
-
 When MemoryMonitor notices that memory is getting low, in addition to showing a
 warning dialog, it should also pause in-progress table loads. Without this, the
 low-memory warning may be useless, because a table loading thread may overflow

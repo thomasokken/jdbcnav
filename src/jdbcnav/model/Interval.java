@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
 /**
  * This class implements a database-neutral Interval representation.
  */
-public class Interval {
+public class Interval implements Comparable {
     public int months;
     public long nanos;
 
@@ -202,5 +202,19 @@ public class Interval {
 	    return false;
 	Interval that = (Interval) o;
 	return months == that.months && nanos == that.nanos;
+    }
+
+    public int compareTo(Object o) {
+	Interval that = (Interval) o;
+	if (months < that.months)
+	    return -1;
+	else if (months > that.months)
+	    return 1;
+	else if (nanos < that.nanos)
+	    return -1;
+	else if (nanos > that.nanos)
+	    return 1;
+	else
+	    return 0;
     }
 }
