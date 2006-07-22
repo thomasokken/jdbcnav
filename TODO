@@ -1,3 +1,15 @@
+When using the "Select FK Value" feature on a foreign key column that allows
+nulls, the last of the corresponding PK values is not made available in the
+foreign key selector window. The reason for this is that the TableFrame.FkData
+object, which encapsulates the available PK values, loads one row too few; this
+in turn is because its addDataStateListener() method simply forwards to that
+method on the encapsulated Data object, but that encapsulated object is unaware
+of the hacks in FkData.getRowCount() and FkData.getValueAt() to add the 'null'
+option on the fly.
+Either the DataStateListener situation needs to be hacked somehow, or the
+'null' option should be added to the Data object explicitly when allowNull is
+true.
+
 When MemoryMonitor notices that memory is getting low, in addition to showing a
 warning dialog, it should also pause in-progress table loads. Without this, the
 low-memory warning may be useless, because a table loading thread may overflow
