@@ -501,11 +501,12 @@ public class TableFrame extends QueryResultFrame {
 	}
     }
 
-    private static class FkData implements Data {
+    private static class FkData implements Data, Data.StateListener {
 	private Data data;
 	private int[] colIndexes;
 	private String[] colNames;
 	private boolean allowNull;
+	private ArrayList listeners = new ArrayList();
 	public FkData(Data data, boolean allowNull,
 			    String[] oldNames, String[] newNames) {
 	    this.data = data;
@@ -525,6 +526,7 @@ public class TableFrame extends QueryResultFrame {
 		    }
 		}
 	    }
+	    data.addStateListener(this);
 	}
 	public int getRowCount() {
 	    return data.getRowCount() + (allowNull ? 1 : 0);
@@ -553,10 +555,20 @@ public class TableFrame extends QueryResultFrame {
 	    return data.getState();
 	}
 	public void addStateListener(StateListener listener) {
-	    data.addStateListener(listener);
+	    if (data.getState() == FINISHED)
+		listener.stateChanged(FINISHED, getRowCount());
+	    else
+		listeners.add(listener);
 	}
 	public void removeStateListener(StateListener listener) {
-	    data.removeStateListener(listener);
+	    listeners.remove(listener);
+	}
+	public void stateChanged(int state, int row) {
+	    ArrayList al = (ArrayList) listeners.clone();
+	    for (int i = 0; i < al.size(); i++)
+		((StateListener) al.get(i)).stateChanged(state, row + (allowNull ? 1 : 0));
+	    if (state == FINISHED)
+		listeners.clear();
 	}
     }
 }

@@ -1,3 +1,9 @@
+22 July 2006: build 2600
+*) When using the 'Select FK Value' command on a column that allows nulls, the
+ForeignKeySelector window did not show the last of the available PK values.
+This was caused by an error in the code that adds 'null' to the list of options
+for this case. Fixed.
+
 16 July 2006: build 2596
 *) The DateTime and Interval classes now implement the Comparable interface, so
 that DATE, TIMESTAMP, and INTERVAL columns can now be used for sorting.
