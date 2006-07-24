@@ -1,3 +1,9 @@
+The PK values used by the 'Select FK Value' command are cached inside the
+BasicTable object (in the pkValues member), but there's currently no provision
+for invalidating that cache when the table is modified.
+The conservative approach would be to run a query *each time* getPKValues() is
+invoked.
+
 When MemoryMonitor notices that memory is getting low, in addition to showing a
 warning dialog, it should also pause in-progress table loads. Without this, the
 low-memory warning may be useless, because a table loading thread may overflow
