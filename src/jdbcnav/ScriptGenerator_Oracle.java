@@ -18,7 +18,6 @@
 
 package jdbcnav;
 
-import java.lang.reflect.*;
 import jdbcnav.model.*;
 import jdbcnav.util.FileUtils;
 
