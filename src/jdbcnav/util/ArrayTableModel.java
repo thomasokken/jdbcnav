@@ -21,12 +21,15 @@ package jdbcnav.util;
 import java.util.*;
 import javax.swing.table.*;
 import jdbcnav.SortedTableModel;
+import jdbcnav.model.TypeSpec;
+import jdbcnav.model.TypeSpecTableModel;
 
 
 public class ArrayTableModel extends AbstractTableModel
-			     implements SortedTableModel {
+			     implements SortedTableModel, TypeSpecTableModel {
     private String[] names;
     private Class[] classes;
+    private TypeSpec[] typeSpecs;
     private Object[][] data;
     private int[] sortPriority;
     private boolean[] sortAscending;
@@ -35,21 +38,25 @@ public class ArrayTableModel extends AbstractTableModel
 	int columns = data[0].length;
 	names = new String[columns];
 	classes = new Class[columns];
+	typeSpecs = new TypeSpec[columns];
 	for (int i = 0; i < columns; i++) {
 	    names[i] = (String) data[0][i];
 	    classes[i] = (Class) data[1][i];
+	    typeSpecs[i] = (TypeSpec) data[2][i];
 	}
-	int rows = data.length - 2;
+	int rows = data.length - 3;
 	this.data = new Object[rows][columns];
 	for (int i = 0; i < rows; i++)
 	    for (int j = 0; j < columns; j++)
-		this.data[i][j] = data[i + 2][j];
+		this.data[i][j] = data[i + 3][j];
 	init();
     }
 
-    public ArrayTableModel(String[] names, Class[] classes, Object[][] data) {
+    public ArrayTableModel(String[] names, Class[] classes,
+				    TypeSpec[] typeSpecs, Object[][] data) {
 	this.names = names;
 	this.classes = classes;
+	this.typeSpecs = typeSpecs;
 	this.data = data;
 	init();
     }
@@ -74,6 +81,10 @@ public class ArrayTableModel extends AbstractTableModel
 
     public String getColumnName(int col) {
 	return names[col];
+    }
+
+    public TypeSpec getTypeSpec(int col) {
+	return typeSpecs[col];
     }
 
     public int getRowCount() {

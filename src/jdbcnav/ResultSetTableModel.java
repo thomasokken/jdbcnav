@@ -34,7 +34,7 @@ import jdbcnav.util.*;
 // them automagically if possible).
 
 public class ResultSetTableModel extends AbstractTableModel
-				 implements SortedTableModel {
+			    implements SortedTableModel, TypeSpecTableModel {
     
     public static final int GENTLE = 0;
     public static final int RUDE = 1;

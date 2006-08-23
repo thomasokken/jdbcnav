@@ -1,3 +1,9 @@
+?? ???? ????: build ????
+*) Copying rows in QueryResultFrame has been broken since build 2239; it didn't
+handle the TypeSpec column class introduced in that build. As a result, the
+copy operation itself would still succeed, but displaying the Clipboard would
+not. Fixed now.
+
 22 July 2006: build 2600
 *) When using the 'Select FK Value' command on a column that allows nulls, the
 ForeignKeySelector window did not show the last of the available PK values.

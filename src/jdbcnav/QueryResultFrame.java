@@ -719,14 +719,15 @@ public class QueryResultFrame extends MyFrame
 	else {
 	    table.stopEditing();
 	    int ncols = model.getColumnCount();
-	    Object[][] array = new Object[nrows + 2][ncols];
+	    Object[][] array = new Object[nrows + 3][ncols];
 	    for (int col = 0; col < ncols; col++) {
 		array[0][col] = model.getColumnName(col);
 		array[1][col] = model.getColumnClass(col);
+		array[2][col] = model.getTypeSpec(col);
 	    }
 	    for (int row = 0; row < nrows; row++)
 		for (int col = 0; col < ncols; col++)
-		    array[row + 2][col] = model.getValueAt(row, col);
+		    array[row + 3][col] = model.getValueAt(row, col);
 	    Main.getClipboard().put(array);
 	}
     }

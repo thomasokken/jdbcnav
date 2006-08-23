@@ -176,7 +176,7 @@ public class TableDetailsFrame extends MyFrame {
 	    data[i][6] = MiscUtils.sqlTypeIntToString(spec.jdbcSqlType);
 	    data[i][7] = spec.jdbcJavaType;
 	}
-	return new ArrayTableModel(names, classes, data);
+	return new ArrayTableModel(names, classes, null, data);
     }
 
     private String buildHtmlDetails() {

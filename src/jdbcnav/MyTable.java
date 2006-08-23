@@ -25,6 +25,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.table.*;
 import jdbcnav.model.TypeSpec;
+import jdbcnav.model.TypeSpecTableModel;
 import jdbcnav.util.*;
 
 
@@ -533,7 +534,7 @@ public class MyTable extends JTable {
 						       boolean hasFocus,
 						       int row,
 						       int column) {
-	    ResultSetTableModel m = (ResultSetTableModel) table.getModel();
+	    TypeSpecTableModel m = (TypeSpecTableModel) table.getModel();
 	    spec = m.getTypeSpec(column);
 	    leftJustified = !Number.class.isAssignableFrom(spec.jdbcJavaClass);
 	    return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -669,7 +670,7 @@ public class MyTable extends JTable {
 	public Component getTableCellEditorComponent(JTable table, Object value,
 						     boolean isSelected,
 						     int row, int column) {
-	    ResultSetTableModel m = (ResultSetTableModel) table.getModel();
+	    TypeSpecTableModel m = (TypeSpecTableModel) table.getModel();
 	    spec = m.getTypeSpec(column);
 	    this.value = spec.objectToString(value);
 	    JTextField tf = (JTextField) getComponent();
