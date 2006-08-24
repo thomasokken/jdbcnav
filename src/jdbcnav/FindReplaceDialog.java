@@ -24,6 +24,7 @@ import javax.swing.*;
 
 import jdbcnav.util.MyGridBagConstraints;
 import jdbcnav.util.MyGridBagLayout;
+import jdbcnav.util.MyTextField;
 
 
 public class FindReplaceDialog extends MyFrame {
@@ -50,13 +51,13 @@ public class FindReplaceDialog extends MyFrame {
 	gbc.gridy++;
 	c.add(label, gbc);
 
-	findField = new JTextField(20);
+	findField = new MyTextField(20);
 	gbc.gridx++;
 	gbc.gridy = 0;
 	gbc.weightx = 1;
 	c.add(findField, gbc);
 
-	replaceField = new JTextField(20);
+	replaceField = new MyTextField(20);
 	gbc.gridy++;
 	c.add(replaceField, gbc);
 

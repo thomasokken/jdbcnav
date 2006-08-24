@@ -98,6 +98,10 @@ public class Clipboard {
 	}
     }
 
+    public void refresh() {
+	notifyListeners();
+    }
+
     public void addListener(Listener listener) {
 	listeners.add(listener);
     }

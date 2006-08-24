@@ -25,6 +25,7 @@ import javax.swing.event.*;
 
 import jdbcnav.util.MyGridBagConstraints;
 import jdbcnav.util.MyGridBagLayout;
+import jdbcnav.util.MyTextArea;
 
 
 public class ColumnMatchDialog extends MyFrame {
@@ -84,7 +85,7 @@ public class ColumnMatchDialog extends MyFrame {
 	gbc.gridwidth = 2;
 	c.add(label, gbc);
 
-	summaryArea = new JTextArea(8, 80);
+	summaryArea = new MyTextArea(8, 80);
 	summaryArea.setFont(new Font("Courier", Font.PLAIN, 12));
 	summaryArea.setLineWrap(true);
 	summaryArea.setWrapStyleWord(true);

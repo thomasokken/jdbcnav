@@ -95,7 +95,7 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 	    table.setNiceSize();
 	    scrollPane.setViewportView(table);
 	} else if (data instanceof byte[]) {
-	    jta = new JTextArea();
+	    jta = new MyTextArea();
 	    jta.setEditable(false);
 	    jta.setLineWrap(wrapLinesMI.getState());
 	    StringBuffer buf = new StringBuffer();
@@ -118,7 +118,7 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 	    clearMI.setEnabled(true);
 	    scrollPane.setViewportView(jta);
 	} else {
-	    jta = new JTextArea();
+	    jta = new MyTextArea();
 	    jta.setEditable(false);
 	    jta.setLineWrap(wrapLinesMI.getState());
 	    jta.setText(String.valueOf(data));

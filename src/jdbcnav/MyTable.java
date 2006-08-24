@@ -541,6 +541,11 @@ public class MyTable extends JTable {
 	}
     }
 
+    // I define my own GenericEditor and NumberEditor, cloned from JTable, so
+    // that I can make sure they use a MyTextField instead of a JTextField.
+    // This is necessary to support automatic refreshing of the Clipboard
+    // window.
+
     private static class GenericEditor extends DefaultCellEditor {
 
 	private Class[] argTypes = new Class[]{String.class};
@@ -548,7 +553,7 @@ public class MyTable extends JTable {
 	protected Object value;
 
 	public GenericEditor() {
-            super(new JTextField());
+            super(new MyTextField());
         }
 
 	public boolean stopCellEditing() {
@@ -646,7 +651,7 @@ public class MyTable extends JTable {
 	private Object value;
 
 	public DatabaseObjectEditor() {
-	    super(new JTextField());
+	    super(new MyTextField());
 	}
 
 	public boolean stopCellEditing() {

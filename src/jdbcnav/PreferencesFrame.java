@@ -163,7 +163,7 @@ public class PreferencesFrame extends MyFrame {
 	gbc2.gridy = 1;
 	gbc2.weightx = 1;
 	gbc2.fill = MyGridBagConstraints.HORIZONTAL;
-	logFileNameTF = new JTextField();
+	logFileNameTF = new MyTextField();
 	String s = prefs.getLogFileName();
 	if (s != null)
 	    logFileNameTF.setText(s);
