@@ -34,7 +34,7 @@ import jdbcnav.util.MyGridBagLayout;
 import jdbcnav.util.NonTabJTextArea;
 
 
-public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
+public class BinaryEditorFrame extends MyFrame {
     private BinaryDataManager datamgr;
     private boolean unsaved;
     private boolean allowRenaming;
@@ -43,7 +43,7 @@ public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
     private TableModel model;
     private int row, column;
     private boolean isCellEditor;
-    JMenuItem undoMI, redoMI, pasteMI;
+    JMenuItem undoMI, redoMI;
 
     public BinaryEditorFrame(String name, byte[] data) {
 	this(null, name, data, false, true, null, 0, 0);
@@ -211,17 +211,14 @@ public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
 			    });
 	mi.setAccelerator(KeyStroke.getKeyStroke('C', Event.CTRL_MASK));
 	m.add(mi);
-	pasteMI = new JMenuItem("Paste");
-	pasteMI.addActionListener(new ActionListener() {
+	mi = new JMenuItem("Paste");
+	mi.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 				    paste();
 				}
 			    });
-	pasteMI.setAccelerator(KeyStroke.getKeyStroke('V', Event.CTRL_MASK));
-	Object cbdata = Main.getClipboard().get();
-	pasteMI.setEnabled(cbdata != null &&
-		((cbdata instanceof String) || (cbdata instanceof byte[])));
-	m.add(pasteMI);
+	mi.setAccelerator(KeyStroke.getKeyStroke('V', Event.CTRL_MASK));
+	m.add(mi);
 	mi = new JMenuItem("Clear");
 	mi.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -389,11 +386,6 @@ public class BinaryEditorFrame extends MyFrame implements Clipboard.Listener {
 	    MessageBox.show("Save failed.", e);
 	    return false;
 	}
-    }
-
-    public void clipboardUpdated(Object data) {
-	pasteMI.setEnabled(data != null &&
-		    ((data instanceof String) || (data instanceof byte[])));
     }
 
     public void undo() {

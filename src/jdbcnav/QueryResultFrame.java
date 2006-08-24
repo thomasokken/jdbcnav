@@ -30,7 +30,7 @@ import jdbcnav.util.*;
 
 
 public class QueryResultFrame extends MyFrame
-	    implements ResultSetTableModel.UndoListener, Clipboard.Listener {
+			      implements ResultSetTableModel.UndoListener {
     protected BrowserFrame browser;
     protected ResultSetTableModel model;
     private String query;
@@ -48,7 +48,6 @@ public class QueryResultFrame extends MyFrame
     private JMenu editMenu;
     private JMenuItem cutMI;
     private JMenuItem copyMI;
-    private JMenuItem pasteMI;
     private JMenuItem setCellNullMI;
     private JMenuItem editCellMI;
     private JMenuItem undoMI;
@@ -195,15 +194,14 @@ public class QueryResultFrame extends MyFrame
 	copyMI.setAccelerator(KeyStroke.getKeyStroke('C', Event.CTRL_MASK));
 	editMenu.add(copyMI);
 	if (editable) {
-	    pasteMI = new JMenuItem("Paste");
-	    pasteMI.addActionListener(new ActionListener() {
+	    mi = new JMenuItem("Paste");
+	    mi.addActionListener(new ActionListener() {
 				    public void actionPerformed(ActionEvent e) {
 					paste();
 				    }
 				});
-	    pasteMI.setAccelerator(KeyStroke.getKeyStroke('V', Event.CTRL_MASK));
-	    pasteMI.setEnabled(Main.getClipboard().get() != Clipboard.EMPTY);
-	    editMenu.add(pasteMI);
+	    mi.setAccelerator(KeyStroke.getKeyStroke('V', Event.CTRL_MASK));
+	    editMenu.add(mi);
 	    editMenu.addSeparator();
 	    mi = new JMenuItem("Insert Row");
 	    mi.addActionListener(new ActionListener() {
@@ -727,7 +725,7 @@ public class QueryResultFrame extends MyFrame
 	    }
 	    for (int row = 0; row < nrows; row++)
 		for (int col = 0; col < ncols; col++)
-		    array[row + 3][col] = model.getValueAt(row, col);
+		    array[row + 3][col] = model.getValueAt(selRows[row], col);
 	    Main.getClipboard().put(array);
 	}
     }
@@ -750,7 +748,7 @@ public class QueryResultFrame extends MyFrame
 	    return;
 	}
 	Object clipdata = Main.getClipboard().get();
-	if (clipdata == Clipboard.EMPTY)
+	if (clipdata == null)
 	    return;
 	if (clipdata instanceof Object[][]) {
 	    Object[][] array = (Object[][]) clipdata;
@@ -927,11 +925,6 @@ public class QueryResultFrame extends MyFrame
 	    redoMI.setText(redo);
 	    redoMI.setEnabled(true);
 	}
-    }
-
-    public void clipboardUpdated(Object clipdata) {
-	if (editable)
-	    pasteMI.setEnabled(clipdata != Clipboard.EMPTY);
     }
 
     public boolean isDirty() {

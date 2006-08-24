@@ -1,23 +1,3 @@
-Copying rows from table editing windows no longer works. Throws exceptions,
-though maybe not on the first attempt. Clipboard frame also broken.
-UPDATE: the problem is that the Clipboard code is not TypeSpec-aware; I
-overlooked it in the great db-independent type handling update in November
-2005. Ever since, the code in MyTable that gets cell renderer components for
-the clipboard fails, because the copied data has columnClass 'TypeSpec' for all
-its columns; MyTable assumes that the underlying model is a ResultSetTableModel
-in that case, while it actually is an ArrayTableModel. Boom,
-ClassCastException!
-Looks like this got broken in build 2239 (12 November 2005).
-To fix, ArrayTableModel needs to support TypeSpecs somehow. First guess: define
-a new interface, HasTypeSpecs, to be implemented by ResultSetTableModel and by
-a new subclass of ArrayTableModel. This new interface should declare one
-method, getTypeSpec(int column), to be used by DatabaseObjectRenderer and
-DatabaseObjectEditor to get the TypeSpec.
-UPDATE: OK, fixed 'Copy' more or less as described above.
-Now it turns out that 'Paste' is broken, apparently because the wrong data is
-written to the system clipboard or something. I fear the clipboard handling
-updates in build 2531 (12 December 2005) may be broken-as-designed.
-
 The PK values used by the 'Select FK Value' command are cached inside the
 BasicTable object (in the pkValues member), but there's currently no provision
 for invalidating that cache when the table is modified.
@@ -34,12 +14,6 @@ problems (flaky table loads?) are due to memory shortages or not).
 Revisit BLOB/BINARY handling: does it work correctly with MySQL and Transbase?
 Also, revisit the BIT (bit array) type in PostgreSQL. Would be nice if that
 were handled in a manner compatible with Transbase's BITS/BITS2 types.
-
-It would be nice to get rid of the JDBC Navigator clipboard, and use the system
-clipboard throughout. Since the system clipboard does not support content
-change notifications, only flavor change notifications, this means some work
-wrt updating the enabled/disabled state of "Paste" commands. Also, it begs the
-question how to support "grid" data for import/export.
 
 When opening multiple table editing windows at the same time, and one or more
 of them are for tables containing Oracle LONG or LONG RAW columns, the

@@ -562,7 +562,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	int length = selection.length;
 	int[] precedes = new int[length];
 	int[] removed = new int[length];
-	Object[][] added = new Object[grid.length - 2][columns];
+	Object[][] added = new Object[grid.length - 3][columns];
 	for (int i = 0; i < length; i++) {
 	    int following = selection[i] + 1;
 	    if (following == sequence.size())
@@ -579,8 +579,8 @@ public class ResultSetTableModel extends AbstractTableModel
 		continue;
 	    for (int i = 0; i < grid[0].length; i++)
 		if (clipColName.equalsIgnoreCase((String) grid[0][i]))
-		    for (int row = 0; row < grid.length - 2; row++)
-			added[row][col] = grid[row + 2][i];
+		    for (int row = 0; row < grid.length - 3; row++)
+			added[row][col] = grid[row + 3][i];
 	}
 	int where = selection.length == 0 ? -1 : selection[0];
 	int w = where;

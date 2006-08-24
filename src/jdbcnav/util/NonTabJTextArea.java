@@ -21,10 +21,11 @@ package jdbcnav.util;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+import javax.swing.JTextArea;
 import javax.swing.text.Document;
 
 
-public class NonTabJTextArea extends MyTextArea {
+public class NonTabJTextArea extends JTextArea {
     private static TreeSet forwardSet;
     private static TreeSet backwardSet;
     static {

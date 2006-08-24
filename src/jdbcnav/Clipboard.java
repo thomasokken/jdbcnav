@@ -27,43 +27,75 @@ import java.io.IOException;
 import java.util.*;
 
 public class Clipboard {
-    public static final Object EMPTY = new Object();
-    private Object data;
     private ArrayList listeners;
     private java.awt.datatransfer.Clipboard sysClip;
-    private Transferable sysData;
+    private static DataFlavor gridFlavor;
+    static {
+        try {
+            gridFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType
+                        + "; class=\"[[Ljava.lang.Object;\"");
+        } catch (ClassNotFoundException e) {
+            // Won't happen.
+        }
+    }
+
+    private class GridSelection implements Transferable {
+	private Object[][] grid;
+	public GridSelection(Object[][] grid) {
+	    this.grid = grid;
+	}
+	public DataFlavor[] getTransferDataFlavors() {
+	    return new DataFlavor[] { gridFlavor, DataFlavor.stringFlavor };
+	}
+	public boolean isDataFlavorSupported(DataFlavor flavor) {
+	    return flavor.equals(gridFlavor) || flavor.equals(DataFlavor.stringFlavor);
+	}
+	public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+	    if (flavor.equals(gridFlavor))
+		return grid;
+	    else if (flavor.equals(DataFlavor.stringFlavor))
+		return grid.toString();
+	    else
+		throw new UnsupportedFlavorException(flavor);
+	}
+    }
 
     public Clipboard() {
 	sysClip = Toolkit.getDefaultToolkit().getSystemClipboard();
-	try {
-	    sysData = sysClip.getContents(null);
-	} catch (IllegalStateException e) {
-	    sysData = null;
-	}
-	String s = tr2str(sysData);
-	data = s == null ? EMPTY : s;
 	listeners = new ArrayList();
     }
 
     public void put(Object data) {
-	this.data = data;
+	Transferable tr;
+	if (data == null)
+	    tr = null;
+	else if (data instanceof Object[][])
+	    tr = new GridSelection((Object[][]) data);
+	else
+	    tr = new StringSelection(data.toString());
 	try {
-	    Transferable tr = data == null ? null :
-			      data == EMPTY ? null :
-				new StringSelection(data.toString());
 	    sysClip.setContents(tr, null);
 	} catch (IllegalStateException e) {}
 	notifyListeners();
     }
 
     public Object get() {
+	Transferable tr;
 	try {
-	    Transferable tr = sysClip.getContents(null);
-	    if (tr != sysData)
-		// System clipboard changed behind our back
-		sys2nav();
-	} catch (IllegalStateException e) {}
-	return data;
+	    tr = sysClip.getContents(null);
+	} catch (IllegalStateException e) {
+	    return null;
+	}
+	try {
+	    if (tr.isDataFlavorSupported(gridFlavor))
+		return tr.getTransferData(gridFlavor);
+	    else
+		return tr.getTransferData(DataFlavor.stringFlavor);
+	} catch (UnsupportedFlavorException e) {
+	    return null;
+	} catch (IOException e) {
+	    return null;
+	}
     }
 
     public void addListener(Listener listener) {
@@ -74,37 +106,15 @@ public class Clipboard {
 	listeners.remove(listener);
     }
 
-    public void sys2nav() {
-	try {
-	    sysData = sysClip.getContents(null);
-	} catch (IllegalStateException e) {
-	    return;
-	}
-	String s = tr2str(sysData);
-	data = s == null ? EMPTY : s;
-	notifyListeners();
-    }
-
     public interface Listener {
 	void clipboardUpdated(Object data);
     }
 
     private void notifyListeners() {
+	Object data = get();
 	for (Iterator iter = listeners.iterator(); iter.hasNext();) {
 	    Listener listener = (Listener) iter.next();
 	    listener.clipboardUpdated(data);
-	}
-    }
-
-    private static String tr2str(Transferable tr) {
-	if (tr == null)
-	    return null;
-	try {
-	    return (String) tr.getTransferData(DataFlavor.stringFlavor);
-	} catch (UnsupportedFlavorException e) {
-	    return null;
-	} catch (IOException e) {
-	    return null;
 	}
     }
 }

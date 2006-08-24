@@ -1,8 +1,14 @@
-?? ???? ????: build ????
+24 August 2006: build 2609
 *) Copying rows in QueryResultFrame has been broken since build 2239; it didn't
 handle the TypeSpec column class introduced in that build. As a result, the
 copy operation itself would still succeed, but displaying the Clipboard would
 not. Fixed now.
+*) All copy and paste operations now use the system clipboard. The JDBC
+Navigator clipboard is gone completely, as is the messy and broken code to
+synchronize it with the system clipboard, that I introduced in build 2531. Copy
+and paste of table rows should work properly again.
+*) Copying n table rows would always copy the top n rows from the table,
+instead of the n rows that were actually selected. Oops! Fixed now.
 
 22 July 2006: build 2600
 *) When using the 'Select FK Value' command on a column that allows nulls, the

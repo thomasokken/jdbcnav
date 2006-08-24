@@ -31,18 +31,11 @@ public class MyFrame extends JInternalFrame {
 
     public MyFrame(String title) {
 	super(title);
-	init();
     }
 
     public MyFrame(String title, boolean resizable, boolean closable,
 		   boolean maximizable, boolean iconifiable) {
 	super(title, resizable, closable, maximizable, iconifiable);
-	init();
-    }
-
-    private void init() {
-	if (this instanceof Clipboard.Listener)
-	    Main.getClipboard().addListener((Clipboard.Listener) this);
     }
 
     public void showCentered() {
@@ -99,8 +92,6 @@ public class MyFrame extends JInternalFrame {
 	if (parent != null && parent.children != null)
 	    parent.children.remove(this);
 	Main.removeFromWindowsMenu(this);
-	if (this instanceof Clipboard.Listener)
-	    Main.getClipboard().removeListener((Clipboard.Listener) this);
 	if (parent != null)
 	    parent.childDisposed(this);
 

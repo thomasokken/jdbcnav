@@ -47,14 +47,21 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 			}
 		    });
 	m.add(wrapLinesMI);
+	JMenuItem mi = new JMenuItem("Refresh");
+	mi.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			    clipboardUpdated(Main.getClipboard().get());
+			}
+		    });
+	m.add(mi);
 	clearMI = new JMenuItem("Clear");
 	clearMI.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			    Main.getClipboard().put(Clipboard.EMPTY);
+			    Main.getClipboard().put(null);
 			}
 		    });
 	m.add(clearMI);
-	JMenuItem mi = new JMenuItem("Close");
+	mi = new JMenuItem("Close");
 	mi.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			    dispose();
@@ -66,11 +73,18 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 	setJMenuBar(mb);
 	clipboardUpdated(clipboard.get());
 	setSize(500, 300);
+
+	Main.getClipboard().addListener(this);
+    }
+
+    public void dispose() {
+	Main.getClipboard().removeListener(this);
+	super.dispose();
     }
 
     public void clipboardUpdated(Object data) {
 	jta = null;
-	if (data == Clipboard.EMPTY) {
+	if (data == null) {
 	    wrapLinesMI.setEnabled(false);
 	    clearMI.setEnabled(false);
 	    scrollPane.setViewportView(new JLabel(""));
@@ -81,7 +95,7 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 	    table.setNiceSize();
 	    scrollPane.setViewportView(table);
 	} else if (data instanceof byte[]) {
-	    jta = new MyTextArea();
+	    jta = new JTextArea();
 	    jta.setEditable(false);
 	    jta.setLineWrap(wrapLinesMI.getState());
 	    StringBuffer buf = new StringBuffer();
@@ -104,7 +118,7 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 	    clearMI.setEnabled(true);
 	    scrollPane.setViewportView(jta);
 	} else {
-	    jta = new MyTextArea();
+	    jta = new JTextArea();
 	    jta.setEditable(false);
 	    jta.setLineWrap(wrapLinesMI.getState());
 	    jta.setText(String.valueOf(data));

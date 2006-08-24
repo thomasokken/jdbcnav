@@ -1654,13 +1654,13 @@ public class JDBCDatabase extends BasicDatabase {
 	    gbc.gridwidth = 3;
 	    gbc.anchor = MyGridBagConstraints.WEST;
 	    p1.add(configNameCB, gbc);
-	    driverTF = new MyTextField(20);
+	    driverTF = new JTextField(20);
 	    gbc.gridy++;
 	    p1.add(driverTF, gbc);
-	    urlTF = new MyTextField(40);
+	    urlTF = new JTextField(40);
 	    gbc.gridy++;
 	    p1.add(urlTF, gbc);
-	    usernameTF = new MyTextField(10);
+	    usernameTF = new JTextField(10);
 	    gbc.gridy++;
 	    gbc.gridwidth = 1;
 	    p1.add(usernameTF, gbc);
