@@ -6,6 +6,11 @@ along the lines of how 'null' is treated; for the editor situation, the best
 thing is probably to substitute a zero-length string or something.
 It would be even nicer if such bad paste operations could be *prevented*...
 
+Clearing the clipboard by storing 'null' into it does not work; it throws a NPE
+in the ClipboardFrame's Clear command and in JavaScript's clipboard=null.
+I may need to reinstate the Clipboard.EMPTY singleton which I removed in build
+2609.
+
 The PK values used by the 'Select FK Value' command are cached inside the
 BasicTable object (in the pkValues member), but there's currently no provision
 for invalidating that cache when the table is modified.
