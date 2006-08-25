@@ -1,4 +1,4 @@
-?? ?????? ????: build ????
+25 August 2006: build 2610
 *) Using MyTextArea/MyTextField instead of JTextArea/JTextField again; these
 take care of automatically refreshing the Clipboard window when a cut or copy
 operation is performed. I had removed this functionality in the previous
