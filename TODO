@@ -11,6 +11,18 @@ in the ClipboardFrame's Clear command and in JavaScript's clipboard=null.
 I may need to reinstate the Clipboard.EMPTY singleton which I removed in build
 2609.
 
+Support Oracle Synonyms. I think querying and updating them is not a problem
+(should work fine as is), but for getting the metadata, I'll have to check for
+a table type of "SYNONYM", and explicitly follow the indirection somehow.
+In JDBCDatabase, the following DatabaseMetaData methods need attention:
+getPrimaryKeys(), getIndexInfo(), getImportedKeys(), getExportedKeys(), and
+getColumns(). JDBCDatabase_Oracle also uses DBMD.getColumns().
+NOTE: in Oracle, the required information is in SYS.ALL_SYNONYMS. Multiple
+levels of indirection are possible. The right approach would probably be to
+add additional properties to jdbcnav.model.Table, to allow distinguishing
+between the display name and the actual target. The table details window should
+mention if something is a synonym, and if so, for what.
+
 The PK values used by the 'Select FK Value' command are cached inside the
 BasicTable object (in the pkValues member), but there's currently no provision
 for invalidating that cache when the table is modified.
