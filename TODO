@@ -1,3 +1,11 @@
+Pasting can cause values to be stored in table columns where they are not
+valid. This will typically cause a ClassCastException in DatabaseObjectRenderer
+.valueToString(), and additional assorted lossage when trying to edit such
+cells. It would be nice if the renderer would show an unambiguous magic value,
+along the lines of how 'null' is treated; for the editor situation, the best
+thing is probably to substitute a zero-length string or something.
+It would be even nicer if such bad paste operations could be *prevented*...
+
 The PK values used by the 'Select FK Value' command are cached inside the
 BasicTable object (in the pkValues member), but there's currently no provision
 for invalidating that cache when the table is modified.
