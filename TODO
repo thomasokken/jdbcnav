@@ -18,10 +18,22 @@ In JDBCDatabase, the following DatabaseMetaData methods need attention:
 getPrimaryKeys(), getIndexInfo(), getImportedKeys(), getExportedKeys(), and
 getColumns(). JDBCDatabase_Oracle also uses DBMD.getColumns().
 NOTE: in Oracle, the required information is in SYS.ALL_SYNONYMS. Multiple
-levels of indirection are possible. The right approach would probably be to
-add additional properties to jdbcnav.model.Table, to allow distinguishing
-between the display name and the actual target. The table details window should
-mention if something is a synonym, and if so, for what.
+levels of indirection are possible. The right approach would probably be to add
+additional properties to jdbcnav.model.Table, to allow distinguishing between
+the display name and the actual target. The table details window should mention
+if something is a synonym, and if so, for what.
+UPDATE: I think the least confusing approach is to treat synonyms like symlinks
+in the UI -- so when you double-click them, they open the pointed-to table
+exactly as if you had navigated to the synonym's target explicitly and then
+double-clicked it. Supporting this properly will require an additional
+"is-synonym" property in BasicDatabase.MyNode, I think. Don't overlook the
+ramification of a synonym being replaced by a table, or vice versa, during a
+Reload Tree operation.
+Note that the idea is that if you open a table directly, and also via one or
+more of its synonyms, ONLY ONE table editing window is opened, and the table
+name reported in the title bar is the table's name, not the synonym's.
+Also note that all this will probably require some work in order to make SQL
+queries of synonyms (sql window) to do the right thing.
 
 The PK values used by the 'Select FK Value' command are cached inside the
 BasicTable object (in the pkValues member), but there's currently no provision
