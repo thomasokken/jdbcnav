@@ -1,3 +1,10 @@
+26 August 2006: build 2619
+*) Added support for Oracle SYNONYMs.
+*) When pasting illegal values into a column, the table editing window now
+catches the exceptions thrown by the object-to-string conversion, and displays
+the word "illegal" instead. Before, it used to just let the exceptions fall
+through to the AWT repaint thread, killing it and messing up the UI! Oops.
+
 25 August 2006: build 2610
 *) Using MyTextArea/MyTextField instead of JTextArea/JTextField again; these
 take care of automatically refreshing the Clipboard window when a cut or copy

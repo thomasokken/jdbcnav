@@ -103,6 +103,9 @@ public abstract class BasicDatabase implements Database {
 	    MyNode n = (MyNode) o;
 	    if (!n.isLeaf())
 		continue;
+	    MyNode target;
+	    if ((target = n.getTarget()) != null)
+		n = target;
 	    if (n.edit != null)
 		n.edit.deiconifyAndRaise();
 	    else {
@@ -126,6 +129,9 @@ public abstract class BasicDatabase implements Database {
 	    MyNode n = (MyNode) o;
 	    if (!n.isLeaf())
 		continue;
+	    MyNode target;
+	    if ((target = n.getTarget()) != null)
+		n = target;
 	    if (n.details != null)
 		n.details.deiconifyAndRaise();
 	    else {
@@ -829,6 +835,10 @@ public abstract class BasicDatabase implements Database {
 	return null;
     }
 
+    protected String getSynonymTarget(String qualifiedName) {
+	return null;
+    }
+
     private static final Comparator myStringComparator =
 	    new Comparator() {
 		// ORPHANAGE comes last, null comes last but before
@@ -882,6 +892,11 @@ public abstract class BasicDatabase implements Database {
 
 	public boolean isLeaf() {
 	    return qualifiedName != null;
+	}
+
+	public MyNode getTarget() {
+	    String name = getSynonymTarget(qualifiedName);
+	    return name == null ? null : findTableNode(name);
 	}
 
 	public Table getTable() throws NavigatorException {

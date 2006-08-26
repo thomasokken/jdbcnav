@@ -1154,6 +1154,9 @@ public class JDBCDatabase extends BasicDatabase {
 		// qualify it ourselves (in some DB-specific manner)
 		if (name.indexOf('.') == -1)
 		    name = qualifyName(name);
+		String target = getSynonymTarget(name);
+		if (target != null)
+		    name = target;
 		try {
 		    table = getTable(name);
 		} catch (NavigatorException e) {

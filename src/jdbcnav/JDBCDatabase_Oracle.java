@@ -348,6 +348,55 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	}
     }
 
+    private static String nameToUpperCase(String name) {
+	if (name == null || name.length() == 0 || name.charAt(0) == '"')
+	    return name;
+	return name.toUpperCase();
+    }
+
+    /**
+     * Attempt to dereference a SYNONYM by looking up its target in the
+     * SYS.ALL_SYNONYMS view. If the given qualified name is not found,
+     * returns <code>null</code>.
+     */
+    protected String getSynonymTarget(String qualifiedName) {
+	PreparedStatement stmt = null;
+	ResultSet rs = null;
+	String[] parts = parseQualifiedName(qualifiedName);
+	String schema = nameToUpperCase(parts[1]);
+	String name = nameToUpperCase(parts[2]);
+	boolean success = false;
+	try {
+	    stmt = con.prepareStatement("select table_owner, table_name from sys.all_synonyms where owner = ? and synonym_name = ?");
+	    for (int i = 0; i < 16; i++) {
+		stmt.setString(1, schema);
+		stmt.setString(2, name);
+		rs = stmt.executeQuery();
+		if (!rs.next())
+		    break;
+		String tmp = rs.getString(1);
+		name = rs.getString(2);
+		schema = tmp;
+		success = true;
+	    }
+	} catch (SQLException e) {
+	    // Ignore
+	} finally {
+	    if (rs != null)
+		try {
+		    rs.close();
+		} catch (SQLException e) {}
+	    if (stmt != null)
+		try {
+		    stmt.close();
+		} catch (SQLException e) {}
+	}
+	if (success)
+	    return schema + "." + name;
+	else
+	    return null;
+    }
+
     protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,
 				    int sqlType, String javaType) {
 	if (javaType == null) {

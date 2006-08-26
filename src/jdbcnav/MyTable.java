@@ -32,6 +32,7 @@ import jdbcnav.util.*;
 public class MyTable extends JTable {
     
     private static final int MAX_COLUMN_WIDTH = 512;
+    private static final String ILLEGAL = new String("illegal");
 
     private int highlightIndex = 0;
     private ArrayList userInteractionListeners = new ArrayList();
@@ -525,7 +526,11 @@ public class MyTable extends JTable {
 	private TypeSpec spec;
 
 	protected String valueToString(Object value) {
-	    return spec.objectToString(value);
+	    try {
+		return spec.objectToString(value);
+	    } catch (RuntimeException e) {
+		return ILLEGAL;
+	    }
 	}
 
 	public Component getTableCellRendererComponent(JTable table,
@@ -672,7 +677,11 @@ public class MyTable extends JTable {
 						     int row, int column) {
 	    TypeSpecTableModel m = (TypeSpecTableModel) table.getModel();
 	    spec = m.getTypeSpec(column);
-	    this.value = spec.objectToString(value);
+	    try {
+		this.value = spec.objectToString(value);
+	    } catch (RuntimeException e) {
+		this.value = null;
+	    }
 	    JTextField tf = (JTextField) getComponent();
 	    tf.setBorder(new LineBorder(Color.black));
 	    tf.setHorizontalAlignment(
@@ -865,8 +874,9 @@ public class MyTable extends JTable {
 	    // This renderer has virtually zero overhead -- and so now the
 	    // various toString() methods are actually becoming hot spots!
 
-	    FontMetrics fm = value == null ? nullFontMetrics
-					   : nonNullFontMetrics;
+	    FontMetrics fm = value == null || value == ILLEGAL
+						? nullFontMetrics
+						: nonNullFontMetrics;
 	    String v = value == null ? "null" : value;
 	    int h = fm.getAscent() + fm.getDescent() + 2;
 	    int w = fm.stringWidth(v) + 2;
@@ -880,21 +890,21 @@ public class MyTable extends JTable {
 		g.drawRect(0, 0, d.width - 1, d.height - 1);
 		g.setColor((Color) unselectedBackground.get(type));
 		g.fillRect(1, 1, d.width - 2, d.height - 2);
-		if (value == null)
+		if (value == null || value == ILLEGAL)
 		    g.setColor((Color) unselectedNullColor.get(type));
 		else
 		    g.setColor((Color) unselectedForeground.get(type));
 	    } else if (isSelected) {
 		g.setColor(selectedBackground);
 		g.fillRect(0, 0, d.width, d.height);
-		if (value == null)
+		if (value == null || value == ILLEGAL)
 		    g.setColor(selectedNullColor);
 		else
 		    g.setColor(selectedForeground);
 	    } else {
 		g.setColor((Color) unselectedBackground.get(type));
 		g.fillRect(0, 0, d.width, d.height);
-		if (value == null)
+		if (value == null || value == ILLEGAL)
 		    g.setColor((Color) unselectedNullColor.get(type));
 		else
 		    g.setColor((Color) unselectedForeground.get(type));
@@ -906,6 +916,10 @@ public class MyTable extends JTable {
 		f = nullFont;
 		fm = nullFontMetrics;
 		v = "null";
+	    } else if (value == ILLEGAL) {
+		f = nullFont;
+		fm = nullFontMetrics;
+		v = value;
 	    } else {
 		f = nonNullFont;
 		fm = nonNullFontMetrics;

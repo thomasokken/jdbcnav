@@ -27,7 +27,6 @@ import jdbcnav.util.*;
 
 public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
     private JCheckBoxMenuItem wrapLinesMI;
-    private JMenuItem clearMI;
     private JScrollPane scrollPane;
     private JTextArea jta;
 
@@ -54,13 +53,6 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 			}
 		    });
 	m.add(mi);
-	clearMI = new JMenuItem("Clear");
-	clearMI.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			    Main.getClipboard().put(null);
-			}
-		    });
-	m.add(clearMI);
 	mi = new JMenuItem("Close");
 	mi.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -86,11 +78,9 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 	jta = null;
 	if (data == null) {
 	    wrapLinesMI.setEnabled(false);
-	    clearMI.setEnabled(false);
 	    scrollPane.setViewportView(new JLabel(""));
 	} else if (data instanceof Object[][]) {
 	    wrapLinesMI.setEnabled(false);
-	    clearMI.setEnabled(true);
 	    MyTable table = new MyTable(new ArrayTableModel((Object[][]) data));
 	    table.setNiceSize();
 	    scrollPane.setViewportView(table);
@@ -115,7 +105,6 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 		}
 	    }
 	    jta.setText(buf.toString());
-	    clearMI.setEnabled(true);
 	    scrollPane.setViewportView(jta);
 	} else {
 	    jta = new MyTextArea();
@@ -123,7 +112,6 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
 	    jta.setLineWrap(wrapLinesMI.getState());
 	    jta.setText(String.valueOf(data));
 	    wrapLinesMI.setEnabled(true);
-	    clearMI.setEnabled(true);
 	    scrollPane.setViewportView(jta);
 	}
     }
