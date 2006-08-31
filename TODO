@@ -4,6 +4,9 @@ for invalidating that cache when the table is modified.
 The conservative approach would be to run a query *each time* getPKValues() is
 invoked.
 
+Cascaded delete/update: when the user deletes or changes a PK, offer to
+propagate those changes to related tables.
+
 When MemoryMonitor notices that memory is getting low, in addition to showing a
 warning dialog, it should also pause in-progress table loads. Without this, the
 low-memory warning may be useless, because a table loading thread may overflow
@@ -49,3 +52,7 @@ maintain a 'size' property for such types. These changes are mostly relevant
 for accurate cross-DB SQL script generation, but the 'size' property could also
 be used to enforce the constraint when editing cells (this should probably also
 be done for the number and string renderers and editors).
+
+Visual schema editor.
+
+Graphical query generator and plan optimizer.
