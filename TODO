@@ -1,3 +1,8 @@
+CSV Import/Export: pluggable filters to support tab-delimited, customizable CSV
+options (change separator, quotation conventions, etc.), different
+representations for null values (zero-length string, the word NULL, some other
+special notation).
+
 The PK values used by the 'Select FK Value' command are cached inside the
 BasicTable object (in the pkValues member), but there's currently no provision
 for invalidating that cache when the table is modified.
