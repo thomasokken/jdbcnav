@@ -1088,8 +1088,6 @@ public abstract class BasicDatabase implements Database {
 		    || spec.type == TypeSpec.VARNCHAR
 		    || spec.type == TypeSpec.LONGVARNCHAR)
 		return s;
-	    if (s.equalsIgnoreCase("null"))
-		return null;
 	    if (spec.type == TypeSpec.DATE
 		    || spec.type == TypeSpec.TIME
 		    || spec.type == TypeSpec.TIME_TZ

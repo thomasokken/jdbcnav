@@ -1,4 +1,4 @@
-19 September 2006: build 2624
+19 September 2006: build 2625
 *) Removed a couple of JDK 1.5 dependencies that I had inadvertently introduced
 in earlier builds. The offending code used the Boolean.parseBoolean(String)
 method and the IllegalArgumentException(Throwable) constructor.
