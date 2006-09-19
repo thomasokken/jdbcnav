@@ -1,3 +1,8 @@
+19 September 2006: build 2624
+*) Removed a couple of JDK 1.5 dependencies that I had inadvertently introduced
+in earlier builds. The offending code used the Boolean.parseBoolean(String)
+method and the IllegalArgumentException(Throwable) constructor.
+
 26 August 2006: build 2619
 *) Added support for Oracle SYNONYMs.
 *) When pasting illegal values into a column, the table editing window now

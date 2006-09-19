@@ -1088,6 +1088,8 @@ public abstract class BasicDatabase implements Database {
 		    || spec.type == TypeSpec.VARNCHAR
 		    || spec.type == TypeSpec.LONGVARNCHAR)
 		return s;
+	    if (s.equalsIgnoreCase("null"))
+		return null;
 	    if (spec.type == TypeSpec.DATE
 		    || spec.type == TypeSpec.TIME
 		    || spec.type == TypeSpec.TIME_TZ
@@ -1113,7 +1115,19 @@ public abstract class BasicDatabase implements Database {
 			klass.getConstructor(new Class[] { String.class });
 	    return cnstr.newInstance(new Object[] { s });
 	} catch (Exception e) {
-	    throw new IllegalArgumentException(e);
+	    // JDK 1.4 does not have the IllegalArgumentException(Throwable)
+	    // constructor; this was introduced in JDK 1.5. I really want to
+	    // use this constructor if it is available, though, but for 1.4
+	    // compatibility, I have to invoke it using reflection.
+	    try {
+		java.lang.reflect.Constructor cnstr =
+			IllegalArgumentException.class.getConstructor(
+					new Class[] { Throwable.class });
+		throw (IllegalArgumentException)
+					cnstr.newInstance(new Object[] { e });
+	    } catch (Exception e2) {
+		throw new IllegalArgumentException(e.getMessage());
+	    }
 	}
     }
 }
