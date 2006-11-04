@@ -1,3 +1,9 @@
+When writing the .jdbcnavrc file, first write it to (say) .jdbcnavrc-new, and,
+only after that has finished successfully, rename .jdbcnavrc to .jdbcnavrc-old,
+rename .jdbcnavrc-new to .jdbcnavrc, and finally, delete .jdbcnavrc-old.
+In other words, do something about this !@#$%^&*( situation where any ill-
+times jdbcnav crash will leave you with a corrupt .jdbcnavrc file!!!
+
 CSV Import/Export: pluggable filters to support tab-delimited, customizable CSV
 options (change separator, quotation conventions, etc.), different
 representations for null values (zero-length string, the word NULL, some other
