@@ -1,11 +1,11 @@
 11 November 2006: build 2626
-*) In some situations, JDBC Navigator would get a "ORA-01866: the datetime
+*) In some situations, JDBC Navigator would get an "ORA-01866: the datetime
 class is invalid" while running the initial DBMD.getTables() right after
 opening a connection to an Oracle database. The problem appears to be caused by
 an earlier (unreported!) error while trying to set the session time zone
 ("ORA-01882: timezone region  not found").
 The Exception thrown by setSessionTimeZone() is now reported to the user, and
-jdbcnav now recognizes a System propery named jdbcnav.tz which can be used to
+jdbcnav now recognizes a System property named jdbcnav.tz which can be used to
 override the default time zone ID. The default, which is used if jdbcnav.tz is
 not set, is whatever is returned by java.util.TimeZone.getDefault().getID().
 
