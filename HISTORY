@@ -1,3 +1,4 @@
+11 November 2006: build 2626
 *) In some situations, JDBC Navigator would get a "ORA-01866: the datetime
 class is invalid" while running the initial DBMD.getTables() right after
 opening a connection to an Oracle database. The problem appears to be caused by
