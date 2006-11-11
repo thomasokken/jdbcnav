@@ -1,3 +1,27 @@
+* Why does the UI freeze while waiting for a connection to open?
+  Did I screw up the ConnectThread logic somewhere?
+* Why the screwy behavior while opening huge windows? Am I messing up the Swing
+  state by making AWT calls from the BackgroundLoadThread? (Hint:
+  SwingUtilities.invokeLater(); maybe my model notifications are unsafe.)
+* What's really going on with the failure to communicate properly with Oracle
+  over NCS's OpenVPN? Could it be related to the use of Oracle8i compatibility
+  mode?
+* Support swapping tables to files, so you can start loading ridiculously huge
+  data sets without having to supply impossibly large -Xmx parameters.
+* What's with those BIN$IRuZWbVMjergQJ+YQhRuLg==$0 table names I sometimes get
+  out of Oracle? My guess is that they're carcasses of recently dropped tables.
+  They don't show up in Toad or in 'select table_name from user_tables', but
+  obviously DBMD.getTables() does return them. Provides no obvious way of
+  filtering them, either.
+* When generating a populate script, am I still doing linear searches to find
+  matching rows, or am I actually doing something clever like sorting both
+  tables according to their PK, and then using an O(n1+n2) algorithm?
+
+In addition to generating scripts, there should also be an option to 
+execute them right away, with the additional option to run them without 
+transactions. The idea being to be able to copy or update databases 
+without ever having to store the generated sql.
+
 When writing the .jdbcnavrc file, first write it to (say) .jdbcnavrc-new, and,
 only after that has finished successfully, rename .jdbcnavrc to .jdbcnavrc-old,
 rename .jdbcnavrc-new to .jdbcnavrc, and finally, delete .jdbcnavrc-old.
