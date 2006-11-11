@@ -1,3 +1,10 @@
+Regarding the problem with Oracle over OpenVPN (ORA-01866: The Datetime class
+is invalid): always a possibility to simply override getTables() in
+JDBCDatabase_Oracle, and use some Oracle-specific queries to obtain the
+information. This might actually be beneficial because it would make it a lot
+easier (as in automatic) to filter out some of the BS that DBMD.getTables()
+tends to return.
+
 When selecting the "References" pop-up menu option to follow a foreign 
 key back to the corresponding row in the referenced table, the actual 
 row is no longer highlighted. UPDATE: I could not reproduce this later on, but
