@@ -30,11 +30,29 @@ import jdbcnav.util.*;
 public class JDBCDatabase_Oracle extends JDBCDatabase {
     public JDBCDatabase_Oracle(String name, String driver, Connection con) {
 	super(name, driver, con);
+	String tz = System.getProperty("jdbcnav.tz");
+	if (tz == null)
+	    tz = TimeZone.getDefault().getID();
 	try {
 	    Method m = Class.forName("oracle.jdbc.OracleConnection").getMethod(
 			    "setSessionTimeZone", new Class[] { String.class });
-	    m.invoke(con, new Object[] { TimeZone.getDefault().getID() });
+	    m.invoke(con, new Object[] { tz });
+	} catch (InvocationTargetException e) {
+	    Throwable th = e.getCause();
+	    MessageBox.show("Could not set time zone \"" + tz + "\".\n" +
+			    "Try setting the System property jdbcnav.tz to your time zone,\n" +
+			    "either by setting it in the Preferences, or using -Djdbcnav.tz=Europe/Amsterdam\n" +
+			    "on the command line. (Substitute your actual time zone in case you are not in\n" +
+			    "the Netherlands!) You will have to exit and restart JDBC Navigator for the new\n" +
+			    "setting to take effect.\n" +
+			    "You can get a list of time zone names with SELECT * FROM V$TIMEZONE_NAMES, or\n" +
+			    "you can specify the time zone as a UTC offset in HH:MM or -HH:MM format.\n",
+			    th == null ? e : th);
 	} catch (Exception e) {
+	    // setSessionTimeZone() was introduced in Oracle 9, so presumably
+	    // if we get an exception here, it's simply because we're talking
+	    // to an old version of Oracle. No need to bother the user now,
+	    // but I'll print the exception just for the hell of it.
 	    e.printStackTrace();
 	}
     }
