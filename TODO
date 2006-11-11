@@ -1,3 +1,15 @@
+When selecting the "References" pop-up menu option to follow a foreign 
+key back to the corresponding row in the referenced table, the actual 
+row is no longer highlighted. UPDATE: I could not reproduce this later on, but
+it does raise more concerns about the possibility that the background load
+thread is making Swing calls it shouldn't be making (maybe even the events
+fired by the TableModel should be initiated from an invokeLater?).
+
+When the table in the Table Details window is re-sorted, the row 
+selection is not updated.
+
+Copying/pasting cells in an Oracle DATE column results in "illegal".
+
 * Why does the UI freeze while waiting for a connection to open?
   Did I screw up the ConnectThread logic somewhere?
 * Why the screwy behavior while opening huge windows? Am I messing up the Swing
