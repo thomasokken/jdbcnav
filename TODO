@@ -1,3 +1,6 @@
+The whole right-clicking to follow PK/FK etc. should also work in updatable
+query results.
+
 Just a thought: how about overriding getTables() in JDBCDatabase_Oracle, and
 using some Oracle-specific query rather than DBMD.getTables()? The latter tends
 to return a great deal of junk, which I don't know how to filter out (though it
