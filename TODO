@@ -1,13 +1,12 @@
-The whole right-clicking to follow PK/FK etc. should also work in updatable
-query results.
+Shouldn't the foreign key chasing feature work in updatable query results?
 
-Just a thought: how about overriding getTables() in JDBCDatabase_Oracle, and
-using some Oracle-specific query rather than DBMD.getTables()? The latter tends
-to return a great deal of junk, which I don't know how to filter out (though it
-may be possible by looking at the table names and checking for illegal chars;
-Q: which characters are legal in Oracle for quoted names?). ALL_TABLES,
-ALL_SYNONYMS, and whatever those views are called, do not suffer from this
-pollution problem.
+I made a few changes to PROFICIENCY_FACTS_AGG using a bit of JavaScript;
+changed 4 cells each in 10 rows. Then tried to commit, and it took several
+minutes with 100% CPU load. Why? This should be linear in the number of edits
+made, no? Table size should not be relevant.
+UPDATE: is this a Heisenbug? I.e., is the simple act of looking at a table
+cell sufficient to change it? The slowness suggests that *all* rows were
+being updated.
 
 When selecting the "References" pop-up menu option to follow a foreign 
 key back to the corresponding row in the referenced table, the actual 

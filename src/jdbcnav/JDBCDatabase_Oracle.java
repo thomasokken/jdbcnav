@@ -78,6 +78,47 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
     }
 
     /**
+     * With Oracle 10g (and possibly other versions), DBMD.getTables() tends
+     * to return a lot of junk along with the actual table/view/synonym
+     * information. For example, after dropping tables, Reload Tree will show
+     * tables with names like BIN$JW/jUvqZ0KbgQKjAagAJqw==$0
+     * So, I query SYS.ALL_TABLES, SYS.ALL_VIEWS, and SYS.ALL_SYNONYMS instead.
+     */
+    protected Collection getTables() throws NavigatorException {
+	ArrayList tables = new ArrayList();
+	Statement stmt = null;
+	final String[][] typeQueryMap = new String[][] {
+	    { "TABLE", "select owner, table_name from sys.all_tables" },
+	    { "VIEW", "select owner, view_name from sys.all_views" },
+	    { "SYNONYM", "select owner, synonym_name from sys.all_synonyms" }
+	};
+	try {
+	    stmt = con.createStatement();
+	    for (int i = 0; i < typeQueryMap.length; i++) {
+		String type = typeQueryMap[i][0];
+		String query = typeQueryMap[i][1];
+		ResultSet rs = stmt.executeQuery(query);
+		while (rs.next()) {
+		    TableSpec ts = new TableSpec();
+		    ts.catalog = null;
+		    ts.schema = rs.getString(1);
+		    ts.type = type;
+		    ts.name = rs.getString(2);
+		    tables.add(ts);
+		}
+	    }
+	} catch (SQLException e) {
+	    throw new NavigatorException(e);
+	} finally {
+	    if (stmt != null)
+		try {
+		    stmt.close();
+		} catch (SQLException e) {}
+	}
+	return tables;
+    }
+
+    /**
      * The Oracle 8i JDBC Driver (classes12.zip) freaks out on
      * PreparedStatement.getMetaData(), which we would like to use to find a
      * table's Java types when creating the Table object.

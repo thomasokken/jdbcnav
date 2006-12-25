@@ -1,3 +1,10 @@
+25 December 2006: build 2628
+*) With Oracle 10g (and possibly earlier versions), DBMD.getTables() can
+return a lot of useless junk along with the actual table/view/synonym info.
+This is confusing, annoying, and it slows things down.
+I changed the jdbcnav's Oracle driver so that it now queries SYS.ALL_TABLES,
+SYS.ALL_VIEWS, and SYS.ALL_SYNONYMS instead.
+
 11 November 2006: build 2626
 *) In some situations, JDBC Navigator would get an "ORA-01866: the datetime
 class is invalid" while running the initial DBMD.getTables() right after
