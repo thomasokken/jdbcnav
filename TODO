@@ -8,6 +8,8 @@ UPDATE: is this a Heisenbug? I.e., is the simple act of looking at a table
 cell sufficient to change it? The slowness suggests that *all* rows were
 being updated.
 
+Support Oracle SEQUENCE.
+
 When selecting the "References" pop-up menu option to follow a foreign 
 key back to the corresponding row in the referenced table, the actual 
 row is no longer highlighted. UPDATE: I could not reproduce this later on, but
