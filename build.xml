@@ -1,6 +1,6 @@
 <!--
    JDBC Navigator - A Free Database Browser and Editor
-   Copyright (C) 2001-2006  Thomas Okken
+   Copyright (C) 2001-2007  Thomas Okken
   
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License, version 2,
@@ -80,7 +80,7 @@
 	     source="1.4"
 	     destdir="javadoc"
 	     windowtitle="JDBC Navigator">
-      <link href="file:///opt/java/jdk1.5.0_06/docs/api"/>
+      <link href="file:///opt/java/jdk1.5.0_10/docs/api"/>
       <link href="file:///home/thomas/rhino1_5R5/docs/apidocs"/>
     </javadoc>
   </target>
