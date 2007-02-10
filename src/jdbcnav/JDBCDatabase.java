@@ -314,6 +314,15 @@ public class JDBCDatabase extends BasicDatabase {
 		}
 	    }
 
+	    /*
+	       // Note to self --
+	       // Why did I go to all this trouble to clone the original
+	       // table's primary key, instead of simply copying its reference?
+	       // Also, why did I not copy the original table's imported and
+	       // exported keys all along? These things really are pretty nice
+	       // to have, to make the pointer-chasing functionality work in
+	       // PartialTables (a.k.a. updatable query results).
+
 	    PrimaryKey tpk = t.getPrimaryKey();
 	    if (tpk != null) {
 		BasicPrimaryKey bpk = new BasicPrimaryKey();
@@ -328,6 +337,12 @@ public class JDBCDatabase extends BasicDatabase {
 
 	    fks = new ForeignKey[0];
 	    rks = new ForeignKey[0];
+	    indexes = new Index[0];
+	    */
+
+	    pk = t.getPrimaryKey();
+	    fks = t.getForeignKeys();
+	    rks = t.getReferencingKeys();
 	    indexes = new Index[0];
 
 	    this.data = data;

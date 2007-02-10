@@ -1,5 +1,3 @@
-Shouldn't the foreign key chasing feature work in updatable query results?
-
 I made a few changes to PROFICIENCY_FACTS_AGG using a bit of JavaScript;
 changed 4 cells each in 10 rows. Then tried to commit, and it took several
 minutes with 100% CPU load. Why? This should be linear in the number of edits
@@ -27,16 +25,8 @@ Copying/pasting cells in an Oracle DATE column results in "illegal".
 * Why the screwy behavior while opening huge windows? Am I messing up the Swing
   state by making AWT calls from the BackgroundLoadThread? (Hint:
   SwingUtilities.invokeLater(); maybe my model notifications are unsafe.)
-* What's really going on with the failure to communicate properly with Oracle
-  over NCS's OpenVPN? Could it be related to the use of Oracle8i compatibility
-  mode?
 * Support swapping tables to files, so you can start loading ridiculously huge
   data sets without having to supply impossibly large -Xmx parameters.
-* What's with those BIN$IRuZWbVMjergQJ+YQhRuLg==$0 table names I sometimes get
-  out of Oracle? My guess is that they're carcasses of recently dropped tables.
-  They don't show up in Toad or in 'select table_name from user_tables', but
-  obviously DBMD.getTables() does return them. Provides no obvious way of
-  filtering them, either.
 * When generating a populate script, am I still doing linear searches to find
   matching rows, or am I actually doing something clever like sorting both
   tables according to their PK, and then using an O(n1+n2) algorithm?
