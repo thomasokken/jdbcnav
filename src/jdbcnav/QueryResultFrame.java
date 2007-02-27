@@ -734,6 +734,7 @@ public class QueryResultFrame extends MyFrame
 	int row = table.getSelectionModel().getAnchorSelectionIndex();
 	int column = table.getColumnModel().getSelectionModel()
 			  .getAnchorSelectionIndex();
+	column = table.convertColumnIndexToModel(column);
 	if (row == -1 || column == -1)
 	    Toolkit.getDefaultToolkit().beep();
 	else {
