@@ -1136,6 +1136,7 @@ public class JDBCDatabase extends BasicDatabase {
 			    // else we have a construct we can't handle.
 			    if (t.equalsIgnoreCase("where"))
 				success = true;
+			    state = 6;
 			    break scanner;
 			} else {
 			    // We have a "select foo.* from", and the previous

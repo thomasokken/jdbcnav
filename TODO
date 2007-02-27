@@ -1,18 +1,3 @@
-Running this query:
-
-    select * from proficiency_facts_agg a inner join assessment b
-    on a.assessment_key=b.assessment_key
-    inner join entity c on a.entity_key=c.entity_key
-    inner join subgroup d on a.group_key=d.group_key
-    where c.entity_code='010100010000'
-    and b.ssads_code='ESL_8_ACCT' and c.school_year=to_date('2005-06-30','yyyy-mm-dd')
-    and d.ssads_group_id=1
-
-against the nclbny_test2 schema returns nothing -- not even a window.
-That is wrong; even "select * from foo where 1 = 2" opens a new window, just
-one with no rows. Is this because I'm doing "select * from" followed by
-multiple tables in the FROM clause? Is this throwing the table loading code off?
-
 When pasting a row, destination columns that don't receive any data (because
 they aren't matched to any source columns) are set to null. Shouldn't they be
 left unchanged? Or, maybe this should be an option on the ColumnMatchDialog.

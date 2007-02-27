@@ -1,3 +1,11 @@
+27 February 2007: build 2637
+*) SELECT * queries from more than one table would fail, because jdbcnav would
+treat them like SELECT * from one table, and then choke when trying to match
+the columns from the ResultSet to the smaller number of columns from the first
+table from the FROM clause. The end result was that no result window would
+appear, and the Exception would just kill the background table loading thread
+and never be reported to the user. Fixed now.
+
 26 February 2007: build 2636
 *) Copy Cell could copy the wrong cell if the columns in the table view had
 been rearranged.
