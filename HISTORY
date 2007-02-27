@@ -1,3 +1,7 @@
+26 February 2007: build 2636
+*) Copy Cell could copy the wrong cell if the columns in the table view had
+been rearranged.
+
 10 February 2007: build 2635
 *) Updatable query results (that is, windows resulting from a "select * from
 foo" type query) now support the same foreign-key chasing as regular table
