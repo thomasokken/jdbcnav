@@ -441,8 +441,16 @@ public class PreferencesFrame extends MyFrame {
 	prefs.setPkHighlightColor(pkHighC);
 	prefs.setFkHighlightColor(fkHighC);
 	prefs.setSystemPropertiesAsText(systemPropsTA.getText());
-	if (prefs.usingSneakyClassLoader())
+	if (prefs.usingSneakyClassLoader()) {
+	    if (classPathTable.isEditing()) {
+		int row = classPathTable.getEditingRow();
+		int column = classPathTable.getEditingColumn();
+		TableCellEditor editor = classPathTable.getCellEditor(row, column);
+		if (!editor.stopCellEditing())
+		    editor.cancelCellEditing();
+	    }
 	    prefs.setClassPath(classPathModel.getItems());
+	}
 	prefs.setShowSplash(showSplashCB.isSelected());
 	prefs.setLogFileName(logFileNameTF.getText());
 	prefs.setLogLevel(logLevelCB.getSelectedIndex());

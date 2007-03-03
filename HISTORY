@@ -1,3 +1,8 @@
+2 March 2007: build 2638
+*) In the Preferences dialog, clicking OK just after editing the Class Path
+would cause the most recent edits to be lost (if one of the Class Path items
+still had a blinking cursor in it). Fixed.
+
 27 February 2007: build 2637
 *) SELECT * queries from more than one table would fail, because jdbcnav would
 treat them like SELECT * from one table, and then choke when trying to match
