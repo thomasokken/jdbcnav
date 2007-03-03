@@ -37,9 +37,10 @@ public class ResultSetTableModel extends AbstractTableModel
 			    implements SortedTableModel, TypeSpecTableModel {
     
     public static final int GENTLE = 0;
-    public static final int RUDE = 1;
-    public static final int VICIOUS = 2;
-    private static final Object NULL = new Object();
+    public static final int ASSERTIVE = 1;
+    public static final int RUDE = 2;
+    public static final int VICIOUS = 3;
+    private static final Object UNSET = new Object();
 
     private Table dbTable;
     private Data data;
@@ -556,44 +557,66 @@ public class ResultSetTableModel extends AbstractTableModel
 	    fireTableDataChanged();
     }
 
-    public synchronized void pasteRow(int[] selection, Object[][] grid,
-							String[] mapping) {
-	Arrays.sort(selection);
-	int length = selection.length;
-	int[] precedes = new int[length];
-	int[] removed = new int[length];
-	Object[][] added = new Object[grid.length - 3][columns];
-	for (int i = 0; i < length; i++) {
-	    int following = selection[i] + 1;
-	    if (following == sequence.size())
-		precedes[i] = -1;
-	    else
-		precedes[i] = ((Integer) sequence.get(following)).intValue();
-	    removed[i] = ((Integer) sequence.get(selection[i])).intValue();
-	}
-	for (int i = length - 1; i >= 0; i--)
-	    sequence.remove(selection[i]);
+    public synchronized void pasteRow(Object[][] grid,
+					String[] mapping, boolean setNull) {
+	Object[] colIndex = new Object[grid[0].length];
+	PrimaryKey dpk = dbTable.getPrimaryKey();
+	int[] pkIndex = dpk == null ? null : new int[dpk.getColumnCount()];
+	int pkFound = 0;
+
 	for (int col = 0; col < columns; col++) {
 	    String clipColName = mapping[col];
 	    if (clipColName == null)
 		continue;
+	    Integer clipColNum = new Integer(col);
 	    for (int i = 0; i < grid[0].length; i++)
-		if (clipColName.equalsIgnoreCase((String) grid[0][i]))
-		    for (int row = 0; row < grid.length - 3; row++)
-			added[row][col] = grid[row + 3][i];
+		if (clipColName.equalsIgnoreCase((String) grid[0][i])) {
+		    Object idx = colIndex[i];
+		    if (idx == null)
+			colIndex[i] = clipColNum;
+		    else if (idx instanceof Integer) {
+			ArrayList al = new ArrayList();
+			al.add(idx);
+			al.add(clipColNum);
+			colIndex[i] = al;
+		    } else
+			((ArrayList) colIndex[i]).add(clipColNum);
+		}
+	    if (dpk != null)
+		for (int i = 0; i < dpk.getColumnCount(); i++)
+		    if (dpk.getColumnName(i).equalsIgnoreCase(headers[col])) {
+			pkIndex[i] = col;
+			pkFound++;
+			break;
+		    }
 	}
-	int where = selection.length == 0 ? -1 : selection[0];
-	int w = where;
-	for (int row = 0; row < added.length; row++) {
-	    cells.add(added[row]);
-	    int n = cells.size() - 1;
-	    if (where == -1)
-		sequence.add(new Integer(n));
-	    else
-		sequence.add(w++, new Integer(n));
+	if (dpk != null && pkFound < dpk.getColumnCount())
+	    pkIndex = null;
+
+	ArrayList pasted = new ArrayList();
+	for (int i = 3; i < grid.length; i++) {
+	    Object[] row = new Object[columns];
+	    if (!setNull)
+		for (int j = 0; j < columns; j++)
+		    row[j] = UNSET;
+	    for (int j = 0; j < grid[0].length; j++) {
+		Object idx = colIndex[j];
+		if (idx == null)
+		    continue;
+		else if (idx instanceof Integer)
+		    row[((Integer) idx).intValue()] = grid[i][j];
+		else {
+		    Object o = grid[i][j];
+		    for (Iterator iter = ((ArrayList) idx).iterator(); iter.hasNext();)
+			row[((Integer) iter.next()).intValue()] = o;
+		}
+	    }
+	    pasted.add(row);
 	}
-	editHappened(new PasteRowEdit(removed, precedes, added, where));
-	fireTableDataChanged();
+
+	Edit edit = new PasteRowEdit(pasted, pkIndex, setNull);
+	editHappened(edit);
+	edit.redo();
     }
 
     private synchronized void editHappened(Edit e) {
@@ -719,7 +742,8 @@ public class ResultSetTableModel extends AbstractTableModel
 						String[] colName) {
 	LineNumberReader in = null;
 	ArrayList imported = new ArrayList();
-	int[] pkIndex;
+	int[] pkIndex = null;
+
 	try {
 	    in = new LineNumberReader(new FileReader(file));
 	    String line;
@@ -744,56 +768,24 @@ public class ResultSetTableModel extends AbstractTableModel
 	    }
 
 	    PrimaryKey dpk = dbTable.getPrimaryKey();
-	    String[] pk;
-	    if (dpk == null)
-		pk = colName;
-	    else {
+	    if (dpk != null) {
 		int n = dpk.getColumnCount();
-		pk = new String[n];
+		String[] pk = new String[n];
 		for (int i = 0; i < n; i++)
 		    pk[i] = dpk.getColumnName(i);
-	    }
-	    boolean[] pkCompPresent = new boolean[pk.length];
-	    pkIndex = new int[pk.length];
-	    int found = 0;
-	    for (int i = 0; i < pk.length; i++) {
-		pkCompPresent[i] = false;
-		String cn = pk[i];
-		for (int j = 0; j < colName.length; j++)
-		    if (cn.equalsIgnoreCase(colName[j])) {
-			pkCompPresent[i] = true;
-			pkIndex[i] = colIndex[j];
-			found++;
-			break;
-		    }
-	    }
-	    if (found < pk.length) {
-		StringBuffer buf = new StringBuffer();
-		buf.append("Can't import file ");
-		buf.append(file.getName());
-		buf.append(" into table ");
-		buf.append(dbTable.getName());
-		buf.append(".\nPrimary key column");
-		if (pk.length - found > 1)
-		    buf.append("s ");
-		else
-		    buf.append(" ");
-		boolean first = true;
-		for (int i = 0; i < pk.length; i++)
-		    if (!pkCompPresent[i]) {
-			if (first)
-			    first = false;
-			else
-			    buf.append(", ");
-			buf.append(pk[i]);
-		    }
-		if (pk.length - found == 1)
-		    buf.append(" is missing.");
-		else
-		    buf.append(" are missing.");
-		JOptionPane.showInternalMessageDialog(Main.getDesktop(),
-						      buf.toString());
-		return;
+		pkIndex = new int[pk.length];
+		int found = 0;
+		for (int i = 0; i < pk.length; i++) {
+		    String cn = pk[i];
+		    for (int j = 0; j < colName.length; j++)
+			if (cn.equalsIgnoreCase(colName[j])) {
+			    pkIndex[i] = colIndex[j];
+			    found++;
+			    break;
+			}
+		}
+		if (found < pk.length)
+		    pkIndex = null;
 	    }
 
 	    TypeSpec[] specs = new TypeSpec[columns];
@@ -803,14 +795,14 @@ public class ResultSetTableModel extends AbstractTableModel
 
 	    while ((line = readLines(in)) != null) {
 		Object[] row = new Object[columns];
-		if (importMode == RUDE) {
-		    // In "rude" mode, we overwrite existing rows -- but
+		if (importMode == ASSERTIVE) {
+		    // In "assertive" mode, we overwrite existing rows -- but
 		    // only the fields that we actually read from the file.
 		    // So, we must have a way to distinguish, while actually
 		    // doing/redoing the edit, between nulls that we actually
 		    // read from the file, and cells that were not read.
 		    for (int i = 0; i < columns; i++)
-			row[i] = NULL;
+			row[i] = UNSET;
 		}
 		tok = new CSVTokenizer(line);
 		int index = -1;
@@ -866,7 +858,9 @@ public class ResultSetTableModel extends AbstractTableModel
 	if (importMode == VICIOUS)
 	    edit = new ViciousImportEdit(imported);
 	else if (importMode == RUDE)
-	    edit = new RudeImportEdit(imported, pkIndex);
+	    edit = new AssertiveImportEdit(imported, pkIndex, true);
+	else if (importMode == ASSERTIVE)
+	    edit = new AssertiveImportEdit(imported, pkIndex, false);
 	else // importMode == GENTLE
 	    edit = new GentleImportEdit(imported, pkIndex);
 	editHappened(edit);
@@ -1028,53 +1022,17 @@ public class ResultSetTableModel extends AbstractTableModel
 	}
     }
 
-    private class PasteRowEdit implements Edit {
-	private int[] removed;
-	private int[] precedes;
-	private Object[][] added;
-	private int where;
-	public PasteRowEdit(int[] removed, int[] precedes, Object[][] added, int where) {
-	    this.removed = removed;
-	    this.precedes = precedes;
-	    this.added = added;
-	    this.where = where;
+    private class PasteRowEdit extends AssertiveImportEdit {
+	private boolean plural;
+	public PasteRowEdit(ArrayList pasted, int[] pkIndex, boolean setNull) {
+	    super(pasted, pkIndex, setNull);
+	    plural = pasted.size() != 1;
 	}
 	public String getUndoTitle() {
-	    return added.length == 1 ? "Undo Paste Row" : "Undo Paste Rows";
+	    return plural ? "Undo Paste Rows" : "Undo Paste Row";
 	}
 	public String getRedoTitle() {
-	    return added.length == 1 ? "Redo Paste Row" : "Redo Paste Rows";
-	}
-	public void undo() {
-	    for (int i = 0; i < added.length; i++) {
-		int index = cells.size() - 1;
-		int row = sequence.indexOf(new Integer(index));
-		sequence.remove(row);
-		cells.remove(index);
-	    }
-	    for (int i = removed.length - 1; i >= 0; i--) {
-		int insertPos = precedes[i];
-		if (insertPos == -1)
-		    sequence.add(new Integer(removed[i]));
-		else {
-		    insertPos = sequence.indexOf(new Integer(insertPos));
-		    sequence.add(insertPos, new Integer(removed[i]));
-		}
-	    }
-	    fireTableDataChanged();
-	}
-	public void redo() {
-	    sequence.removeAll(new ArrayCollection(removed));
-	    int w = where;
-	    for (int row = 0; row < added.length; row++) {
-		cells.add(added[row]);
-		int n = cells.size() - 1;
-		if (where == -1)
-		    sequence.add(new Integer(n));
-		else
-		    sequence.add(w++, new Integer(n));
-	    }
-	    fireTableDataChanged();
+	    return plural ? "Redo Paste Rows" : "Redo Paste Row";
 	}
     }
 
@@ -1109,36 +1067,38 @@ public class ResultSetTableModel extends AbstractTableModel
 	}
     }
     
-    private class RudeImportEdit implements Edit {
+    private class AssertiveImportEdit implements Edit {
 	ArrayList updated = new ArrayList();
 	ArrayList updatedIndex = new ArrayList();
 	ArrayList updatedBak = new ArrayList();
 	ArrayList added = new ArrayList();
-	public RudeImportEdit(ArrayList imports, int[] pkIndex) {
+	public AssertiveImportEdit(ArrayList imports, int[] pkIndex,
+							    boolean rude) {
 	    int seqSize = sequence.size();
 	    int impSize = imports.size();
 	    for (int i = 0; i < impSize; i++) {
 		Object[] impRow = (Object[]) imports.get(i);
 		int matchRow = -1;
-		for (int j = 0; j < seqSize; j++) {
-		    int cellIndex = ((Integer) sequence.get(j)).intValue();
-		    Object[] seqRow = (Object[]) cells.get(cellIndex);
-		    if (rowEqual(impRow, seqRow, pkIndex)) {
-			matchRow = cellIndex;
-			break;
+		if (pkIndex != null)
+		    for (int j = 0; j < seqSize; j++) {
+			int cellIndex = ((Integer) sequence.get(j)).intValue();
+			Object[] seqRow = (Object[]) cells.get(cellIndex);
+			if (rowEqual(impRow, seqRow, pkIndex)) {
+			    matchRow = cellIndex;
+			    break;
+			}
 		    }
-		}
 		if (matchRow == -1) {
 		    for (int j = 0; j < columns; j++)
-			if (impRow[j] == NULL)
+			if (impRow[j] == UNSET)
 			    impRow[j] = null;
 		    added.add(impRow);
 		} else {
 		    Object[] prev = (Object[]) cells.get(matchRow);
 		    updatedBak.add(prev);
 		    for (int j = 0; j < columns; j++)
-			if (impRow[j] == NULL)
-			    impRow[j] = prev[j];
+			if (impRow[j] == UNSET)
+			    impRow[j] = rude ? null : prev[j];
 		    updated.add(impRow);
 		    updatedIndex.add(new Integer(matchRow));
 		}
@@ -1187,14 +1147,15 @@ public class ResultSetTableModel extends AbstractTableModel
 	    for (int i = 0; i < impSize; i++) {
 		Object[] impRow = (Object[]) imports.get(i);
 		boolean matched = false;
-		for (int j = 0; j < seqSize; j++) {
-		    Object[] seqRow = (Object[]) cells.get(((Integer)
-				    sequence.get(j)).intValue());
-		    if (rowEqual(impRow, seqRow, pkIndex)) {
-			matched = true;
-			break;
+		if (pkIndex != null)
+		    for (int j = 0; j < seqSize; j++) {
+			Object[] seqRow = (Object[]) cells.get(((Integer)
+					sequence.get(j)).intValue());
+			if (rowEqual(impRow, seqRow, pkIndex)) {
+			    matched = true;
+			    break;
+			}
 		    }
-		}
 		if (!matched)
 		    added.add(impRow);
 	    }

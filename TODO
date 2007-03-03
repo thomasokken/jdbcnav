@@ -1,9 +1,5 @@
 In Javascript, Table.addRow() hangs when called on a table with 0 rows.
 
-When pasting a row, destination columns that don't receive any data (because
-they aren't matched to any source columns) are set to null. Shouldn't they be
-left unchanged? Or, maybe this should be an option on the ColumnMatchDialog.
-
 I made a few changes to PROFICIENCY_FACTS_AGG using a bit of JavaScript;
 changed 4 cells each in 10 rows. Then tried to commit, and it took several
 minutes with 100% CPU load. Why? This should be linear in the number of edits
@@ -24,8 +20,6 @@ fired by the TableModel should be initiated from an invokeLater?).
 When the table in the Table Details window is re-sorted, the row 
 selection is not updated.
 
-Copying/pasting cells in an Oracle DATE column results in "illegal".
-
 * Why does the UI freeze while waiting for a connection to open?
   Did I screw up the ConnectThread logic somewhere?
 * Why the screwy behavior while opening huge windows? Am I messing up the Swing
@@ -41,12 +35,6 @@ In addition to generating scripts, there should also be an option to
 execute them right away, with the additional option to run them without 
 transactions. The idea being to be able to copy or update databases 
 without ever having to store the generated sql.
-
-When writing the .jdbcnavrc file, first write it to (say) .jdbcnavrc-new, and,
-only after that has finished successfully, rename .jdbcnavrc to .jdbcnavrc-old,
-rename .jdbcnavrc-new to .jdbcnavrc, and finally, delete .jdbcnavrc-old.
-In other words, do something about this !@#$%^&*( situation where any ill-
-times jdbcnav crash will leave you with a corrupt .jdbcnavrc file!!!
 
 CSV Import/Export: pluggable filters to support tab-delimited, customizable CSV
 options (change separator, quotation conventions, etc.), different

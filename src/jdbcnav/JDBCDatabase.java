@@ -1673,7 +1673,7 @@ public class JDBCDatabase extends BasicDatabase {
 	    gbc.gridwidth = 3;
 	    gbc.anchor = MyGridBagConstraints.WEST;
 	    p1.add(configNameCB, gbc);
-	    driverTF = new MyTextField(20);
+	    driverTF = new MyTextField(30);
 	    gbc.gridy++;
 	    p1.add(driverTF, gbc);
 	    urlTF = new MyTextField(40);

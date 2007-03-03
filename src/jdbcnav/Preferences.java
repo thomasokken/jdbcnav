@@ -44,10 +44,14 @@ import jdbcnav.util.MyGridBagLayout;
 
 
 public class Preferences {
-    private static final File PREFS_FILE =
-		new File(System.getProperty("user.home")
+    private static final File PREFS_FILE = new File(
+			   System.getProperty("user.home")
 			 + System.getProperty("file.separator")
 			 + ".jdbcnavrc");
+    private static final File NEW_PREFS_FILE = new File(
+			   System.getProperty("user.home")
+			 + System.getProperty("file.separator")
+			 + ".jdbcnavrc-new");
 
     public static class ConnectionConfig {
 	public String driver;
@@ -715,7 +719,7 @@ public class Preferences {
     public void write() {
 	PrintWriter pw;
 	try {
-	    pw = new PrintWriter(new FileWriter(PREFS_FILE));
+	    pw = new PrintWriter(new FileWriter(NEW_PREFS_FILE));
 	} catch (IOException e) {
 	    return;
 	}
@@ -896,6 +900,11 @@ public class Preferences {
 	xml.closeTag();
 	pw.flush();
 	pw.close();
+
+	// Once we get here, we can assume that writing the .jdbcnavrc-new file
+	// was successful; now, we rename it to .jdbcnavrc
+	if (PREFS_FILE.delete())
+	    NEW_PREFS_FILE.renameTo(PREFS_FILE);
     }
 
 

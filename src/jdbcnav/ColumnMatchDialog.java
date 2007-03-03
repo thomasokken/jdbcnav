@@ -36,6 +36,7 @@ public class ColumnMatchDialog extends MyFrame {
     private boolean ignoreTableListSelectionChange;
     private String[] mapping;
     private JTextArea summaryArea;
+    private JRadioButton leaveUnchangedButton;
     private Listener listener;
 
     public ColumnMatchDialog(String[] clipCols, String[] tableCols, Listener listener_p) {
@@ -98,11 +99,32 @@ public class ColumnMatchDialog extends MyFrame {
 	gbc.gridy++;
 	c.add(p, gbc);
 
+	MyGridBagConstraints gbc2 = new MyGridBagConstraints();
+	gbc2.gridx = 0;
+	gbc2.gridy = 0;
+	label = new JLabel("Unmatched destination columns: ");
+	p.add(label, gbc2);
+	ButtonGroup group = new ButtonGroup();
+	leaveUnchangedButton = new JRadioButton("Leave unchanged", true);
+	group.add(leaveUnchangedButton);
+	gbc2.gridx++;
+	p.add(leaveUnchangedButton, gbc2);
+	JRadioButton radio = new JRadioButton("Set to null");
+	group.add(radio);
+	gbc2.gridx++;
+	p.add(radio, gbc2);
+
+	p = new JPanel();
+	p.setLayout(new MyGridBagLayout());
+	gbc.gridy++;
+	c.add(p, gbc);
+
 	JButton button = new JButton("OK");
 	button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			    dispose();
-			    listener.done(mapping);
+			    listener.done(mapping,
+				!leaveUnchangedButton.isSelected());
 			}
 		    });
 	gbc = new MyGridBagConstraints();
@@ -127,7 +149,7 @@ public class ColumnMatchDialog extends MyFrame {
     }
 
     public interface Listener {
-	public void done(String[] destCols);
+	public void done(String[] destCols, boolean setNull);
     }
 
     private void initializeMapping() {

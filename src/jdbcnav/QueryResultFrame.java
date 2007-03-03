@@ -560,16 +560,19 @@ public class QueryResultFrame extends MyFrame
 	p1.add(cb, gbc);
 	JRadioButton rb1 = new JRadioButton("Import only non-conflicting rows");
 	JRadioButton rb2 = new JRadioButton("Overwrite conflicting rows");
-	JRadioButton rb3 = new JRadioButton("Remove all existing rows");
-	JPanel p2 = new JPanel(new GridLayout(3, 1));
+	JRadioButton rb3 = new JRadioButton("Replace conflicting rows");
+	JRadioButton rb4 = new JRadioButton("Replace all existing rows");
+	JPanel p2 = new JPanel(new GridLayout(4, 1));
 	p2.add(rb1);
 	p2.add(rb2);
 	p2.add(rb3);
+	p2.add(rb4);
 	ButtonGroup bg = new ButtonGroup();
 	bg.add(rb1);
 	bg.add(rb2);
 	bg.add(rb3);
-	rb1.setSelected(true);
+	bg.add(rb4);
+	rb2.setSelected(true);
 	gbc.gridy = 1;
 	p1.add(p2, gbc);
 	jfc.setAccessory(p1);
@@ -580,6 +583,8 @@ public class QueryResultFrame extends MyFrame
 	    if (rb1.isSelected())
 		importMode = ResultSetTableModel.GENTLE;
 	    else if (rb2.isSelected())
+		importMode = ResultSetTableModel.ASSERTIVE;
+	    else if (rb3.isSelected())
 		importMode = ResultSetTableModel.RUDE;
 	    else
 		importMode = ResultSetTableModel.VICIOUS;
@@ -763,11 +768,11 @@ public class QueryResultFrame extends MyFrame
 	    for (int i = 0; i < tlen; i++)
 		tableHeaders[i] = model.getColumnName(i);
 	    columnMatchDialog = new ColumnMatchDialog(clipHeaders, tableHeaders,
-			    new ColumnMatchDialog.Listener() {
-				    public void done(String[] mapping) {
-					pasteRow(mapping);
-				    }
-				});
+		new ColumnMatchDialog.Listener() {
+			public void done(String[] mapping, boolean setNull) {
+			    pasteRow(mapping, setNull);
+			}
+		    });
 	    columnMatchDialog.setParent(this);
 	    columnMatchDialog.showCentered();
 	} else {
@@ -783,14 +788,13 @@ public class QueryResultFrame extends MyFrame
 	}
     }
 
-    private void pasteRow(String[] mapping) {
+    private void pasteRow(String[] mapping, boolean setNull) {
 	Object clipdata = Main.getClipboard().get();
 	if (!(clipdata instanceof Object[][])) {
 	    Toolkit.getDefaultToolkit().beep();
 	    return;
 	}
-	int[] selection = table.getSelectedRows();
-	model.pasteRow(selection, (Object[][]) clipdata, mapping);
+	model.pasteRow((Object[][]) clipdata, mapping, setNull);
     }
 
     private void insertRow() {
