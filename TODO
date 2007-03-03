@@ -1,3 +1,5 @@
+In Javascript, Table.addRow() hangs when called on a table with 0 rows.
+
 When pasting a row, destination columns that don't receive any data (because
 they aren't matched to any source columns) are set to null. Shouldn't they be
 left unchanged? Or, maybe this should be an option on the ColumnMatchDialog.
