@@ -1,12 +1,12 @@
 In Javascript, Table.addRow() hangs when called on a table with 0 rows.
 
-I made a few changes to PROFICIENCY_FACTS_AGG using a bit of JavaScript;
-changed 4 cells each in 10 rows. Then tried to commit, and it took several
-minutes with 100% CPU load. Why? This should be linear in the number of edits
-made, no? Table size should not be relevant.
-UPDATE: is this a Heisenbug? I.e., is the simple act of looking at a table
-cell sufficient to change it? The slowness suggests that *all* rows were
-being updated.
+ResultSetTableModel.commit() and ResultSetTableModel.postCommit() are not
+efficient. While they do a good job of generating minimal DB traffic, they do
+so using code that is linear in the total number of cells in the table. It
+should not be too hard to make it linear in the number of actual edits. For
+small tables, this doesn't matter too much, but when you're working with
+tables with millions of cells, having to wait several minutes for a Commit to
+complete is not acceptable.
 
 Support Oracle SEQUENCE.
 
