@@ -1,40 +1,30 @@
-In Javascript, Table.addRow() hangs when called on a table with 0 rows.
-
 ResultSetTableModel.commit() and ResultSetTableModel.postCommit() are not
 efficient. While they do a good job of generating minimal DB traffic, they do
 so using code that is linear in the total number of cells in the table. It
 should not be too hard to make it linear in the number of actual edits. For
 small tables, this doesn't matter too much, but when you're working with
-tables with millions of cells, having to wait several minutes for a Commit to
-complete is not acceptable.
+tables with millions of cells, editing just a handful of cells and then having
+to wait several minutes for a Commit to complete is not acceptable.
 
 Support Oracle SEQUENCE.
 
-When selecting the "References" pop-up menu option to follow a foreign 
-key back to the corresponding row in the referenced table, the actual 
-row is no longer highlighted. UPDATE: I could not reproduce this later on, but
-it does raise more concerns about the possibility that the background load
-thread is making Swing calls it shouldn't be making (maybe even the events
-fired by the TableModel should be initiated from an invokeLater?).
+When the table in the Table Details window is re-sorted, the row selection is
+not updated.
 
-When the table in the Table Details window is re-sorted, the row 
-selection is not updated.
+Why does the UI freeze while waiting for a connection to open? Did I screw up
+the ConnectThread logic somewhere?
 
-* Why does the UI freeze while waiting for a connection to open?
-  Did I screw up the ConnectThread logic somewhere?
-* Why the screwy behavior while opening huge windows? Am I messing up the Swing
-  state by making AWT calls from the BackgroundLoadThread? (Hint:
-  SwingUtilities.invokeLater(); maybe my model notifications are unsafe.)
-* Support swapping tables to files, so you can start loading ridiculously huge
-  data sets without having to supply impossibly large -Xmx parameters.
-* When generating a populate script, am I still doing linear searches to find
-  matching rows, or am I actually doing something clever like sorting both
-  tables according to their PK, and then using an O(n1+n2) algorithm?
+Support swapping tables to files, so you can start loading ridiculously huge
+data sets without having to supply impossibly large -Xmx parameters.
 
-In addition to generating scripts, there should also be an option to 
-execute them right away, with the additional option to run them without 
-transactions. The idea being to be able to copy or update databases 
-without ever having to store the generated sql.
+When generating a populate script, am I still doing linear searches to find
+matching rows, or am I actually doing something clever like sorting both tables
+according to their PK, and then using an O(n1+n2) algorithm?
+
+In addition to generating scripts, there should also be an option to execute
+them right away, with the additional option to run them without transactions.
+The idea being to be able to copy or update databases without ever having to
+store the generated sql.
 
 CSV Import/Export: pluggable filters to support tab-delimited, customizable CSV
 options (change separator, quotation conventions, etc.), different

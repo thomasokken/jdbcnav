@@ -1,4 +1,4 @@
-3 March 2007: build ????
+3 March 2007: build 2651
 *) Added a new option for Import CSV, called "Replace conflicting rows". What
 it does is completely replace rows whose PK matches that of imported rows, as
 opposed to the "Overwrite conflicting rows" option, which only replaces those
@@ -11,13 +11,21 @@ table's existing rows are retained. Previously, jdbcnav would refuse to import
 CSV files that did not specify the full PK, and it would attempt to match rows
 even in tables with no PK. I think this new behavior is a bit more useful, and
 hopefully also a bit more intuitive.
-*) Pasting rows now uses the same logic as Import CSV in "Overwrite/Replace
-conflicting rows" mode.
+*) Pasting rows from the Clipboard now uses the same logic as Import CSV in
+"Overwrite/Replace conflicting rows" mode.
 *) Writing the .jdbcnavrc file is now done in two stages: first, write a new
 file called .jdbcnavrc-new, and only when that is successful, delete the old
 .jdbcnavrc and rename .jdbcnavrc-new to .jdbcnavrc. This prevents the
 .jdbcnavrc file from becoming corrupted if jdbcnav crashes on exit. (Not that
 that ever happens, of course. ;-) )
+*) Sometimes, modifying a table using JavaScript would cause the application to
+freeze. Also, loading large tables sometimes failed in weird ways. I believe
+both of these types of problems were caused by ResultSetTableModel firing table
+events from background threads -- some of the event handlers that get invoked
+perform Swing calls that should only be made from the AWT event thread.
+I modified ResultSetTableModel so that it will now always check if it is on the
+AWT event thread before firing events; if it is not, it queues them up using
+SwingUtilities.invokeLater() instead.
 
 2 March 2007: build 2638
 *) In the Preferences dialog, clicking OK just after editing the Class Path

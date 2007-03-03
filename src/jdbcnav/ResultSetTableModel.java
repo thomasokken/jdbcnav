@@ -204,7 +204,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	    this.last = last;
 	}
 	public void run() {
-	    fireTableRowsInserted(first, last);
+	    safelyFireTableRowsInserted(first, last);
 	}
     }
 
@@ -276,7 +276,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	    return;
 	currRow[column] = value;
 	editHappened(new SingleCellEdit(realRow, column, prev, value, why));
-	fireTableCellUpdated(row, column);
+	safelyFireTableCellUpdated(row, column);
     }
 
     public synchronized String[] getHeaders() {
@@ -387,7 +387,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	cells = newCells;
 	// Just for good measure, and to get the commit/rollback menu
 	// items to be disabled
-	fireTableDataChanged();
+	safelyFireTableDataChanged();
     }
 
     public synchronized void rollback() {
@@ -403,7 +403,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	    cells.remove(i);
 	clearUndoStack();
 	Collections.sort(sequence, rowComparator);
-	fireTableDataChanged();
+	safelyFireTableDataChanged();
     }
     
     public synchronized void sortColumn(int col) {
@@ -424,7 +424,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	    sortPriority[i] = temp;
 	}
 	Collections.sort(sequence, rowComparator);
-	fireTableDataChanged();
+	safelyFireTableDataChanged();
     }
 
     public synchronized int getSortedColumn() {
@@ -433,7 +433,7 @@ public class ResultSetTableModel extends AbstractTableModel
 
     public synchronized void sort() {
 	Collections.sort(sequence, rowComparator);
-	fireTableDataChanged();
+	safelyFireTableDataChanged();
     }
 
     public synchronized void selectionFromViewToModel(int[] selection) {
@@ -528,7 +528,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	    sequence.add(viewRow, new Integer(modelRow));
 	}
 	editHappened(new InsertRowEdit(beforeModelRow));
-	fireTableRowsInserted(viewRow, viewRow);
+	safelyFireTableRowsInserted(viewRow, viewRow);
     }
 
     public synchronized void deleteRow(int[] rows, boolean cut) {
@@ -552,9 +552,9 @@ public class ResultSetTableModel extends AbstractTableModel
 	int first = rows[0];
 	int last = rows[length - 1];
 	if (last - first == length - 1)
-	    fireTableRowsDeleted(first, last);
+	    safelyFireTableRowsDeleted(first, last);
 	else
-	    fireTableDataChanged();
+	    safelyFireTableDataChanged();
     }
 
     public synchronized void pasteRow(Object[][] grid,
@@ -931,12 +931,12 @@ public class ResultSetTableModel extends AbstractTableModel
 
 	public void undo() {
 	    ((Object[]) cells.get(row))[column] = before;
-	    fireTableCellUpdated(sequence.indexOf(new Integer(row)), column);
+	    safelyFireTableCellUpdated(sequence.indexOf(new Integer(row)), column);
 	}
 
 	public void redo() {
 	    ((Object[]) cells.get(row))[column] = after;
-	    fireTableCellUpdated(sequence.indexOf(new Integer(row)), column);
+	    safelyFireTableCellUpdated(sequence.indexOf(new Integer(row)), column);
 	}
     }
 
@@ -960,7 +960,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	    int row = sequence.indexOf(new Integer(index));
 	    sequence.remove(row);
 	    cells.remove(index);
-	    fireTableRowsDeleted(row, row);
+	    safelyFireTableRowsDeleted(row, row);
 	}
 
 	public void redo() {
@@ -974,7 +974,7 @@ public class ResultSetTableModel extends AbstractTableModel
 		viewRow = sequence.indexOf(new Integer(row));
 		sequence.add(viewRow, new Integer(modelRow));
 	    }
-	    fireTableRowsInserted(viewRow, viewRow);
+	    safelyFireTableRowsInserted(viewRow, viewRow);
 	}
     }
 
@@ -1013,12 +1013,12 @@ public class ResultSetTableModel extends AbstractTableModel
 		    sequence.add(insertPos, new Integer(removed[i]));
 		}
 	    }
-	    fireTableDataChanged();
+	    safelyFireTableDataChanged();
 	}
 
 	public void redo() {
 	    sequence.removeAll(new ArrayCollection(removed));
-	    fireTableDataChanged();
+	    safelyFireTableDataChanged();
 	}
     }
 
@@ -1055,7 +1055,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	    for (int i = last; i >= first; i--)
 		cells.remove(i);
 	    sequence = (ArrayList) seq.clone();
-	    fireTableDataChanged();
+	    safelyFireTableDataChanged();
 	}
 	public void redo() {
 	    sequence.clear();
@@ -1063,7 +1063,7 @@ public class ResultSetTableModel extends AbstractTableModel
 		sequence.add(new Integer(cells.size()));
 		cells.add(imports.get(i));
 	    }
-	    fireTableDataChanged();
+	    safelyFireTableDataChanged();
 	}
     }
     
@@ -1122,7 +1122,7 @@ public class ResultSetTableModel extends AbstractTableModel
 		sequence.remove(new Integer(i));
 	    }
 	    Collections.sort(sequence, rowComparator);
-	    fireTableDataChanged();
+	    safelyFireTableDataChanged();
 	}
 	public void redo() {
 	    for (int src = 0; src < updated.size(); src++) {
@@ -1135,7 +1135,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	    for (int i = first; i <= last; i++)
 		sequence.add(new Integer(i));
 	    Collections.sort(sequence, rowComparator);
-	    fireTableDataChanged();
+	    safelyFireTableDataChanged();
 	}
     }
     
@@ -1174,7 +1174,7 @@ public class ResultSetTableModel extends AbstractTableModel
 		sequence.remove(new Integer(i));
 	    }
 	    Collections.sort(sequence, rowComparator);
-	    fireTableDataChanged();
+	    safelyFireTableDataChanged();
 	}
 	public void redo() {
 	    int first = cells.size();
@@ -1183,7 +1183,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	    for (int i = first; i <= last; i++)
 		sequence.add(new Integer(i));
 	    Collections.sort(sequence, rowComparator);
-	    fireTableDataChanged();
+	    safelyFireTableDataChanged();
 	}
     }
 
@@ -1210,5 +1210,77 @@ public class ResultSetTableModel extends AbstractTableModel
 	while ((pos = s.indexOf('"', pos + 1)) != -1)
 	    odd = !odd;
 	return odd;
+    }
+
+    // Because of the JavaScript integration, and because of background table
+    // loading, a lot of ResultSetTableModel activity takes place on background
+    // threads. Since some of the callbacks attached to my tables perform Swing
+    // calls, we must not fire any events from background threads; so, I have a
+    // few background-safe versions of the AbstractTableModel's fire* methods
+    // here.
+
+    public void safelyFireTableCellUpdated(int row, int column) {
+	if (SwingUtilities.isEventDispatchThread())
+	    fireTableCellUpdated(row, column);
+	else
+	    SwingUtilities.invokeLater(new DelayedFireTableCellUpdated(row, column));
+    }
+
+    public void safelyFireTableRowsInserted(int first, int last) {
+	if (SwingUtilities.isEventDispatchThread())
+	    fireTableRowsInserted(first, last);
+	else
+	    SwingUtilities.invokeLater(new DelayedFireTableRowsInserted(first, last));
+    }
+
+    public void safelyFireTableRowsDeleted(int first, int last) {
+	if (SwingUtilities.isEventDispatchThread())
+	    fireTableRowsDeleted(first, last);
+	else
+	    SwingUtilities.invokeLater(new DelayedFireTableRowsDeleted(first, last));
+    }
+
+    public void safelyFireTableDataChanged() {
+	if (SwingUtilities.isEventDispatchThread())
+	    fireTableDataChanged();
+	else
+	    SwingUtilities.invokeLater(new Runnable() {
+		    public void run() {
+			fireTableDataChanged();
+		    }
+		});
+    }
+
+    private class DelayedFireTableCellUpdated implements Runnable {
+	private int row, column;
+	public DelayedFireTableCellUpdated(int row, int column) {
+	    this.row = row;
+	    this.column = column;
+	}
+	public void run() {
+	    fireTableCellUpdated(row, column);
+	}
+    }
+
+    private class DelayedFireTableRowsDeleted implements Runnable {
+	private int first, last;
+	public DelayedFireTableRowsDeleted(int first, int last) {
+	    this.first = first;
+	    this.last = last;
+	}
+	public void run() {
+	    fireTableRowsDeleted(first, last);
+	}
+    }
+
+    private class DelayedFireTableRowsInserted implements Runnable {
+	private int first, last;
+	public DelayedFireTableRowsInserted(int first, int last) {
+	    this.first = first;
+	    this.last = last;
+	}
+	public void run() {
+	    fireTableRowsInserted(first, last);
+	}
     }
 }
