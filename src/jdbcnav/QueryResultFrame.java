@@ -303,6 +303,7 @@ public class QueryResultFrame extends MyFrame
 	model.addStateListener(datastatelistener);
 	table.addUserInteractionListener(new MyUserInteractionListener());
 	tenSecondDelay = new Thread(new WaitTenSecondsThenFinish());
+	tenSecondDelay.setPriority(Thread.MIN_PRIORITY);
 	tenSecondDelay.setDaemon(true);
 	tenSecondDelay.start();
     }
@@ -326,7 +327,23 @@ public class QueryResultFrame extends MyFrame
 
 
     private class DataStateListener implements Data.StateListener {
+	private class DelayedStateChanged implements Runnable {
+	    private int state, row;
+	    public DelayedStateChanged(int state, int row) {
+		this.state = state;
+		this.row = row;
+	    }
+	    public void run() {
+		stateChanged(state, row);
+	    }
+	}
 	public void stateChanged(int state, int row) {
+	    if (SwingUtilities.isEventDispatchThread())
+		stateChanged2(state, row);
+	    else
+		SwingUtilities.invokeLater(new DelayedStateChanged(state, row));
+	}
+	private void stateChanged2(int state, int row) {
 	    if (state == Data.FINISHED) {
 		menubar.remove(progressMenu);
 		menubar.validate();
@@ -354,7 +371,14 @@ public class QueryResultFrame extends MyFrame
 	    } while (timeToWait > 0);
 	    // Check if we're still needed!
 	    if (tenSecondDelay != null)
-		finishInitialization();
+		if (SwingUtilities.isEventDispatchThread())
+		    finishInitialization();
+		else
+		    SwingUtilities.invokeLater(new Runnable() {
+			    public void run() {
+				finishInitialization();
+			    }
+			});
 	}
     }
 

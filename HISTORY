@@ -1,3 +1,12 @@
+4 March 2007: build 2654
+*) The previous release still didn't fix all of the problems with loading large
+tables; it turned out that there were still a couple of places where background
+threads were making Swing calls. I fixed those, and so far, it looks like it's
+working properly now. (Loading tables that won't fit in memory is still a
+problem, but that's a separate issue, and has much different symptoms. This
+type of problem can be identified by running jdbcnav from the command line and
+looking for OutOfMemoryError messages.)
+
 3 March 2007: build 2651
 *) Added a new option for Import CSV, called "Replace conflicting rows". What
 it does is completely replace rows whose PK matches that of imported rows, as
