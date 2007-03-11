@@ -1,3 +1,47 @@
+Bringing up a "referenced by" window can start with the wrong rows selected. It
+appears that jdbcnav does know which rows *should* be selected, since changing
+the sort order appears to fix the situation. 
+Ergo, it's just that the selection does not get set correctly *initially*.
+Could have something to do with background loading, or am I trying to set the
+selection from a background thread or something? Try it with diettv.xml.gz (may
+have to copy it into a DB first, or just point at the MySQL server at the
+office). Test case: open FDA_DATA_SOURCE, then right-click on the top left
+cell, and go to FDA_DATA_SOURCE_LINK. Result: the first 8 rows are selected
+initially, which is incorrect; changing the source order so that a different
+column than NDB_No is the sort leader fixes it (simply flipping the asc/desc of
+NDB_No is not sufficient).
+UPDATE: The above test case actually works fine on my laptop, but not on the
+screamingly fast PC at work. Which suggests a race condition.
+
+Problems generating an Oracle SQL script from a MySQL database:
+1) Non-unique PK names (default name PRIMARY?)
+2) Identifiers too long (Oracle has a 30-character limit)
+3) Unsupported data types (enum, int, bigint, binary_double(?),
+   decimal unsigned)
+4) Generating indexes that match PKs
+5) Identifiers that aren't legal in Oracle (USER, COMMENT)
+6) BIT: translated to NUMBER(1), which is fine, but the values are printed
+   as "true" and "false" (including the quotes); should print 1 and 0 instead.
+
+Importing FDA_NUTRIENT_DATA.csv and then committing it to Oracle is taking
+forever, even with jdbcnav running with -Xmx600m. I should profile this.
+Update: the FDA_NUTRIENT_DATA.DF column in the generated Oracle create script
+is a NUMBER(2, 0), but the actual table contains data that don't fit in there.
+
+Need to spend some time thinking about copying tables (or sets of tables) from
+one db to another without loading everything into memory first. Same for
+generating SQL update scripts, etc. There are too many ways to represent
+tables, and the UI and implementation needs to be more uniform and more
+efficient. Jdbcnav *should* be able to copy even a db like ardb without needing
+tons of memory, and without making the user work their ass of with CSV files
+etc...
+
+When generating SQL, quote all identifiers.
+
+Import CSV does not seem to handle empty strings correctly -- they turn into
+nulls. There may be a similar problem with empty strings being treated as nulls
+while committing a table.
+
 ResultSetTableModel.commit() and ResultSetTableModel.postCommit() are not
 efficient. While they do a good job of generating minimal DB traffic, they do
 so using code that is linear in the total number of cells in the table. It
