@@ -55,7 +55,13 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
 		|| dbType.equalsIgnoreCase("int")
 		|| dbType.equalsIgnoreCase("integer")
 		|| dbType.equalsIgnoreCase("mediumint")
-		|| dbType.equalsIgnoreCase("bigint")) {
+		|| dbType.equalsIgnoreCase("bigint")
+		|| dbType.equalsIgnoreCase("tinyint unsigned")
+		|| dbType.equalsIgnoreCase("smallint unsigned")
+		|| dbType.equalsIgnoreCase("int unsigned")
+		|| dbType.equalsIgnoreCase("integer unsigned")
+		|| dbType.equalsIgnoreCase("mediumint unsigned")
+		|| dbType.equalsIgnoreCase("bigint unsigned")) {
 	    spec.type = TypeSpec.FIXED;
 	    spec.size = size.intValue();
 	    spec.size_in_bits = false;
@@ -184,6 +190,12 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
 		|| dbType.equalsIgnoreCase("int")
 		|| dbType.equalsIgnoreCase("integer")
 		|| dbType.equalsIgnoreCase("bigint")
+		|| dbType.equalsIgnoreCase("tinyint unsigned")
+		|| dbType.equalsIgnoreCase("smallint unsigned")
+		|| dbType.equalsIgnoreCase("mediumint unsigned")
+		|| dbType.equalsIgnoreCase("int unsigned")
+		|| dbType.equalsIgnoreCase("integer unsigned")
+		|| dbType.equalsIgnoreCase("bigint unsigned")
 		|| dbType.equalsIgnoreCase("timestamp")
 		|| dbType.equalsIgnoreCase("year")
 		|| dbType.equalsIgnoreCase("char")
