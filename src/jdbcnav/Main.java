@@ -41,6 +41,7 @@ public class Main extends JFrame {
 
     private static Main instance;
     private static ArrayList frameList = new ArrayList();
+    private static Cursor arrowAndHourglassCursor;
 
     private static BufferedImage splash;
     private static String version;
@@ -50,6 +51,52 @@ public class Main extends JFrame {
 		"http://home.planet.nl/~demun000/thomas_projects/jdbcnav/";
 
     static {
+	// Constructing the arrow-plus-hourglass cursor
+	byte[] comps;
+	if (System.getProperty("file.separator").equals("\\"))
+	    // Windows -- white arrow with black border
+	    comps = new byte[] { -1, 0, 0 };
+	else
+	    // Unix etc. -- black arrow with white border
+	    comps = new byte[] { 0, -1, 0 };
+	IndexColorModel colormap = new IndexColorModel(8, 3, comps, comps, comps, 2);
+	byte[] bits = new byte[] {
+	    1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 1, 0, 1, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 1, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 1, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 1, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 1, 0, 1, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 1, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 0, 0, 1, 0, 0, 1, 2, 2, 2, 2, 2, 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 0, 1, 1, 0, 0, 1, 2, 2, 2, 2, 2, 1, 0, 0, 1, 0, 1, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 2, 2, 1, 0, 1, 0, 1, 0, 1, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 1, 2, 2, 2, 1, 0, 0, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    1, 2, 2, 2, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 1, 0, 0, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+	};
+	Image img = new JLabel().createImage(new MemoryImageSource(32, 32, colormap, bits, 0, 32));
+	arrowAndHourglassCursor = Toolkit.getDefaultToolkit().createCustomCursor(img, new Point(0, 0), "ArrowAndHourglass");
+
 	InputStream is = Main.class.getResourceAsStream("images/splash.gif");
 	if (is != null) {
 	    try {
@@ -80,6 +127,7 @@ public class Main extends JFrame {
 	    version = "Could not read version information";
     }
 
+    private int backgroundJobCount = 0;
     private JDesktopPane desktop;
     private Point initialLoc;
     private JavaScriptGlobal global;
@@ -94,7 +142,7 @@ public class Main extends JFrame {
 			b.showStaggered();
 		    }
 		};
-    
+
     public static void main(String[] args) {
 	Preferences prefs = Preferences.getPreferences();
 	String lafName = prefs.getLookAndFeelName();
@@ -379,7 +427,7 @@ public class Main extends JFrame {
     public static Clipboard getClipboard() {
 	return instance.clipboard;
     }
-    
+
     public static void addToWindowsMenu(MyFrame f) {
 	addToWindowsMenu(f, true);
     }
@@ -434,6 +482,32 @@ public class Main extends JFrame {
 		windowsMenu.remove(i);
 		addToWindowsMenu(f, false);
 		break;
+	    }
+	}
+    }
+
+    public static void backgroundJobStarted() {
+	SwingUtilities.invokeLater(new BackgroundJobStateChange(instance, true));
+    }
+
+    public static void backgroundJobEnded() {
+	SwingUtilities.invokeLater(new BackgroundJobStateChange(instance, false));
+    }
+
+    private static class BackgroundJobStateChange implements Runnable {
+	private Main instance;
+	private boolean started;
+	public BackgroundJobStateChange(Main instance, boolean started) {
+	    this.instance = instance;
+	    this.started = started;
+	}
+	public void run() {
+	    if (started) {
+		if (instance.backgroundJobCount++ == 0)
+		    instance.setCursor(arrowAndHourglassCursor);
+	    } else {
+		if (--instance.backgroundJobCount == 0)
+		    instance.setCursor(Cursor.getDefaultCursor());
 	    }
 	}
     }
@@ -612,7 +686,7 @@ public class Main extends JFrame {
 	prefs.write();
 	System.exit(0);
     }
-    
+
     private static class AboutGlassPane extends JComponent {
 	private Thread timeout;
 	private boolean showAbout;

@@ -1,3 +1,6 @@
+?? ????? ????: build ????
+*) Added hourglass cursor...
+
 14 March 2007: build 2657
 *) Now recognizes MySQL unsigned types, so they can be edited. They are still
 not handled correctly when generating scripts, though.
