@@ -1890,6 +1890,7 @@ public class JDBCDatabase extends BasicDatabase {
 			    saveB.setEnabled(true);
 			    deleteB.setEnabled(true);
 			    connectThread = null;
+			    Main.backgroundJobEnded();
 			}
 		    }
 		    return;
