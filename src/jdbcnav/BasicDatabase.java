@@ -110,11 +110,14 @@ public abstract class BasicDatabase implements Database {
 		n.edit.deiconifyAndRaise();
 	    else {
 		try {
+		    Main.backgroundJobStarted();
 		    n.edit = new TableFrame(n.getTable(), browser);
 		    n.edit.setParent(browser);
 		    n.edit.showStaggered();
 		} catch (NavigatorException e) {
 		    MessageBox.show("Can't open Table window", e);
+		} finally {
+		    Main.backgroundJobEnded();
 		}
 	    }
 	}
@@ -136,11 +139,14 @@ public abstract class BasicDatabase implements Database {
 		n.details.deiconifyAndRaise();
 	    else {
 		try {
+		    Main.backgroundJobStarted();
 		    n.details = new TableDetailsFrame(n.getTable(), browser);
 		    n.details.setParent(browser);
 		    n.details.showStaggered();
 		} catch (NavigatorException e) {
 		    MessageBox.show("Can't open Table Details window", e);
+		} finally {
+		    Main.backgroundJobEnded();
 		}
 	    }
 	}

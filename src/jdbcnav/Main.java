@@ -50,7 +50,7 @@ public class Main extends JFrame {
     private static String website =
 		"http://home.planet.nl/~demun000/thomas_projects/jdbcnav/";
 
-    static {
+    private static void initArrowAndHourglassCursor() {
 	// Constructing the arrow-plus-hourglass cursor
 	byte[] comps;
 	if (System.getProperty("file.separator").equals("\\"))
@@ -96,7 +96,9 @@ public class Main extends JFrame {
 	};
 	Image img = new JLabel().createImage(new MemoryImageSource(32, 32, colormap, bits, 0, 32));
 	arrowAndHourglassCursor = Toolkit.getDefaultToolkit().createCustomCursor(img, new Point(0, 0), "ArrowAndHourglass");
+    }
 
+    static {
 	InputStream is = Main.class.getResourceAsStream("images/splash.gif");
 	if (is != null) {
 	    try {
@@ -167,6 +169,7 @@ public class Main extends JFrame {
 	    //
 	}
 
+	initArrowAndHourglassCursor();
 
 	Main.log(1, "jdbcnav version: " + version);
 	for (Iterator iter = prefs.getClassPath().iterator(); iter.hasNext();)
@@ -487,11 +490,19 @@ public class Main extends JFrame {
     }
 
     public static void backgroundJobStarted() {
-	SwingUtilities.invokeLater(new BackgroundJobStateChange(instance, true));
+	backgroundJobStateChange(true);
     }
 
     public static void backgroundJobEnded() {
-	SwingUtilities.invokeLater(new BackgroundJobStateChange(instance, false));
+	backgroundJobStateChange(false);
+    }
+
+    private static void backgroundJobStateChange(boolean started) {
+	Runnable r = new BackgroundJobStateChange(instance, started);
+	if (SwingUtilities.isEventDispatchThread())
+	    r.run();
+	else
+	    SwingUtilities.invokeLater(r);
     }
 
     private static class BackgroundJobStateChange implements Runnable {
@@ -506,8 +517,10 @@ public class Main extends JFrame {
 		if (instance.backgroundJobCount++ == 0)
 		    instance.setCursor(arrowAndHourglassCursor);
 	    } else {
-		if (--instance.backgroundJobCount == 0)
+		if (instance.backgroundJobCount > 0) {
 		    instance.setCursor(Cursor.getDefaultCursor());
+		    instance.backgroundJobCount--;
+		}
 	    }
 	}
     }

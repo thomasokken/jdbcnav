@@ -38,6 +38,14 @@ public class MyFrame extends JInternalFrame {
 	super(title, resizable, closable, maximizable, iconifiable);
     }
 
+    public void setCursor(Cursor cursor) {
+	// TODO: If I don't do anything, the BasicInternalFrameUI will set this
+	// frame's cursor to "Default Cursor". This is a bit annoying, because
+	// I need all Components' cursors to be left at null in order to be
+	// able to set the "ArrowAndHourglass" cursor globally.
+	// So, I override setCursor() so it does nothing. Ugly but functional.
+    }
+
     public void showCentered() {
 	JDesktopPane desktop = Main.getDesktop();
 	desktop.add(this);

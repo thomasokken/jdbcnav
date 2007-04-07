@@ -1829,6 +1829,7 @@ public class JDBCDatabase extends BasicDatabase {
 		// we want to allow the user to cancel the operation.
 		connectThread = new ConnectThread(name, url, driver,
 						  username, password);
+		Main.backgroundJobStarted();
 		new Thread(connectThread).start();
 	    }
 	}
@@ -1836,6 +1837,7 @@ public class JDBCDatabase extends BasicDatabase {
 	private void cancel() {
 	    synchronized (this) {
 		if (connectThread != null) {
+		    Main.backgroundJobEnded();
 		    connectThread = null;
 		    connectB.setEnabled(true);
 		    saveB.setEnabled(true);
@@ -1926,6 +1928,7 @@ public class JDBCDatabase extends BasicDatabase {
 		dispose();
 		JDBCDatabase db = JDBCDatabase.create(driver, name, con);
 		opencb.databaseOpened(db);
+		Main.backgroundJobEnded();
 	    }
 	}
 

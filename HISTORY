@@ -1,5 +1,7 @@
-?? ????? ????: build ????
-*) Added hourglass cursor...
+6 April 2007: build 2672
+*) Now showing an hourglass cursor while opening a JDBC connection, opening a
+table editing window, opening a table details window, and while running a
+query.
 
 14 March 2007: build 2657
 *) Now recognizes MySQL unsigned types, so they can be edited. They are still

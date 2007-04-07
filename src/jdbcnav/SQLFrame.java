@@ -109,6 +109,7 @@ public class SQLFrame extends TextEditorFrame {
 		continue;
 
 	    try {
+		Main.backgroundJobStarted();
 		Database db = browser.getDatabase();
 		if (cmd.toLowerCase().startsWith("select")) {
 		    Object queryOutput = db.runQuery(cmd, true, true);
@@ -134,6 +135,8 @@ public class SQLFrame extends TextEditorFrame {
 	    } catch (NavigatorException e) {
 		MessageBox.show(e);
 		break;
+	    } finally {
+		Main.backgroundJobEnded();
 	    }
 	}
 
