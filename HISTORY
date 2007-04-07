@@ -1,4 +1,4 @@
-7 April 2007: build 2672
+7 April 2007: build 2678
 *) Now showing a "Please Wait" dialog while the tree in the BrowserFrame is
 initially populated upon opening a JDBC connection. It's a totally lame dialog
 so far; it does not yet have a progress indicator nor a Cancel button, but at
