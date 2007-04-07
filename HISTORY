@@ -1,3 +1,11 @@
+7 April 2007: build 2672
+*) Now showing a "Please Wait" dialog while the tree in the BrowserFrame is
+initially populated upon opening a JDBC connection. It's a totally lame dialog
+so far; it does not yet have a progress indicator nor a Cancel button, but at
+least now there is *some* feedback -- you can now tell the difference between
+waiting for the Connection to be established, and waiting for the table
+information to load.
+
 6 April 2007: build 2672
 *) Now showing an hourglass cursor while opening a JDBC connection, opening a
 table editing window, opening a table details window, and while running a

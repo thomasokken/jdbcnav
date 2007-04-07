@@ -1,9 +1,3 @@
-When opening a JDBC connection, after the Connection is opened, dismiss the
-LoginDialog, and replace it with a progress dialog that shows the tables
-being read (the tree). A Cancel option at this point might be nice, but at
-least make sure the UI is unfrozen (right now this loading appears to be
-done in the UI thread (by BrowserOpener), which is not good).
-
 When closing a browser window, is the underlying Connection always closed?
 Might be an idea to report Exceptions that get thrown by Connection.close().
 

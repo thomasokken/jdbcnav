@@ -95,7 +95,10 @@ public class JDBCDatabase extends BasicDatabase {
     public void close() {
 	try {
 	    con.close();
-	} catch (SQLException e) {}
+	} catch (SQLException e) {
+	    MessageBox.show("An unexpected error occurred while "
+			    + "closing the JDBC Connection", e);
+	}
     }
 
     public String getName() {
@@ -1908,17 +1911,17 @@ public class JDBCDatabase extends BasicDatabase {
 		// repaint manager to get confused and throw an exception
 		// (which appears to be harmless, but still...).
 		SwingUtilities.invokeLater(
-			    new BrowserOpener(name, con, driver));
+			    new BrowserOpener1(name, con, driver));
 	    }
 	}
 
-	private class BrowserOpener implements Runnable {
+	private class BrowserOpener1 implements Runnable {
 	    private String name;
 	    private Connection con;
 	    private String driver;
 
-	    public BrowserOpener(String name, Connection con,
-				 String driver) {
+	    public BrowserOpener1(String name, Connection con,
+				  String driver) {
 		this.name = name;
 		this.con = con;
 		this.driver = driver;
@@ -1926,9 +1929,45 @@ public class JDBCDatabase extends BasicDatabase {
 
 	    public void run() {
 		dispose();
+		MyFrame waitDlg = new WaitDialog();
+		waitDlg.showCentered();
+		SwingUtilities.invokeLater(new BrowserOpener2(name, con, driver, waitDlg));
+	    }
+	}
+
+	private class BrowserOpener2 implements Runnable {
+	    private String name;
+	    private Connection con;
+	    private String driver;
+	    private MyFrame waitDlg;
+
+	    public BrowserOpener2(String name, Connection con,
+				  String driver, MyFrame waitDlg) {
+		this.name = name;
+		this.con = con;
+		this.driver = driver;
+		this.waitDlg = waitDlg;
+	    }
+
+	    public void run() {
 		JDBCDatabase db = JDBCDatabase.create(driver, name, con);
 		opencb.databaseOpened(db);
+		waitDlg.dispose();
 		Main.backgroundJobEnded();
+	    }
+	}
+
+	private static class WaitDialog extends MyFrame {
+	    public WaitDialog() {
+		super("Opening JDBC Connection");
+		Container c = getContentPane();
+		c.setLayout(new MyGridBagLayout());
+		MyGridBagConstraints gbc = new MyGridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.insets = new Insets(10, 20, 10, 20);
+		c.add(new JLabel("Loading object information; please wait..."), gbc);
+		pack();
 	    }
 	}
 
