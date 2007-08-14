@@ -903,7 +903,7 @@ public class Preferences {
 
 	// Once we get here, we can assume that writing the .jdbcnavrc-new file
 	// was successful; now, we rename it to .jdbcnavrc
-	if (PREFS_FILE.delete())
+	if (!PREFS_FILE.exists() || PREFS_FILE.delete())
 	    NEW_PREFS_FILE.renameTo(PREFS_FILE);
     }
 

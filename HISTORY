@@ -1,3 +1,12 @@
+13 August 2007: build 2680
+*) Saving the .jdbcnav file did not work unless one already existed. When JDBC
+Navigator exists, it actually writes a file called .jdbcnavrc-new, and once
+that is done, it deletes the old .jdbcnavrc file, and renames .jdbcnavrc-new to
+.jdbcnavrc. All well and good so far, except that it considered it an error if
+it couldn't delete the old .jdbcnavrc. Note to self: getting an error while
+trying to delete a file is not *really* an error if that file did not exist in
+the first place!
+
 7 April 2007: build 2679
 *) Now showing a "Please Wait" dialog while the tree in the BrowserFrame is
 initially populated upon opening a JDBC connection. It's a totally lame dialog
