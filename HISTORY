@@ -1,6 +1,6 @@
 13 August 2007: build 2680
 *) Saving the .jdbcnav file did not work unless one already existed. When JDBC
-Navigator exists, it actually writes a file called .jdbcnavrc-new, and once
+Navigator exits, it actually writes a file called .jdbcnavrc-new, and once
 that is done, it deletes the old .jdbcnavrc file, and renames .jdbcnavrc-new to
 .jdbcnavrc. All well and good so far, except that it considered it an error if
 it couldn't delete the old .jdbcnavrc. Note to self: getting an error while
