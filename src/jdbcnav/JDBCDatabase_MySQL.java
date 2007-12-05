@@ -121,8 +121,8 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
 		|| dbType.equalsIgnoreCase("character")) {
 	    spec.type = TypeSpec.CHAR;
 	    spec.size = size.intValue();
-	} else if (dbType.equals("varchar")
-		|| dbType.equals("character varying")) {
+	} else if (dbType.equalsIgnoreCase("varchar")
+		|| dbType.equalsIgnoreCase("character varying")) {
 	    // Despite the richness of character types claimed in the MySQL
 	    // documentation, it appears *everything* is actually converted
 	    // to VARCHAR -- even BINARY! There is no way to distinguish

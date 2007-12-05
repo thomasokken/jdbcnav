@@ -1,3 +1,7 @@
+4 December 2007: build 2681
+*) The MySQL driver did not recognize varchar columns, making it impossible to
+edit them. Fixed.
+
 13 August 2007: build 2680
 *) Saving the .jdbcnav file did not work unless one already existed. When JDBC
 Navigator exits, it actually writes a file called .jdbcnavrc-new, and once
