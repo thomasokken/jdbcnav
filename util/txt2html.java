@@ -7,10 +7,7 @@ public class txt2html {
 		+ "<head>\n"
 		+ "  <title>" + args[0] + "</title>\n"
 		+ "<head>\n"
-		+ "<body>\n"
-		+ "  <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n"
-		+ "    <tr><td valign=\"top\" align=\"center\" bgcolor=\"#ff60a0\"><a href=\"../index.html\"><img border=\"0\" src=\"../title.png\"></a></td>\n"
-		+ "    <td><img src=\"../spacer.gif\" width=\"10\"></td><td>\n"
+		+ "<body style=\"background: no-repeat fixed left top; background-image: url(title.png); padding-left: 62px;\">\n"
 		+ "<h3>" + args[0] + "</h3>\n"
 		+ "<pre>");
 	int c;
@@ -28,7 +25,6 @@ public class txt2html {
 		"</pre>\n"
 		+ "<p>\n"
 		+ "Go <a href=\"index.html\">back</a>.\n"
-		+ "</td></tr></table>\n"
 		+ "</body>\n"
 		+ "</html>\n");
     }
