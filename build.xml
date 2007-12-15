@@ -108,7 +108,7 @@
          compression="gzip"
 	 basedir=".."
 	 includes="jdbcnav/**"
-	 excludes="jdbcnav/TODO,jdbcnav/classes/**,jdbcnav/javadoc/**,jdbcnav/jdbcnav.jar,jdbcnav/jdbcnav.tgz">
+	 excludes="jdbcnav/classes/**,jdbcnav/javadoc/**,jdbcnav/jdbcnav.jar,jdbcnav/jdbcnav.tgz">
     </tar>
   </target>
 
