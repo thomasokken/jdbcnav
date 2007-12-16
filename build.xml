@@ -18,7 +18,7 @@
 <project name="JDBC Navigator" default="compile" basedir=".">
 
   <!-- Location of the Rhino jar file -->
-  <property name="rhino" location="${user.home}/.jars/js.jar"/>
+  <property name="rhino" location="../.jars/js.jar"/>
 
   <!-- Build classes and copy anything else -->
   <!-- that needs to be in the class path   -->
@@ -48,6 +48,7 @@
     <mkdir dir="classes/foo"/>
     <javac source="1.4"
 	   target="1.4"
+	   classpath="${rhino}"
 	   srcdir="src"
 	   destdir="classes/foo"
 	   debug="on"

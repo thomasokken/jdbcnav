@@ -58,9 +58,6 @@ Support Oracle SEQUENCE.
 When the table in the Table Details window is re-sorted, the row selection is
 not updated.
 
-Why does the UI freeze while waiting for a connection to open? Did I screw up
-the ConnectThread logic somewhere?
-
 Support swapping tables to files, so you can start loading ridiculously huge
 data sets without having to supply impossibly large -Xmx parameters.
 
@@ -123,6 +120,10 @@ Progress dialog for Generate Script.
 Make "Reload Tree", "Clear Cache", and "Remove Orphans" scriptable, so that
 you can mix the SQL embedding and the JDBCNav functionality in one script --
 this could be useful for testing etc.
+
+It would be nice if "Reload Tree" and table reloading were done in the
+background, to avoid freezing the UI. "Reload Tree" on Oracle databases can
+be particularly slow.
 
 TypeSpec should distinguish between LONG and LOB types; also, it should
 maintain a 'size' property for such types. These changes are mostly relevant

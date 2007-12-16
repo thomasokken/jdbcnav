@@ -1833,7 +1833,10 @@ public class JDBCDatabase extends BasicDatabase {
 		connectThread = new ConnectThread(name, url, driver,
 						  username, password);
 		Main.backgroundJobStarted();
-		new Thread(connectThread).start();
+		Thread thr = new Thread(connectThread);
+		thr.setPriority(Thread.MIN_PRIORITY);
+		thr.setDaemon(true);
+		thr.start();
 	    }
 	}
 
@@ -1932,7 +1935,10 @@ public class JDBCDatabase extends BasicDatabase {
 		dispose();
 		MyFrame waitDlg = new WaitDialog();
 		waitDlg.showCentered();
-		SwingUtilities.invokeLater(new BrowserOpener2(name, con, driver, waitDlg));
+		Thread thr = new Thread(new BrowserOpener2(name, con, driver, waitDlg));
+		thr.setPriority(Thread.MIN_PRIORITY);
+		thr.setDaemon(true);
+		thr.start();
 	    }
 	}
 
@@ -1952,6 +1958,25 @@ public class JDBCDatabase extends BasicDatabase {
 
 	    public void run() {
 		JDBCDatabase db = JDBCDatabase.create(driver, name, con);
+		// The BrowserFrame constructor is going to call
+		// Database.getRootNode(), which can be a very slow operation.
+		// Better to call it here first, in a background thread, so
+		// that this operation doesn't block the UI.
+		db.getRootNode();
+		SwingUtilities.invokeLater(new BrowserOpener3(waitDlg, db));
+	    }
+	}
+
+	private class BrowserOpener3 implements Runnable {
+	    private MyFrame waitDlg;
+	    private JDBCDatabase db;
+
+	    public BrowserOpener3(MyFrame waitDlg, JDBCDatabase db) {
+		this.waitDlg = waitDlg;
+		this.db = db;
+	    }
+
+	    public void run() {
 		opencb.databaseOpened(db);
 		waitDlg.dispose();
 		Main.backgroundJobEnded();
