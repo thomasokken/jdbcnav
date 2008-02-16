@@ -1,6 +1,11 @@
 When closing a browser window, is the underlying Connection always closed?
 Might be an idea to report Exceptions that get thrown by Connection.close().
 
+Support updatable query results, not only for "select *" and "select foo.*",
+but for all cases where (1) all selected columns come from one table, and (2)
+all of that table's PK columns are selected. (In tables without PK, require all
+columns to be selected.)
+
 Bringing up a "referenced by" window can start with the wrong rows selected. It
 appears that jdbcnav does know which rows *should* be selected, since changing
 the sort order appears to fix the situation. 
