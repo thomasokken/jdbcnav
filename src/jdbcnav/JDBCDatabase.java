@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2007  Thomas Okken
+// Copyright (C) 2001-2008  Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -1084,14 +1084,22 @@ public class JDBCDatabase extends BasicDatabase {
 	    // way to find that out is by parsing the SQL ourselves.
 	    // Since I don't feel like implementing a full-blown SQL parser
 	    // here (not right now, anyway, plenty TODO already!), I restrict
-	    // myself to two extremely useful special cases:
+	    // myself to these useful special cases:
 	    //
-	    //     select * from <table> where [...]
-	    //     select foo.* from [...] <table> foo [...] where [...]
+	    //     select * from <table>
+	    //     select a, b, c from <table>
+	    //     select foo.* from [...] <table> foo [...]
+	    //     select foo.a, foo.b, foo.c from [...] <table> foo [...]
+	    //
+	    // The idea is that all the selected columns must come from the
+	    // same table; if the column names are unqualified, the only way
+	    // to be sure of this is to require that the from clause contain
+	    // only one table.
 
 	    StringTokenizer tok = new StringTokenizer(query, " \t\n\r,", true);
 	    int state = 0;
-	    String identifier = null;
+	    String identifier = "";
+	    boolean firstCol = true;
 	    String name = null;
 	    boolean success = false;
 	    scanner:
@@ -1107,39 +1115,51 @@ public class JDBCDatabase extends BasicDatabase {
 			    break scanner;
 			state = 1;
 			break;
-		    case 1:
-			// Looking for "*" or "identifier.*"
-			if (t.equals("*"))
-			    identifier = null;
-			else if (t.length() > 2 && t.endsWith(".*"))
-			    identifier = t.substring(0, t.length() - 2);
-			else
+		    case 1: {
+			// Looking for column names or "*", optionally qualified
+			if (t.equals(","))
+			    continue;
+			if (t.equalsIgnoreCase("from"))
+			    if (firstCol)
+				break scanner;
+			    else {
+				state = 2;
+				break;
+			    }
+			int dot = t.indexOf('.');
+			String id;
+			if (dot == -1)
+			    id = "";
+			else {
+			    id = t.substring(0, dot);
+			    t = t.substring(dot + 1);
+			}
+			if (firstCol) {
+			    identifier = id;
+			    firstCol = false;
+			} else if (!id.equals(identifier))
 			    break scanner;
-			state = 2;
 			break;
+		    }
 		    case 2:
-			// Looking for "from"
-			if (!t.equalsIgnoreCase("from"))
-			    break scanner;
-			state = 3;
-			break;
-		    case 3:
-			// Looking for table name
+			// Looking for table names
 			if (t.equals(",") || t.equalsIgnoreCase("where"))
 			    break scanner;
 			name = t;
-			state = 4;
+			state = 3;
 			break;
-		    case 4:
+		    case 3:
 			// After table name
-			if (identifier == null) {
-			    // We have a "select * from", so the first word
-			    // after "from" was the table name, and the first
-			    // word after the table name should be "where";
-			    // else we have a construct we can't handle.
+			if (identifier.equals("")) {
+			    // We have a "select <columns> from", where all the
+			    // columns were unqualified, so the first word
+			    // after "from" should be the table name, and the
+			    // first word after the table name should be
+			    // "where"; else we have a construct we can't
+			    // handle.
 			    if (t.equalsIgnoreCase("where"))
 				success = true;
-			    state = 6;
+			    state = 5;
 			    break scanner;
 			} else {
 			    // We have a "select foo.* from", and the previous
@@ -1152,19 +1172,19 @@ public class JDBCDatabase extends BasicDatabase {
 				success = true;
 				break scanner;
 			    } else {
-				state = 5;
+				state = 4;
 				break;
 			    }
 			}
-		    case 5:
+		    case 4:
 			// Waiting for comma
 			if (!t.equals(","))
 			    break scanner;
-			state = 3;
+			state = 2;
 			break;
 		}
 	    }
-            if (state == 4 && identifier == null)
+            if (state == 3 && identifier.equals(""))
                 // We ran out of tokens just after having found a table name
                 // in a "select * from <tablename>" query.
                 success = true;
@@ -1246,42 +1266,43 @@ public class JDBCDatabase extends BasicDatabase {
 		    // will just have to make do with a non-editable
 		    // QueryResultFrame.
 		}
-		if (table != null) {
-		    // We check if all the primary key components are present
-		    // in the result set; if there is no primary key, we make
-		    // sure that *all* columns are present.
-		    // The idea is to prevent the occurrence that someone
-		    // deletes a row from a partial view, and inadvertently
-		    // deletes many more rows from the actual table. By
-		    // ensuring the complete primary key is matches, we
-		    // guarantee that deleting one row from a partial view
-		    // deletes exactly that one row from the actual table.
-		    PrimaryKey pk = table.getPrimaryKey();
-		    int pkSize;
-		    String[] pkColumns;
-		    if (pk != null) {
-			pkSize = pk.getColumnCount();
-			pkColumns = new String[pkSize];
-			for (int i = 0; i < pkSize; i++)
-			    pkColumns[i] = pk.getColumnName(i);
-		    } else {
-			pkSize = table.getColumnCount();
-			pkColumns = table.getColumnNames();
-		    }
-		    for (int i = 0; i < pkSize; i++) {
-			String n = pkColumns[i];
-			boolean found = false;
-			for (int j = 0; j < columnNames.length; j++)
-			    if (columnNames[j].equalsIgnoreCase(n)) {
-				found = true;
-				break;
-			    }
-			if (!found) {
-			    // Primary key component missing in ResultSet;
-			    // don't allow table in this case
-			    table = null;
+	    }
+
+	    if (table != null) {
+		// We check if all the primary key components are present
+		// in the result set; if there is no primary key, we make
+		// sure that *all* columns are present.
+		// The idea is to prevent the occurrence that someone
+		// deletes a row from a partial view, and inadvertently
+		// deletes many more rows from the actual table. By
+		// ensuring the complete primary key is present, we
+		// guarantee that deleting one row from a partial view
+		// deletes exactly that one row from the actual table.
+		PrimaryKey pk = table.getPrimaryKey();
+		int pkSize;
+		String[] pkColumns;
+		if (pk != null) {
+		    pkSize = pk.getColumnCount();
+		    pkColumns = new String[pkSize];
+		    for (int i = 0; i < pkSize; i++)
+			pkColumns[i] = pk.getColumnName(i);
+		} else {
+		    pkSize = table.getColumnCount();
+		    pkColumns = table.getColumnNames();
+		}
+		for (int i = 0; i < pkSize; i++) {
+		    String n = pkColumns[i];
+		    boolean found = false;
+		    for (int j = 0; j < columnNames.length; j++)
+			if (columnNames[j].equalsIgnoreCase(n)) {
+			    found = true;
 			    break;
 			}
+		    if (!found) {
+			// Primary key component missing in ResultSet;
+			// don't allow table in this case
+			table = null;
+			break;
 		    }
 		}
 	    }

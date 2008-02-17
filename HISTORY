@@ -1,3 +1,10 @@
+16 February 2008: build 2688
+*) Running a query that selects columns from only one table, including all of
+that table's PK columns, now returns an updatable query result *even* if the
+JDBC driver does not provide catalog/schema/table information in ResultSet.
+Formerly, with such drivers you would only get an updatable query result if you
+performed a "select *".
+
 16 December 2007: build 2684
 *) The initial Database.getRootNode() call, which loads all the table metadata
 when a JDBC connection is opened, is now performed in the background, so it
