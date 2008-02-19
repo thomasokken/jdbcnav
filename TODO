@@ -1,3 +1,5 @@
+Allow sorting on byte[] columns (i.e. BINARY).
+
 When closing a browser window, is the underlying Connection always closed?
 Might be an idea to report Exceptions that get thrown by Connection.close().
 
