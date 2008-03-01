@@ -1,3 +1,10 @@
+Import CSV does not seem to distinguish between "" and null.
+
+select * from utterance group by...
+not handled correctly; it's looking for a "where" or end-of-text, and 
+gets thrown by the "group".
+Need better criterion for finding the end of the "from" clause.
+
 Allow sorting on byte[] columns (i.e. BINARY).
 
 When closing a browser window, is the underlying Connection always closed?
