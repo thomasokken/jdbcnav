@@ -18,7 +18,7 @@
 <project name="JDBC Navigator" default="compile" basedir=".">
 
   <!-- Location of the Rhino jar file -->
-  <property name="rhino" location="../.jars/js.jar"/>
+  <property name="rhino" location="lib/js.jar"/>
 
   <!-- Build classes and copy anything else -->
   <!-- that needs to be in the class path   -->

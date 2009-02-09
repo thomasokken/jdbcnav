@@ -1,3 +1,9 @@
+I think it is safe to say Java 1.4 is officially dead; time to generify JDBC
+Navigator. Also, change the source code to 4-space tabs... yeah, Eclipse.
+
+Eclipse alerts me to something weird in JDBCDatabase.java, line 2226, where I
+dereference pk where it can only be null. What the hell?
+
 Copy/paste of binary values failing (with MySQL -- see account.uuid).
 
 Import CSV does not seem to distinguish between "" and null.
