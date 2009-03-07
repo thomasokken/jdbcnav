@@ -540,7 +540,7 @@ public class MyTable extends JTable {
 													   int row,
 													   int column) {
 			TypeSpecTableModel m = (TypeSpecTableModel) table.getModel();
-			spec = m.getTypeSpec(column);
+			spec = m.getTypeSpec(table.convertColumnIndexToModel(column));
 			leftJustified = !Number.class.isAssignableFrom(spec.jdbcJavaClass);
 			return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 		}

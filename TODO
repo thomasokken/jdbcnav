@@ -1,11 +1,5 @@
-When you rearrange columns, it appears as though the column *formatting* gets
-out of sync. For example, when you swap column A which is a timestamp, with
-column B which is a String, after the swap column B will show "illegal",
-indicating that the strings are being formatted as timestamps, while column A
-will show timestamps in generic notation instead of appropriately truncated.
-
 I think it is safe to say Java 1.4 is officially dead; time to generify JDBC
-Navigator. Also, change the source code to 4-space tabs... yeah, Eclipse.
+Navigator.
 
 Copy/paste of binary values failing (with MySQL -- see account.uuid).
 

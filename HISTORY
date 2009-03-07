@@ -1,5 +1,6 @@
 ?? ??? ???: build ????
 *) Sorting on byte[] columns works now.
+*) When moving columns, the column formatting would not move. Fixed.
 
 16 February 2008: build 2688
 *) Running a query that selects columns from only one table, including all of
