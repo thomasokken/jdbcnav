@@ -1,5 +1,3 @@
-Copy/paste of binary values failing (with MySQL -- see account.uuid).
-
 Import CSV does not seem to distinguish between "" and null.
 Import CSV does not seem to handle empty strings correctly -- they turn into
 nulls. There may be a similar problem with empty strings being treated as nulls
