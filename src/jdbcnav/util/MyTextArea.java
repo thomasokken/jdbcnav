@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008  Thomas Okken
+// Copyright (C) 2001-2008	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -23,33 +23,33 @@ import javax.swing.text.Document;
 
 
 public class MyTextArea extends JTextArea {
-    public MyTextArea() {
-	super();
-    }
+	public MyTextArea() {
+		super();
+	}
 
-    public MyTextArea(int width, int height) {
-	super(width, height);
-    }
+	public MyTextArea(int width, int height) {
+		super(width, height);
+	}
 
-    public MyTextArea(String s) {
-	super(s);
-    }
+	public MyTextArea(String s) {
+		super(s);
+	}
 
-    public MyTextArea(String s, int width, int height) {
-	super(s, width, height);
-    }
+	public MyTextArea(String s, int width, int height) {
+		super(s, width, height);
+	}
 
-    public MyTextArea(Document doc, String s, int width, int height) {
-	super(doc, s, width, height);
-    }
+	public MyTextArea(Document doc, String s, int width, int height) {
+		super(doc, s, width, height);
+	}
 
-    public void copy() {
-	super.copy();
-	jdbcnav.Main.getClipboard().refresh();
-    }
+	public void copy() {
+		super.copy();
+		jdbcnav.Main.getClipboard().refresh();
+	}
 
-    public void cut() {
-	super.cut();
-	jdbcnav.Main.getClipboard().refresh();
-    }
+	public void cut() {
+		super.cut();
+		jdbcnav.Main.getClipboard().refresh();
+	}
 }

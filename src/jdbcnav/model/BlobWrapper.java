@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008  Thomas Okken
+// Copyright (C) 2001-2008	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -26,14 +26,14 @@ package jdbcnav.model;
  * closed.
  */
 public interface BlobWrapper {
-    /**
-     * This method returns the representation to be displayed in a table view.
-     */
-    String toString();
+	/**
+	 * This method returns the representation to be displayed in a table view.
+	 */
+	String toString();
 
-    /**
-     * This method loads the actual data; if it returns successfully, the
-     * BlobWrapper object should be replaced with this return value.
-     */
-    byte[] load();
+	/**
+	 * This method loads the actual data; if it returns successfully, the
+	 * BlobWrapper object should be replaced with this return value.
+	 */
+	byte[] load();
 }

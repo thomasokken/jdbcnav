@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008  Thomas Okken
+// Copyright (C) 2001-2008	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -19,20 +19,20 @@
 package jdbcnav.model;
 
 public interface Data {
-    int getRowCount();
-    int getColumnCount();
-    String getColumnName(int col);
-    TypeSpec getTypeSpec(int col);
-    Object getValueAt(int row, int col);
+	int getRowCount();
+	int getColumnCount();
+	String getColumnName(int col);
+	TypeSpec getTypeSpec(int col);
+	Object getValueAt(int row, int col);
 
-    static final int LOADING = 0;
-    static final int PAUSED = 1;
-    static final int FINISHED = 2;
-    void setState(int state);
-    int getState();
-    void addStateListener(StateListener listener);
-    void removeStateListener(StateListener listener);
-    interface StateListener {
-	void stateChanged(int state, int rows);
-    }
+	static final int LOADING = 0;
+	static final int PAUSED = 1;
+	static final int FINISHED = 2;
+	void setState(int state);
+	int getState();
+	void addStateListener(StateListener listener);
+	void removeStateListener(StateListener listener);
+	interface StateListener {
+		void stateChanged(int state, int rows);
+	}
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008  Thomas Okken
+// Copyright (C) 2001-2008	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -24,61 +24,61 @@ import jdbcnav.MessageBox;
 
 
 public class JavaScriptGlobal extends ScriptableObject {
-    private Pipe pipe;
+	private Pipe pipe;
 
-    public JavaScriptGlobal() {
-	String[] names = { "print", "println" };
-	try {
-	    defineFunctionProperties(names, JavaScriptGlobal.class,
-				     ScriptableObject.DONTENUM
-				     + ScriptableObject.PERMANENT);
-	    defineProperty("clipboard", JavaScriptGlobal.class,
-			   ScriptableObject.PERMANENT);
-	} catch (PropertyException e) {
-	    MessageBox.show("Problem constructing JavaScriptGlobal", e);
+	public JavaScriptGlobal() {
+		String[] names = { "print", "println" };
+		try {
+			defineFunctionProperties(names, JavaScriptGlobal.class,
+									 ScriptableObject.DONTENUM
+									 + ScriptableObject.PERMANENT);
+			defineProperty("clipboard", JavaScriptGlobal.class,
+						   ScriptableObject.PERMANENT);
+		} catch (PropertyException e) {
+			MessageBox.show("Problem constructing JavaScriptGlobal", e);
+		}
 	}
-    }
 
-    public String getClassName() {
-	return "global";
-    }
-
-    public void setOut(Pipe pipe) {
-	this.pipe = pipe;
-    }
-
-    public static void print(Context ctx, Scriptable thisObj, Object[] args,
-			     Function funObj) {
-	Pipe pipe = ((JavaScriptGlobal) thisObj).pipe;
-	for (int i = 0; i < args.length; i++) {
-	    if (i > 0)
-		pipe.print(" ");
-	    pipe.print(Context.toString(args[i]));
+	public String getClassName() {
+		return "global";
 	}
-    }
 
-    public static void println(Context ctx, Scriptable thisObj, Object[] args,
-			     Function funObj) {
-	Pipe pipe = ((JavaScriptGlobal) thisObj).pipe;
-	for (int i = 0; i < args.length; i++) {
-	    if (i > 0)
-		pipe.print(" ");
-	    pipe.print(Context.toString(args[i]));
+	public void setOut(Pipe pipe) {
+		this.pipe = pipe;
 	}
-	pipe.println();
-    }
 
-    public void setClipboard(Object o) {
-	jdbcnav.Main.getClipboard().put(o);
-    }
+	public static void print(Context ctx, Scriptable thisObj, Object[] args,
+							 Function funObj) {
+		Pipe pipe = ((JavaScriptGlobal) thisObj).pipe;
+		for (int i = 0; i < args.length; i++) {
+			if (i > 0)
+				pipe.print(" ");
+			pipe.print(Context.toString(args[i]));
+		}
+	}
 
-    public Object getClipboard() {
-	return jdbcnav.Main.getClipboard().get();
-    }
+	public static void println(Context ctx, Scriptable thisObj, Object[] args,
+							 Function funObj) {
+		Pipe pipe = ((JavaScriptGlobal) thisObj).pipe;
+		for (int i = 0; i < args.length; i++) {
+			if (i > 0)
+				pipe.print(" ");
+			pipe.print(Context.toString(args[i]));
+		}
+		pipe.println();
+	}
 
-    public interface Pipe {
-	void print(String s);
-	void println(String s);
-	void println();
-    }
+	public void setClipboard(Object o) {
+		jdbcnav.Main.getClipboard().put(o);
+	}
+
+	public Object getClipboard() {
+		return jdbcnav.Main.getClipboard().get();
+	}
+
+	public interface Pipe {
+		void print(String s);
+		void println(String s);
+		void println();
+	}
 }

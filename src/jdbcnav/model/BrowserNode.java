@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008  Thomas Okken
+// Copyright (C) 2001-2008	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -22,17 +22,17 @@ import java.util.Iterator;
 import jdbcnav.util.NavigatorException;
 
 public interface BrowserNode {
-    String getName();
-    BrowserNode getParent();
-    boolean isLeaf();
-    Iterator getChildren();
-    void setDisplayNode(DisplayNode dn);
-    Table getTable() throws NavigatorException;
-    boolean busy();
+	String getName();
+	BrowserNode getParent();
+	boolean isLeaf();
+	Iterator getChildren();
+	void setDisplayNode(DisplayNode dn);
+	Table getTable() throws NavigatorException;
+	boolean busy();
 
-    interface DisplayNode {
-	void childAddedAt(int index, BrowserNode kid);
-	void childRemovedAt(int index);
-	void show();
-    }
+	interface DisplayNode {
+		void childAddedAt(int index, BrowserNode kid);
+		void childRemovedAt(int index);
+		void show();
+	}
 }

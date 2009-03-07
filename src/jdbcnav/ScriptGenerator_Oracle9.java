@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008  Thomas Okken
+// Copyright (C) 2001-2008	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -19,7 +19,7 @@
 package jdbcnav;
 
 public class ScriptGenerator_Oracle9 extends ScriptGenerator_Oracle {
-    public ScriptGenerator_Oracle9() {
-	oracle10types = false;
-    }
+	public ScriptGenerator_Oracle9() {
+		oracle10types = false;
+	}
 }

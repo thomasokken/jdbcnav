@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008  Thomas Okken
+// Copyright (C) 2001-2008	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -23,114 +23,114 @@ import org.mozilla.javascript.*;
 
 
 public class JavaScriptStatement implements Scriptable {
-    private Statement stmt;
-    private CloseFunction closeFunction = new CloseFunction();
-    private ExecuteFunction executeFunction = new ExecuteFunction();
+	private Statement stmt;
+	private CloseFunction closeFunction = new CloseFunction();
+	private ExecuteFunction executeFunction = new ExecuteFunction();
 
-    public JavaScriptStatement(Statement stmt) {
-	this.stmt = stmt;
-    }
-
-    private class CloseFunction extends BasicFunction {
-	public Object call(Object[] args) {
-	    if (args.length != 0)
-		throw new EvaluatorException(
-				"Statement.close() requires no arguments.");
-	    try {
-		stmt.close();
-	    } catch (SQLException e) {
-		throw new WrappedException(e);
-	    }
-	    return Context.getUndefinedValue();
+	public JavaScriptStatement(Statement stmt) {
+		this.stmt = stmt;
 	}
-    }
 
-    private class ExecuteFunction extends BasicFunction {
-	public Object call(Object[] args) {
-	    if (args.length != 1 || !(args[0] instanceof String))
-		throw new EvaluatorException(
-			"Statement.execute() requires one String argument.");
-	    try {
-		boolean hasResultSet = stmt.execute((String) args[0]);
-		if (hasResultSet)
-		    return new JavaScriptResultSet(stmt.getResultSet());
+	private class CloseFunction extends BasicFunction {
+		public Object call(Object[] args) {
+			if (args.length != 0)
+				throw new EvaluatorException(
+								"Statement.close() requires no arguments.");
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				throw new WrappedException(e);
+			}
+			return Context.getUndefinedValue();
+		}
+	}
+
+	private class ExecuteFunction extends BasicFunction {
+		public Object call(Object[] args) {
+			if (args.length != 1 || !(args[0] instanceof String))
+				throw new EvaluatorException(
+						"Statement.execute() requires one String argument.");
+			try {
+				boolean hasResultSet = stmt.execute((String) args[0]);
+				if (hasResultSet)
+					return new JavaScriptResultSet(stmt.getResultSet());
+				else
+					return new Integer(stmt.getUpdateCount());
+			} catch (SQLException e) {
+				throw new WrappedException(e);
+			}
+		}
+	}
+
+	public void delete(int index) {
+		//
+	}
+
+	public void delete(String name) {
+		//
+	}
+
+	public Object get(int index, Scriptable start) {
+		return NOT_FOUND;
+	}
+
+	public Object get(String name, Scriptable start) {
+		if (name.equals("execute"))
+			return executeFunction;
+		else if (name.equals("close"))
+			return closeFunction;
 		else
-		    return new Integer(stmt.getUpdateCount());
-	    } catch (SQLException e) {
-		throw new WrappedException(e);
-	    }
+			return NOT_FOUND;
 	}
-    }
 
-    public void delete(int index) {
-	//
-    }
+	public String getClassName() {
+		return "Statement";
+	}
 
-    public void delete(String name) {
-	//
-    }
+	public Object getDefaultValue(Class hint) {
+		return "Statement";
+	}
 
-    public Object get(int index, Scriptable start) {
-	return NOT_FOUND;
-    }
+	public Object[] getIds() {
+		return new Object[] {
+			"close",
+			"execute"
+		};
+	}
 
-    public Object get(String name, Scriptable start) {
-	if (name.equals("execute"))
-	    return executeFunction;
-	else if (name.equals("close"))
-	    return closeFunction;
-	else
-	    return NOT_FOUND;
-    }
+	public Scriptable getParentScope() {
+		return null;
+	}
 
-    public String getClassName() {
-	return "Statement";
-    }
+	public Scriptable getPrototype() {
+		return null;
+	}
 
-    public Object getDefaultValue(Class hint) {
-	return "Statement";
-    }
+	public boolean has(int index, Scriptable start) {
+		return false;
+	}
 
-    public Object[] getIds() {
-	return new Object[] {
-	    "close",
-	    "execute"
-	};
-    }
+	public boolean has(String name, Scriptable start) {
+		return name.equals("execute") || name.equals("close");
+	}
 
-    public Scriptable getParentScope() {
-	return null;
-    }
+	public boolean hasInstance(Scriptable instance) {
+		return getClass().isInstance(instance);
+	}
 
-    public Scriptable getPrototype() {
-	return null;
-    }
+	public void put(int index, Scriptable start, Object value) {
+		//
+	}
 
-    public boolean has(int index, Scriptable start) {
-	return false;
-    }
+	public void put(String name, Scriptable start, Object value) {
+		//
+	}
 
-    public boolean has(String name, Scriptable start) {
-	return name.equals("execute") || name.equals("close");
-    }
+	public void setParentScope(Scriptable parentScope) {
+		//
+	}
 
-    public boolean hasInstance(Scriptable instance) {
-	return getClass().isInstance(instance);
-    }
-
-    public void put(int index, Scriptable start, Object value) {
-	//
-    }
-
-    public void put(String name, Scriptable start, Object value) {
-	//
-    }
-
-    public void setParentScope(Scriptable parentScope) {
-	//
-    }
-
-    public void setPrototype(Scriptable prototype) {
-	//
-    }
+	public void setPrototype(Scriptable prototype) {
+		//
+	}
 }
