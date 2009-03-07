@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -88,9 +88,9 @@ public class JDBCDatabase_Derby extends JDBCDatabase {
 				|| dbType.equals("DECIMAL")
 				|| dbType.equals("NUMERIC")) {
 			spec.type = TypeSpec.FIXED;
-			spec.size = size.intValue();
+			spec.size = size;
 			spec.size_in_bits = false;
-			spec.scale = scale.intValue();
+			spec.scale = scale;
 			spec.scale_in_bits = false;
 		} else if (dbType.equals("REAL")) {
 			spec.type = TypeSpec.FLOAT;
@@ -109,19 +109,19 @@ public class JDBCDatabase_Derby extends JDBCDatabase {
 			spec.exp_of_2 = true;
 		} else if (spec.jdbcSqlType == Types.CHAR) {
 			spec.type = TypeSpec.CHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (spec.jdbcSqlType == Types.VARCHAR) {
 			spec.type = TypeSpec.VARCHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (spec.jdbcSqlType == Types.LONGVARCHAR
 				|| spec.jdbcSqlType == Types.CLOB) {
 			spec.type = TypeSpec.LONGVARCHAR;
 		} else if (spec.jdbcSqlType == Types.BINARY) {
 			spec.type = TypeSpec.RAW;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (spec.jdbcSqlType == Types.VARBINARY) {
 			spec.type = TypeSpec.VARRAW;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (spec.jdbcSqlType == Types.LONGVARBINARY
 				|| spec.jdbcSqlType == Types.BLOB) {
 			spec.type = TypeSpec.LONGVARRAW;
@@ -162,7 +162,7 @@ public class JDBCDatabase_Derby extends JDBCDatabase {
 		else if (spec.jdbcSqlType == Types.BLOB
 				|| spec.jdbcSqlType == Types.CLOB) {
 			StringBuffer buf = new StringBuffer();
-			int sz = size.intValue();
+			int sz = size;
 			buf.append(dbType);
 			buf.append('(');
 			if ((sz & 1073741823) == 0) {

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -88,9 +88,9 @@ public class JDBCDatabase_DB2 extends JDBCDatabase {
 			spec.scale_in_bits = true;
 		} else if (dbType.equals("DECIMAL")) {
 			spec.type = TypeSpec.FIXED;
-			spec.size = size.intValue();
+			spec.size = size;
 			spec.size_in_bits = false;
-			spec.scale = scale.intValue();
+			spec.scale = scale;
 			spec.scale_in_bits = false;
 		} else if (dbType.equals("REAL")) {
 			spec.type = TypeSpec.FLOAT;
@@ -108,30 +108,30 @@ public class JDBCDatabase_DB2 extends JDBCDatabase {
 			spec.exp_of_2 = true;
 		} else if (dbType.equals("CHAR")) {
 			spec.type = TypeSpec.CHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (spec.jdbcSqlType == Types.LONGVARCHAR) {
 			spec.type = TypeSpec.LONGVARCHAR;
 		} else if (spec.jdbcSqlType == Types.BINARY) {
 			spec.type = TypeSpec.RAW;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (spec.jdbcSqlType == Types.VARBINARY) {
 			spec.type = TypeSpec.VARRAW;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (spec.jdbcSqlType == Types.LONGVARBINARY) {
 			spec.type = TypeSpec.LONGVARRAW;
 		} else if (dbType.equals("VARCHAR")) {
 			spec.type = TypeSpec.VARCHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("CLOB")) {
 			spec.type = TypeSpec.LONGVARCHAR;
 		} else if (dbType.equals("GRAPHIC")) {
 			spec.type = TypeSpec.NCHAR;
-			spec.size = size.intValue() / 2;
-			size = new Integer(spec.size);
+			spec.size = size / 2;
+			size = spec.size;
 		} else if (dbType.equals("VARGRAPHIC")) {
 			spec.type = TypeSpec.VARNCHAR;
-			spec.size = size.intValue() / 2;
-			size = new Integer(spec.size);
+			spec.size = size / 2;
+			size = spec.size;
 		} else if (dbType.equals("DBCLOB")) {
 			spec.type = TypeSpec.LONGVARNCHAR;
 		} else if (dbType.equals("BLOB")) {
@@ -173,7 +173,7 @@ public class JDBCDatabase_DB2 extends JDBCDatabase {
 				|| dbType.equals("CLOB")
 				|| dbType.equals("DBCLOB")) {
 			StringBuffer buf = new StringBuffer();
-			int sz = size.intValue();
+			int sz = size;
 			if (dbType.equals("DBCLOB"))
 				sz /= 2;
 			buf.append(dbType);

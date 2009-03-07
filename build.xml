@@ -1,6 +1,6 @@
 <!--
    JDBC Navigator - A Free Database Browser and Editor
-   Copyright (C) 2001-2008	Thomas Okken
+   Copyright (C) 2001-2009	Thomas Okken
   
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License, version 2,
@@ -30,14 +30,14 @@
   <target name="compile-boot">
 	<mkdir dir="classes"/>
 	<!-- Our boot loader, including our "sneaky" class loader -->
-	<javac source="1.4"
-		   target="1.4"
+	<javac source="1.5"
+		   target="1.5"
 		   srcdir="srcboot"
 		   destdir="classes"
 		   debug="on"
 		   debuglevel="source,lines">
-	  <!-- <compilerarg value="-Xlint:deprecation"/> -->
-	  <!-- <compilerarg value="-Xlint:unchecked"/> -->
+	  <compilerarg value="-Xlint:deprecation"/>
+	  <compilerarg value="-Xlint:unchecked"/>
 	</javac>
   </target>
 
@@ -46,15 +46,15 @@
   <!-- "smalljar" target!) know to look...						  -->
   <target name="compile-main">
 	<mkdir dir="classes/foo"/>
-	<javac source="1.4"
-		   target="1.4"
+	<javac source="1.5"
+		   target="1.5"
 		   classpath="${rhino}"
 		   srcdir="src"
 		   destdir="classes/foo"
 		   debug="on"
 		   debuglevel="source,lines">
-	  <!-- <compilerarg value="-Xlint:deprecation"/> -->
-	  <!-- <compilerarg value="-Xlint:unchecked"/> -->
+	  <compilerarg value="-Xlint:deprecation"/>
+	  <compilerarg value="-Xlint:unchecked"/>
 	</javac>
   </target>
 
@@ -78,7 +78,7 @@
   <target name="javadoc">
 	<javadoc sourcepath="src:srcboot"
 			 packagenames="jdbcnav.*,jdbcnavboot.*"
-			 source="1.4"
+			 source="1.5"
 			 destdir="javadoc"
 			 windowtitle="JDBC Navigator">
 	  <link href="file:///opt/java/jdk1.5.0_10/docs/api"/>
@@ -116,14 +116,14 @@
   <!-- Make package for upload to web site -->
   <target name="package">
 	<antcall target="tarball"/>
-	<javac source="1.4"
-		   target="1.4"
+	<javac source="1.5"
+		   target="1.5"
 		   srcdir="util"
 		   destdir="util"
 		   debug="on"
 		   debuglevel="source,lines">
-	  <!-- <compilerarg value="-Xlint:deprecation"/> -->
-	  <!-- <compilerarg value="-Xlint:unchecked"/> -->
+	  <compilerarg value="-Xlint:deprecation"/>
+	  <compilerarg value="-Xlint:unchecked"/>
 	</javac>
 	<java classname="txt2html"
 		  classpath="util"

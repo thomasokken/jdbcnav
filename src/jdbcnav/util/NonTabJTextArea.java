@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -25,12 +25,12 @@ import javax.swing.text.Document;
 
 
 public class NonTabJTextArea extends MyTextArea {
-	private static TreeSet forwardSet;
-	private static TreeSet backwardSet;
+	private static TreeSet<AWTKeyStroke> forwardSet;
+	private static TreeSet<AWTKeyStroke> backwardSet;
 	static {
-		forwardSet = new TreeSet();
+		forwardSet = new TreeSet<AWTKeyStroke>();
 		forwardSet.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, 0));
-		backwardSet = new TreeSet();
+		backwardSet = new TreeSet<AWTKeyStroke>();
 		backwardSet.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB,
 													InputEvent.SHIFT_MASK));
 	}

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -153,7 +153,7 @@ public class ScriptGenerator_MySQL extends ScriptGenerator {
 		} else if (spec.type == TypeSpec.TIMESTAMP) {
 			if (spec.db.getClass().getName().equals("jdbcnav.JDBCDatabase_MySQL")
 					&& spec.jdbcDbType.equalsIgnoreCase("timestamp")) {
-				int sz = spec.jdbcSize.intValue();
+				int sz = spec.jdbcSize;
 				DateTime dt = (DateTime) obj;
 				java.util.Date d = new java.util.Date(dt.time + dt.nanos / 1000000);
 				String s;

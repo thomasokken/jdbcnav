@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -66,9 +66,9 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 		} else if (dbType.equals("NUMERIC")
 				|| dbType.equals("DECIMAL")) {
 			spec.type = TypeSpec.FIXED;
-			spec.size = size.intValue();
+			spec.size = size;
 			spec.size_in_bits = false;
-			spec.scale = scale.intValue();
+			spec.scale = scale;
 			spec.scale_in_bits = false;
 			spec.jdbcJavaClass = java.math.BigDecimal.class;
 		} else if (dbType.equals("FLOAT")) {
@@ -93,25 +93,25 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 				spec.type = TypeSpec.LONGVARCHAR;
 			} else {
 				spec.type = TypeSpec.CHAR;
-				spec.size = size.intValue();
+				spec.size = size;
 			}
 			spec.jdbcJavaClass = String.class;
 		} else if (dbType.equals("VARCHAR")) {
 			spec.type = TypeSpec.VARCHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 			spec.jdbcJavaClass = String.class;
 		} else if (dbType.equals("BINCHAR")) {
 			if (spec.jdbcSqlType == Types.VARCHAR) {
 				spec.type = TypeSpec.LONGVARRAW;
 			} else {
 				spec.type = TypeSpec.RAW;
-				spec.size = size.intValue();
+				spec.size = size;
 			}
 			spec.jdbcJavaClass = String.class;
 		} else if (dbType.equals("BITS")
 				|| dbType.equals("BITS2")) {
 			spec.type = TypeSpec.RAW;
-			spec.size = (size.intValue() + 7) / 8;
+			spec.size = (size + 7) / 8;
 			try {
 				spec.jdbcJavaClass = Class.forName("transbase.tbx.types.TBBits");
 			} catch (ClassNotFoundException e) {
@@ -235,13 +235,13 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 			return null;
 		if (spec.jdbcJavaType.equals("transbase.tbx.types.TBBits")) {
 			try {
-				Class c = o.getClass();
-				Method m = c.getMethod("isNull", null);
-				Boolean b = (Boolean) m.invoke(o, null);
+				Class<?> c = o.getClass();
+				Method m = c.getMethod("isNull", (Class[]) null);
+				Boolean b = (Boolean) m.invoke(o, (Object[]) null);
 				if (b != null && b.booleanValue() == true)
 					return null;
-				m = c.getMethod("getBitArray", null);
-				return m.invoke(o, null);
+				m = c.getMethod("getBitArray", (Class[]) null);
+				return m.invoke(o, (Object[]) null);
 			} catch (Exception e) {
 				e.printStackTrace();
 				return o;
@@ -251,8 +251,8 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 			return null;
 		if (spec.jdbcJavaType.equals("transbase.tbx.types.TBDatetime")) {
 			try {
-				Method m = spec.jdbcJavaClass.getMethod("getTimestamp", null);
-				Timestamp ts = (Timestamp) m.invoke(o, null);
+				Method m = spec.jdbcJavaClass.getMethod("getTimestamp", (Class[]) null);
+				Timestamp ts = (Timestamp) m.invoke(o, (Object[]) null);
 				int nanos = ts.getNanos();
 				long time = ts.getTime() - nanos / 1000000;
 				return new DateTime(time, nanos, null);
@@ -263,16 +263,16 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 		}
 		if (spec.jdbcJavaType.equals("transbase.tbx.types.TBTimespan")) {
 			try {
-				Method m = spec.jdbcJavaClass.getMethod("getHighField", null);
-				int high = ((Integer) m.invoke(o, null)).intValue();
-				m = spec.jdbcJavaClass.getMethod("getLowField", null);
-				int low = ((Integer) m.invoke(o, null)).intValue();
+				Method m = spec.jdbcJavaClass.getMethod("getHighField", (Class[]) null);
+				int high = (Integer) m.invoke(o, (Object[]) null);
+				m = spec.jdbcJavaClass.getMethod("getLowField", (Class[]) null);
+				int low = (Integer) m.invoke(o, (Object[]) null);
 				m = spec.jdbcJavaClass.getMethod("getField", new Class[] { int.class });
 				long[] fields = new long[7];
 				Object[] args = new Object[1];
 				for (int i = low; i <= high; i++) {
-					args[0] = new Integer(i);
-					fields[i] = ((Long) m.invoke(o, args)).longValue();
+					args[0] = i;
+					fields[i] = (Long) m.invoke(o, args);
 				}
 				int months = 0;
 				long nanos = 0;
@@ -299,13 +299,13 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 		if (spec.jdbcJavaType.equals("transbase.tbx.types.TBBits")) {
 			// TODO: This doesn't work. Contact the good folks at
 			// Transbase Inc. and ask them how to do this.
-			Class c = spec.jdbcJavaClass;
+			Class<?> c = spec.jdbcJavaClass;
 			try {
-				Constructor cnstr = c.getConstructor(null);
-				Object tbbits = cnstr.newInstance(null);
+				Constructor<?> cnstr = c.getConstructor((Class[]) null);
+				Object tbbits = cnstr.newInstance((Object[]) null);
 				if (o == null) {
-					Method m = c.getMethod("setNull", null);
-					m.invoke(tbbits, null);
+					Method m = c.getMethod("setNull", (Class[]) null);
+					m.invoke(tbbits, (Object[]) null);
 					return tbbits;
 				} else {
 					byte[] ba = (byte[]) o;
@@ -315,7 +315,7 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 					for (int i = 0; i < ba.length; i++) {
 						for (int j = 0; j < 8; j++) {
 							if ((j & 128) != 0) {
-								args[0] = new Integer(pos);
+								args[0] = pos;
 								m.invoke(tbbits, args);
 							}
 							pos++;
@@ -335,8 +335,8 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 			Timestamp ts = new Timestamp(dt.time);
 			ts.setNanos(dt.nanos);
 			try {
-				Constructor c = spec.jdbcJavaClass.getConstructor(null);
-				Object tbdt = c.newInstance(null);
+				Constructor<?> c = spec.jdbcJavaClass.getConstructor((Class[]) null);
+				Object tbdt = c.newInstance((Object[]) null);
 				Method m = spec.jdbcJavaClass.getMethod("setTimestamp", new Class[] { Timestamp.class });
 				m.invoke(tbdt, new Object[] { ts });
 				return tbdt;
@@ -350,14 +350,14 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 			// Transbase Inc. and ask them how to do this.
 			Interval inter = (Interval) o;
 			try {
-				Constructor c = spec.jdbcJavaClass.getConstructor(null);
-				Object tbint = c.newInstance(null);
+				Constructor<?> c = spec.jdbcJavaClass.getConstructor((Class[]) null);
+				Object tbint = c.newInstance((Object[]) null);
 				Method m = spec.jdbcJavaClass.getMethod("setField", new Class[] { int.class, long.class });
 				if (spec.type == TypeSpec.INTERVAL_YM) {
 					long years = inter.months / 12;
 					long months = inter.months - years * 12;
-					m.invoke(tbint, new Object[] { new Integer(6), new Long(years) });
-					m.invoke(tbint, new Object[] { new Integer(5), new Long(months) });
+					m.invoke(tbint, new Object[] { 6, years });
+					m.invoke(tbint, new Object[] { 5, months });
 				} else {
 					long nanos = inter.nanos;
 					if (spec.type == TypeSpec.INTERVAL_YS)
@@ -372,11 +372,11 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 					long seconds = nanos / 1000000000L;
 					nanos -= seconds * 1000000000L;
 					long milliseconds = nanos / 1000000L;
-					m.invoke(tbint, new Object[] { new Integer(4), new Long(days) });
-					m.invoke(tbint, new Object[] { new Integer(3), new Long(hours) });
-					m.invoke(tbint, new Object[] { new Integer(2), new Long(minutes) });
-					m.invoke(tbint, new Object[] { new Integer(1), new Long(seconds) });
-					m.invoke(tbint, new Object[] { new Integer(0), new Long(milliseconds) });
+					m.invoke(tbint, new Object[] { 4, days });
+					m.invoke(tbint, new Object[] { 3, hours });
+					m.invoke(tbint, new Object[] { 2, minutes });
+					m.invoke(tbint, new Object[] { 1, seconds });
+					m.invoke(tbint, new Object[] { 0, milliseconds });
 				}
 				return tbint;
 			} catch (Exception e) {

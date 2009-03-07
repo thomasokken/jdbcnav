@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -86,9 +86,9 @@ public class InternalDriverMap {
 		}
 	}
 
-	private static TreeMap databaseMap;
+	private static TreeMap<String, String> databaseMap;
 	static {
-		databaseMap = new TreeMap();
+		databaseMap = new TreeMap<String, String>();
 		databaseMap.put("Generic", "jdbcnav.JDBCDatabase");
 		databaseMap.put("DB2", "jdbcnav.JDBCDatabase_DB2");
 		databaseMap.put("Derby", "jdbcnav.JDBCDatabase_Derby");
@@ -102,12 +102,12 @@ public class InternalDriverMap {
 	}
 
 	public static String getDatabaseClassName(String driverName) {
-		return (String) databaseMap.get(driverName);
+		return databaseMap.get(driverName);
 	}
 
-	private static TreeMap scriptGenMap;
+	private static TreeMap<String, String> scriptGenMap;
 	static {
-		scriptGenMap = new TreeMap();
+		scriptGenMap = new TreeMap<String, String>();
 		scriptGenMap.put("Generic", "jdbcnav.ScriptGenerator");
 		scriptGenMap.put("DB2", "jdbcnav.ScriptGenerator_DB2");
 		scriptGenMap.put("Derby", "jdbcnav.ScriptGenerator_Derby");
@@ -121,13 +121,13 @@ public class InternalDriverMap {
 	}
 
 	public static String getScriptGeneratorClassName(String driverName) {
-		return (String) scriptGenMap.get(driverName);
+		return scriptGenMap.get(driverName);
 	}
 
 	public static String[] getScriptGeneratorNames() {
-		ArrayList list = new ArrayList(scriptGenMap.keySet());
+		ArrayList<String> list = new ArrayList<String>(scriptGenMap.keySet());
 		list.remove("Generic");
 		list.add(0, "Generic");
-		return (String[]) list.toArray(new String[list.size()]);
+		return list.toArray(new String[list.size()]);
 	}
 }

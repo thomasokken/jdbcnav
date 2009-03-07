@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -27,7 +27,7 @@ public class MyFrame extends JInternalFrame {
 	private static int titleBarHeight = -1;
 	private static Point position = null;
 	private MyFrame parent;
-	private ArrayList children;
+	private ArrayList<MyFrame> children;
 
 	public MyFrame(String title) {
 		super(title);
@@ -96,7 +96,7 @@ public class MyFrame extends JInternalFrame {
 	public void dispose() {
 		if (children != null)
 			while (!children.isEmpty())
-				((MyFrame) children.get(0)).dispose();
+				children.get(0).dispose();
 		if (parent != null && parent.children != null)
 			parent.children.remove(this);
 		Main.removeFromWindowsMenu(this);
@@ -144,14 +144,14 @@ public class MyFrame extends JInternalFrame {
 		super.setTitle(title);
 		Main.renameInWindowsMenu(this);
 		if (children != null)
-			for (Iterator iter = children.iterator(); iter.hasNext();)
-				((MyFrame) iter.next()).updateTitle();
+			for (MyFrame f : children)
+				f.updateTitle();
 	}
 
 	public void setParent(MyFrame parent) {
 		this.parent = parent;
 		if (parent.children == null)
-			parent.children = new ArrayList();
+			parent.children = new ArrayList<MyFrame>();
 		parent.children.add(this);
 	}
 
@@ -165,8 +165,8 @@ public class MyFrame extends JInternalFrame {
 
 	public boolean isDirty() {
 		if (children != null)
-			for (Iterator iter = children.iterator(); iter.hasNext();)
-				if (((MyFrame) iter.next()).isDirty())
+			for (MyFrame f : children)
+				if (f.isDirty())
 					return true;
 		return false;
 	}

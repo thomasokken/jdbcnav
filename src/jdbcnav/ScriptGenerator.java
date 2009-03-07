@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -187,13 +187,12 @@ public class ScriptGenerator {
 	///// Public methods /////
 	//////////////////////////
 
-	public String drop(Collection coll, boolean fqtn) {
+	public String drop(Collection<Table> coll, boolean fqtn) {
 		if (coll.isEmpty())
 			return "";
-		TreeSet set = new TreeSet(coll);
+		TreeSet<Table> set = new TreeSet<Table>(coll);
 		StringBuffer buf = new StringBuffer();
-		for (Iterator iter = set.iterator(); iter.hasNext();) {
-			Table table = (Table) iter.next();
+		for (Table table : set) {
 			ForeignKey[] rks = table.getReferencingKeys();
 			for (int i = 0; i < rks.length; i++) {
 				ForeignKey rk = rks[i];
@@ -213,14 +212,14 @@ public class ScriptGenerator {
 			}
 		}
 		while (!set.isEmpty()) {
-			Table table = (Table) set.first();
+			Table table = set.first();
 			set.remove(table);
 			drop2(table, set, buf, fqtn);
 		}
 		return buf.toString();
 	}
 
-	private void drop2(Table table, TreeSet set, StringBuffer buf,
+	private void drop2(Table table, TreeSet<Table> set, StringBuffer buf,
 														boolean fqtn) {
 		ForeignKey[] rks = table.getReferencingKeys();
 		for (int i = 0; i < rks.length; i++) {
@@ -243,20 +242,20 @@ public class ScriptGenerator {
 		buf.append(";\n");
 	}
 
-	public String create(Collection coll, boolean fqtn) {
+	public String create(Collection<Table> coll, boolean fqtn) {
 		if (coll.isEmpty())
 			return "";
-		TreeSet set = new TreeSet(coll);
+		TreeSet<Table> set = new TreeSet<Table>(coll);
 		StringBuffer buf = new StringBuffer();
 		while (!set.isEmpty()) {
-			Table table = (Table) set.first();
+			Table table = set.first();
 			set.remove(table);
 			create2(table, set, buf, fqtn);
 		}
 		return buf.toString();
 	}
 
-	private void create2(Table table, TreeSet set, StringBuffer buf,
+	private void create2(Table table, TreeSet<Table> set, StringBuffer buf,
 							boolean fqtn) {
 		ForeignKey[] fks = table.getForeignKeys();
 		for (int i = 0; i < fks.length; i++) {
@@ -380,13 +379,12 @@ public class ScriptGenerator {
 		}
 	}
 
-	public String keys(Collection coll, boolean fqtn) {
+	public String keys(Collection<Table> coll, boolean fqtn) {
 		if (coll.isEmpty())
 			return "";
-		TreeSet set = new TreeSet(coll);
+		TreeSet<Table> set = new TreeSet<Table>(coll);
 		StringBuffer buf = new StringBuffer();
-		for (Iterator iter = set.iterator(); iter.hasNext();) {
-			Table table = (Table) iter.next();
+		for (Table table : set) {
 			ForeignKey[] rks = table.getReferencingKeys();
 			for (int i = 0; i < rks.length; i++) {
 				ForeignKey rk = rks[i];
@@ -448,7 +446,7 @@ public class ScriptGenerator {
 	 * asynchronously to finish. Do not call this method from the AWT
 	 * event thread, or your UI may freeze for a long time.
 	 */
-	public String populate(Collection tables, boolean fqtn)
+	public String populate(Collection<Table> tables, boolean fqtn)
 												throws NavigatorException {
 		DiffCallback dcb = new DiffCallback(fqtn);
 		MultiTableDiff.populate(dcb, tables, true);
@@ -461,7 +459,7 @@ public class ScriptGenerator {
 	 * asynchronously to finish. Do not call this method from the AWT
 	 * event thread, or your UI may freeze for a long time.
 	 */
-	public String diff(Collection oldtables, Collection newtables,
+	public String diff(Collection<Table> oldtables, Collection<Table> newtables,
 									boolean fqtn) throws NavigatorException {
 		DiffCallback dcb = new DiffCallback(fqtn);
 		MultiTableDiff.diff(dcb, oldtables, newtables, true);
@@ -961,15 +959,13 @@ public class ScriptGenerator {
 		return buf.toString();
 	}
 
-	private static Table findTable(TreeSet set, String catalog, String schema,
+	private static Table findTable(TreeSet<Table> set, String catalog, String schema,
 																String name) {
-		for (Iterator iter = set.iterator(); iter.hasNext();) {
-			Table t = (Table) iter.next();
+		for (Table t : set)
 			if (MiscUtils.strEq(catalog, t.getCatalog())
 					&& MiscUtils.strEq(schema, t.getSchema())
 					&& MiscUtils.strEq(name, t.getName()))
 				return t;
-		}
 		return null;
 	}
 
@@ -978,10 +974,10 @@ public class ScriptGenerator {
 	///// Methods for finding and loading ScriptGenerators /////
 	////////////////////////////////////////////////////////////
 
-	private static WeakHashMap instances = new WeakHashMap();
+	private static WeakHashMap<String, ScriptGenerator> instances = new WeakHashMap<String, ScriptGenerator>();
 
 	public static ScriptGenerator getInstance(String name) {
-		ScriptGenerator instance = (ScriptGenerator) instances.get(name);
+		ScriptGenerator instance = instances.get(name);
 		if (instance != null)
 			return instance;
 		String className = null;

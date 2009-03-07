@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -30,7 +30,7 @@ public class JavaScriptResultSet implements Scriptable {
 	private CloseFunction closeFunction = new CloseFunction();
 	private NextFunction nextFunction = new NextFunction();
 	private int columnCount;
-	private TreeMap columnMap;
+	private TreeMap<String, Integer> columnMap;
 	private String[] columnNames;
 	private String[] dbTypes;
 	private String[] sqlTypes;
@@ -39,7 +39,7 @@ public class JavaScriptResultSet implements Scriptable {
 
 	public JavaScriptResultSet(ResultSet rs) {
 		this.rs = rs;
-		columnMap = new TreeMap();
+		columnMap = new TreeMap<String, Integer>();
 		try {
 			ResultSetMetaData rsmd = rs.getMetaData();
 			columnCount = rsmd.getColumnCount();
@@ -50,7 +50,7 @@ public class JavaScriptResultSet implements Scriptable {
 			for (int i = 1; i <= columnCount; i++) {
 				String name = rsmd.getColumnName(i);
 				columnNames[i - 1] = name;
-				columnMap.put(name.toUpperCase(), new Integer(i));
+				columnMap.put(name.toUpperCase(), i);
 				dbTypes[i - 1] = rsmd.getColumnTypeName(i);
 				sqlTypes[i - 1] = MiscUtils.sqlTypeIntToString(
 													rsmd.getColumnType(i));
@@ -130,7 +130,7 @@ public class JavaScriptResultSet implements Scriptable {
 		else if (name.equals("javatypes"))
 			return new JavaScriptArray(javaTypes);
 		else if (name.equals("length"))
-			return new Integer(columnCount);
+			return columnCount;
 		else {
 			// I know, I know, you can simply pass the column name to
 			// ResultSet.getObject(). The reason I don't do that is because
@@ -139,12 +139,12 @@ public class JavaScriptResultSet implements Scriptable {
 			// without looking at it first, I can't tell the SQLException
 			// thrown because the column was not found from a SQLException
 			// thrown for some other reason.
-			Integer i = (Integer) columnMap.get(name.toUpperCase());
+			Integer i = columnMap.get(name.toUpperCase());
 			if (i == null)
 				return NOT_FOUND;
 			else
 				try {
-					return rs.getObject(i.intValue());
+					return rs.getObject(i);
 				} catch (SQLException e) {
 					throw new EvaluatorException(
 										MiscUtils.throwableToString(e));
@@ -156,6 +156,7 @@ public class JavaScriptResultSet implements Scriptable {
 		return "ResultSet";
 	}
 
+	@SuppressWarnings(value={"unchecked"})
 	public Object getDefaultValue(Class hint) {
 		StringBuffer buf = new StringBuffer();
 		buf.append("[ ");

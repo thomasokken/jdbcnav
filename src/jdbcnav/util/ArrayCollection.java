@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -22,7 +22,7 @@ import java.lang.reflect.*;
 import java.util.*;
 
 
-public class ArrayCollection implements Collection {
+public class ArrayCollection<T> implements Collection<T> {
 	private Object array;
 
 	public ArrayCollection(Object array) {
@@ -35,11 +35,11 @@ public class ArrayCollection implements Collection {
 		}
 	}
 
-	public boolean add(Object o) {
+	public boolean add(T o) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean addAll(Collection c) {
+	public boolean addAll(Collection<? extends T> c) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -57,12 +57,10 @@ public class ArrayCollection implements Collection {
 		return false;
 	}
 
-	public boolean containsAll(Collection c) {
-		Iterator iter = c.iterator();
-		while (iter.hasNext()) {
-			if (!contains(iter.next()))
+	public boolean containsAll(Collection<?> c) {
+		for (Object o : c)
+			if (!contains(o))
 				return false;
-		}
 		return true;
 	}
 
@@ -70,7 +68,7 @@ public class ArrayCollection implements Collection {
 		return Array.getLength(array) == 0;
 	}
 
-	public Iterator iterator() {
+	public Iterator<T> iterator() {
 		return new ArrayIterator();
 	}
 
@@ -78,11 +76,11 @@ public class ArrayCollection implements Collection {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean removeAll(Collection c) {
+	public boolean removeAll(Collection<?> c) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean retainAll(Collection c) {
+	public boolean retainAll(Collection<?> c) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -92,7 +90,7 @@ public class ArrayCollection implements Collection {
 
 	public Object[] toArray() {
 		int length = Array.getLength(array);
-		Class klass = array.getClass().getComponentType();
+		Class<?> klass = array.getClass().getComponentType();
 		Object[] ret;
 		if (klass.isPrimitive()) {
 			if (klass == Boolean.TYPE)
@@ -124,11 +122,12 @@ public class ArrayCollection implements Collection {
 		}
 		return ret;
 	}
-
-	public Object[] toArray(Object[] a) {
+	
+	@SuppressWarnings(value={"unchecked"})
+	public <T2> T2[] toArray(T2[] a) {
 		int length = Array.getLength(array);
 		if (a.length < length) {
-			a = (Object[]) Array.newInstance(a.getClass().getComponentType(),
+			a = (T2[]) Array.newInstance(a.getClass().getComponentType(),
 											 length);
 			System.arraycopy(array, 0, a, 0, length);
 		} else {
@@ -139,16 +138,17 @@ public class ArrayCollection implements Collection {
 		return a;
 	}
 
-	private class ArrayIterator implements Iterator {
+	private class ArrayIterator implements Iterator<T> {
 		private int index = 0;
 
 		public boolean hasNext() {
 			return index < Array.getLength(array);
 		}
 
-		public Object next() {
+		@SuppressWarnings(value={"unchecked"})
+		public T next() {
 			try {
-				return Array.get(array, index++);
+				return (T) Array.get(array, index++);
 			} catch (ArrayIndexOutOfBoundsException e) {
 				throw new NoSuchElementException();
 			}

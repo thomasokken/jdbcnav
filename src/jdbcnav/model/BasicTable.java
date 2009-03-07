@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -108,7 +108,7 @@ public abstract class BasicTable implements Table, Scriptable {
 					names[i] = columnNames[col[i]];
 					typeSpecs[i] = model.getTypeSpec(col[i]);
 				}
-				ArrayList data = new ArrayList();
+				ArrayList<Object[]> data = new ArrayList<Object[]>();
 				for (int i = 0; i < nrows; i++) {
 					Object[] row = new Object[ncols];
 					for (int j = 0; j < ncols; j++)
@@ -310,8 +310,7 @@ public abstract class BasicTable implements Table, Scriptable {
 	///// Comparable /////
 	//////////////////////
 
-	public int compareTo(Object o) {
-		Table that = (Table) o;
+	public int compareTo(Table that) {
 		int res = MiscUtils.strCmp(this.getCatalog(), that.getCatalog());
 		if (res != 0)
 			return res;
@@ -379,7 +378,7 @@ public abstract class BasicTable implements Table, Scriptable {
 			if (!needsCommit())
 				return Context.getUndefinedValue();
 			try {
-				ArrayList al = new ArrayList();
+				ArrayList<Table> al = new ArrayList<Table>();
 				al.add(BasicTable.this);
 				getDatabase().commitTables(al);
 			} catch (NavigatorException e) {
@@ -419,7 +418,7 @@ public abstract class BasicTable implements Table, Scriptable {
 					key = (Object[]) args[0];
 				else if (args[0] instanceof Scriptable) {
 					Scriptable arg = (Scriptable) args[0];
-					ArrayList al = new ArrayList();
+					ArrayList<Object> al = new ArrayList<Object>();
 					int i = 0;
 					Object obj;
 					while ((obj = arg.get(i, arg)) != Scriptable.NOT_FOUND) {
@@ -441,7 +440,7 @@ public abstract class BasicTable implements Table, Scriptable {
 				for (int j = 0; j < key.length; j++)
 					if (!key[j].equals(model.getValueAt(i, pkcol[j])))
 						continue outerloop;
-				return new Integer(i);
+				return i;
 			}
 			return null;
 		}
@@ -497,7 +496,7 @@ public abstract class BasicTable implements Table, Scriptable {
 					key = (Object[]) args[1];
 				else if (args[1] instanceof Scriptable) {
 					Scriptable arg = (Scriptable) args[1];
-					ArrayList al = new ArrayList();
+					ArrayList<Object> al = new ArrayList<Object>();
 					int i = 0;
 					Object obj;
 					while ((obj = arg.get(i, arg)) != Scriptable.NOT_FOUND) {
@@ -514,7 +513,7 @@ public abstract class BasicTable implements Table, Scriptable {
 
 			if (key.length != fk.getColumnCount())
 				return new Integer[0];
-			ArrayList matchingRows = new ArrayList();
+			ArrayList<Integer> matchingRows = new ArrayList<Integer>();
 			outerloop:
 			for (int i = 0; i < model.getRowCount(); i++) {
 				for (int j = 0; j < key.length; j++) {
@@ -523,7 +522,7 @@ public abstract class BasicTable implements Table, Scriptable {
 					if (o1 == null ? o2 != null : !o1.equals(o2))
 						continue outerloop;
 				}
-				matchingRows.add(new Integer(i));
+				matchingRows.add(i);
 			}
 			int n = matchingRows.size();
 			return new JavaScriptArray(matchingRows.toArray(new Integer[n]));
@@ -609,10 +608,10 @@ public abstract class BasicTable implements Table, Scriptable {
 			return row2FKFunction;
 		} else if (name.equals("length")) {
 			int n = model == null ? -1 : model.getRowCount();
-			return new Integer(n);
+			return n;
 		} else if (name.equals("width")) {
 			int n = model == null ? -1 : model.getColumnCount();
-			return new Integer(n);
+			return n;
 		} else if (name.equals("columns")) {
 			String[] colNames;
 			if (model == null)
@@ -640,6 +639,7 @@ public abstract class BasicTable implements Table, Scriptable {
 		return getClass().getName();
 	}
 
+	@SuppressWarnings(value={"unchecked"})
 	public Object getDefaultValue(Class hint) {
 		if (model == null)
 			return "(not loaded)";
@@ -834,7 +834,7 @@ public abstract class BasicTable implements Table, Scriptable {
 				return NOT_FOUND;
 			int ncols = model.getColumnCount();
 			if (name.equals("length"))
-				return new Integer(ncols);
+				return ncols;
 			if (rowIndex < 0 || rowIndex >= model.getRowCount())
 				return NOT_FOUND;
 			for (int col = 0; col < ncols; col++)
@@ -845,6 +845,7 @@ public abstract class BasicTable implements Table, Scriptable {
 		public String getClassName() {
 			return "Row";
 		}
+		@SuppressWarnings(value={"unchecked"})
 		public Object getDefaultValue(Class hint) {
 			if (model == null)
 				return "(not loaded)";

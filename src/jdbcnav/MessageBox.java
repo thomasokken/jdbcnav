@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -48,7 +48,7 @@ public class MessageBox {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		PrintWriter pw = new PrintWriter(bos);
 
-		ArrayList throwables = new ArrayList();
+		ArrayList<Throwable> throwables = new ArrayList<Throwable>();
 		boolean need_empty_line = false;
 
 		if (message != null) {
@@ -76,12 +76,12 @@ public class MessageBox {
 				break;
 		}
 		
-		for (Iterator iter = throwables.iterator(); iter.hasNext();) {
+		for (Throwable thr : throwables) {
 			if (need_empty_line)
 				pw.println();
 			else
 				need_empty_line = true;
-			((Throwable) iter.next()).printStackTrace(pw);
+			thr.printStackTrace(pw);
 		}
 
 		pw.flush();

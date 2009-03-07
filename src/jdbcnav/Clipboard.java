@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class Clipboard {
-	private ArrayList listeners;
+	private ArrayList<Listener> listeners;
 	private java.awt.datatransfer.Clipboard sysClip;
 	private static DataFlavor gridFlavor;
 	static {
@@ -62,7 +62,7 @@ public class Clipboard {
 
 	public Clipboard() {
 		sysClip = Toolkit.getDefaultToolkit().getSystemClipboard();
-		listeners = new ArrayList();
+		listeners = new ArrayList<Listener>();
 	}
 
 	public void put(Object data) {
@@ -116,9 +116,7 @@ public class Clipboard {
 
 	private void notifyListeners() {
 		Object data = get();
-		for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-			Listener listener = (Listener) iter.next();
+		for (Listener listener : listeners)
 			listener.clipboardUpdated(data);
-		}
 	}
 }

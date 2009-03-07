@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -34,9 +34,9 @@ public class MultiCommitDialog extends MyFrame {
 	private JCheckBox[] checkboxes;
 	private boolean doCommit;
 
-	public MultiCommitDialog(Table tt, Collection dirtyColl, boolean doCommit) {
+	public MultiCommitDialog(Table tt, Collection<Table> dirtyColl, boolean doCommit) {
 		super(doCommit ? "Commit Tables" : "Roll Back Tables");
-		this.dirty = (Table[]) dirtyColl.toArray(new Table[0]);
+		this.dirty = dirtyColl.toArray(new Table[0]);
 		this.doCommit = doCommit;
 
 		JPanel p = new JPanel(new MyGridBagLayout());
@@ -135,7 +135,7 @@ public class MultiCommitDialog extends MyFrame {
 
 	private void ok() {
 		if (doCommit) {
-			ArrayList selected = new ArrayList();
+			ArrayList<Table> selected = new ArrayList<Table>();
 			for (int i = 0; i < checkboxes.length; i++)
 				if (checkboxes[i].isSelected())
 					selected.add(dirty[i]);
@@ -174,12 +174,12 @@ public class MultiCommitDialog extends MyFrame {
 	}
 
 	private void selectRelated() {
-		ArrayList list = new ArrayList();
+		ArrayList<Integer> list = new ArrayList<Integer>();
 		boolean[] checked = new boolean[dirty.length];
-		HashMap tableMap = new HashMap();
+		HashMap<String, Integer> tableMap = new HashMap<String, Integer>();
 
 		for (int i = 0; i < dirty.length; i++) {
-			Integer ii = new Integer(i);
+			Integer ii = i;
 			if (checkboxes[i].isSelected()) {
 				checked[i] = true;
 				list.add(ii);
@@ -188,14 +188,14 @@ public class MultiCommitDialog extends MyFrame {
 		}
 
 		while (!list.isEmpty()) {
-			int n = ((Integer) list.remove(0)).intValue();
+			int n = list.remove(0);
 			Table t = dirty[n];
 			ForeignKey[] fks = t.getForeignKeys();
 			for (int i = 0; i < fks.length; i++) {
 				String qname = fks[i].getThatQualifiedName();
-				Integer ff = (Integer) tableMap.get(qname);
+				Integer ff = tableMap.get(qname);
 				if (ff != null) {
-					int f = ff.intValue();
+					int f = ff;
 					if (!checked[f]) {
 						checkboxes[f].setSelected(true);
 						checked[f] = true;
@@ -206,9 +206,9 @@ public class MultiCommitDialog extends MyFrame {
 			ForeignKey[] rks = t.getReferencingKeys();
 			for (int i = 0; i < rks.length; i++) {
 				String qname = rks[i].getThatQualifiedName();
-				Integer rr = (Integer) tableMap.get(qname);
+				Integer rr = tableMap.get(qname);
 				if (rr != null) {
-					int r = rr.intValue();
+					int r = rr;
 					if (!checked[r]) {
 						checkboxes[r].setSelected(true);
 						checked[r] = true;

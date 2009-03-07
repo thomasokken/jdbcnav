@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -35,7 +35,7 @@ public class FileDatabase extends BasicDatabase {
 	private File file;
 	private String title;
 	private String internalDriverName;
-	private ArrayList tables;
+	private ArrayList<FileTable> tables;
 	private static int dupCount = 0;
 
 	public static void open(Database.OpenCallback opencb) {
@@ -55,19 +55,18 @@ public class FileDatabase extends BasicDatabase {
 	private FileDatabase(File file) throws NavigatorException {
 		this.file = file;
 		title = file.getName();
-		tables = new ArrayList();
+		tables = new ArrayList<FileTable>();
 		internalDriverName = "Generic"; // fallback value in case the
 										// <internal_driver> element is missing
 		new FileDatabaseReader().read();
 	}
 
-	public FileDatabase(Collection t) throws NavigatorException {
+	public FileDatabase(Collection<? extends Table> t) throws NavigatorException {
 		title = "Duplicate " + (++dupCount);
 		file = null;
-		tables = new ArrayList();
+		tables = new ArrayList<FileTable>();
 		Database db = null;
-		for (Iterator iter = t.iterator(); iter.hasNext();) {
-			Table table = (Table) iter.next();
+		for (Table table : t) {
 			Database tdb = table.getDatabase();
 			if (db == null) {
 				db = tdb;
@@ -119,7 +118,7 @@ public class FileDatabase extends BasicDatabase {
 		return file == null;
 	}
 
-	public Collection getDirtyTables() {
+	public Collection<Table> getDirtyTables() {
 		return null;
 	}
 
@@ -127,7 +126,7 @@ public class FileDatabase extends BasicDatabase {
 		return false;
 	}
 
-	public void commitTables(Collection tables) throws NavigatorException {
+	public void commitTables(Collection<Table> tables) throws NavigatorException {
 		// Nothing to do -- FileDatabase is read-only so there's never
 		// anything to commit
 	}
@@ -142,10 +141,9 @@ public class FileDatabase extends BasicDatabase {
 		}
 	}
 
-	protected Collection getTables() throws NavigatorException {
-		ArrayList al = new ArrayList();
-		for (Iterator iter = tables.iterator(); iter.hasNext();) {
-			FileTable ft = (FileTable) iter.next();
+	protected Collection<TableSpec> getTables() throws NavigatorException {
+		ArrayList<TableSpec> al = new ArrayList<TableSpec>();
+		for (FileTable ft : tables) {
 			TableSpec ts = new TableSpec();
 			ts.catalog = ft.getCatalog();
 			ts.schema = ft.getSchema();
@@ -157,11 +155,9 @@ public class FileDatabase extends BasicDatabase {
 	}
 
 	public Table loadTable(String qualifiedName) throws NavigatorException {
-		for (Iterator iter = tables.iterator(); iter.hasNext();) {
-			Table t = (Table) iter.next();
+		for (FileTable t : tables)
 			if (qualifiedName.compareToIgnoreCase(t.getQualifiedName()) == 0)
 				return t;
-		}
 		throw new NavigatorException("Table " + qualifiedName
 					+ " not found in File Data Source.");
 	}
@@ -200,10 +196,8 @@ public class FileDatabase extends BasicDatabase {
 			XMLWriter xml = new XMLWriter(pw);
 			xml.openTag("database");
 			xml.wholeTag("internal_driver", internalDriverName);
-			for (Iterator iter = tables.iterator(); iter.hasNext();) {
-				FileTable ft = (FileTable) iter.next();
+			for (FileTable ft : tables)
 				dumpFileTable(xml, ft);
-			}
 			xml.closeTag();
 			pw.flush();
 			if (pw.checkError())
@@ -279,7 +273,7 @@ public class FileDatabase extends BasicDatabase {
 		xml.wholeTag("type", t.getType());
 		xml.wholeTag("remarks", t.getRemarks());
 		xml.wholeTag("qualified_name", t.getQualifiedName());
-		xml.wholeTag("column_count", Integer.toString(t.getColumnCount()));
+		xml.wholeTag("column_count", t.getColumnCount());
 		xml.openTag("column_names");
 		for (int i = 0; i < t.getColumnNames().length; i++)
 			xml.wholeTag("_" + i, t.getColumnNames()[i]);
@@ -309,25 +303,25 @@ public class FileDatabase extends BasicDatabase {
 	
 	private static void dumpTypeSpec(XMLWriter xml, TypeSpec spec) {
 		xml.openTag("type_spec");
-		xml.wholeTag("type", Integer.toString(spec.type));
+		xml.wholeTag("type", spec.type);
 		if (spec.type != TypeSpec.UNKNOWN
 				&& spec.type != TypeSpec.DATE
 				&& spec.type != TypeSpec.LONGVARCHAR
 				&& spec.type != TypeSpec.LONGVARNCHAR
 				&& spec.type != TypeSpec.LONGVARRAW) {
-			xml.wholeTag("size", Integer.toString(spec.size));
+			xml.wholeTag("size", spec.size);
 			if (spec.type == TypeSpec.FIXED || spec.type == TypeSpec.FLOAT)
 				xml.wholeTag("size_in_bits", spec.size_in_bits ? "true" : "false");
 		}
 		if (spec.type == TypeSpec.FIXED
 				|| spec.type == TypeSpec.INTERVAL_DS) {
-			xml.wholeTag("scale", Integer.toString(spec.scale));
+			xml.wholeTag("scale", spec.scale);
 			if (spec.type == TypeSpec.FIXED)
 				xml.wholeTag("scale_in_bits", spec.scale_in_bits ? "true" : "false");
 		}
 		if (spec.type == TypeSpec.FLOAT) {
-			xml.wholeTag("min_exp", Integer.toString(spec.min_exp));
-			xml.wholeTag("max_exp", Integer.toString(spec.max_exp));
+			xml.wholeTag("min_exp", spec.min_exp);
+			xml.wholeTag("max_exp", spec.max_exp);
 			xml.wholeTag("exp_of_2", spec.exp_of_2 ? "true" : "false");
 		}
 		xml.wholeTag("part_of_key", spec.part_of_key ? "true" : "false");
@@ -338,7 +332,7 @@ public class FileDatabase extends BasicDatabase {
 			xml.wholeTag("jdbc_size", spec.jdbcSize.toString());
 		if (spec.jdbcScale != null)
 			xml.wholeTag("jdbc_scale", spec.jdbcScale.toString());
-		xml.wholeTag("jdbc_sql_type", Integer.toString(spec.jdbcSqlType));
+		xml.wholeTag("jdbc_sql_type", spec.jdbcSqlType);
 		xml.wholeTag("jdbc_java_type", spec.jdbcJavaType);
 		xml.closeTag();
 	}
@@ -397,7 +391,7 @@ public class FileDatabase extends BasicDatabase {
 		TypeSpec[] specs = new TypeSpec[columns];
 		for (int i = 0; i < columns; i++)
 			specs[i] = data.getTypeSpec(i);
-		Class byteArrayClass = new byte[1].getClass();
+		Class<?> byteArrayClass = new byte[1].getClass();
 
 		xml.openTag("data");
 		for (int i = 0; i < rows; i++) {
@@ -407,7 +401,7 @@ public class FileDatabase extends BasicDatabase {
 				String s;
 				if (o == null)
 					continue;
-				Class k = specs[j].jdbcJavaClass;
+				Class<?> k = specs[j].jdbcJavaClass;
 				if (k == String.class
 						|| java.sql.Clob.class.isAssignableFrom(k))
 					s = FileUtils.encodeEntities((String) o);
@@ -434,14 +428,14 @@ public class FileDatabase extends BasicDatabase {
 		private BasicPrimaryKey pk;
 		private BasicForeignKey fk;
 		private BasicIndex index;
-		private ArrayList typeSpecs = new ArrayList();
-		private ArrayList fks = new ArrayList();
-		private ArrayList rks = new ArrayList();
-		private ArrayList indexes = new ArrayList();
+		private ArrayList<TypeSpec> typeSpecs = new ArrayList<TypeSpec>();
+		private ArrayList<ForeignKey> fks = new ArrayList<ForeignKey>();
+		private ArrayList<ForeignKey> rks = new ArrayList<ForeignKey>();
+		private ArrayList<Index> indexes = new ArrayList<Index>();
 		private BasicData tr;
-		private ArrayList elements = new ArrayList();
+		private ArrayList<String> elements = new ArrayList<String>();
 		private StringBuffer elementData = new StringBuffer();
-		private ArrayList arrayBuffer = new ArrayList();
+		private ArrayList<Object> arrayBuffer = new ArrayList<Object>();
 		private boolean inPrimaryKey;
 		private boolean inTypeSpec;
 
@@ -518,7 +512,7 @@ public class FileDatabase extends BasicDatabase {
 				tr = new BasicData();
 				tr.setColumnNames(table.getColumnNames());
 				tr.setTypeSpecs(table.getTypeSpecs());
-				tr.setData(new ArrayList());
+				tr.setData(new ArrayList<Object[]>());
 			}
 		}
 
@@ -526,7 +520,7 @@ public class FileDatabase extends BasicDatabase {
 														throws SAXException {
 			boolean error = true;
 			if (!elements.isEmpty()) {
-				String tos = (String) elements.remove(elements.size() - 1);
+				String tos = elements.remove(elements.size() - 1);
 				if (tos.equals(name))
 					error = false;
 			}
@@ -538,9 +532,9 @@ public class FileDatabase extends BasicDatabase {
 			if (name.equals("internal_driver"))
 				internalDriverName = data;
 			else if (name.equals("table")) {
-				table.setForeignKeys((ForeignKey[]) fks.toArray(new ForeignKey[0]));
-				table.setReferencingKeys((ForeignKey[]) rks.toArray(new ForeignKey[0]));
-				table.setIndexes((Index[]) indexes.toArray(new Index[0]));
+				table.setForeignKeys(fks.toArray(new ForeignKey[0]));
+				table.setReferencingKeys(rks.toArray(new ForeignKey[0]));
+				table.setIndexes(indexes.toArray(new Index[0]));
 				tables.add(table);
 			} else if (name.equals("catalog"))
 				table.setCatalog(data);
@@ -578,9 +572,9 @@ public class FileDatabase extends BasicDatabase {
 					fk.setThisKeyName(data);
 			} else if (name.equals("key_columns")) {
 				if (inPrimaryKey)
-					pk.setColumns((String[]) arrayBuffer.toArray(STRARRAY));
+					pk.setColumns(arrayBuffer.toArray(STRARRAY));
 				else
-					fk.setThisColumns((String[]) arrayBuffer.toArray(STRARRAY));
+					fk.setThisColumns(arrayBuffer.toArray(STRARRAY));
 			} else if (name.equals("foreign_key"))
 				fks.add(fk);
 			else if (name.equals("referencing_key"))
@@ -602,7 +596,7 @@ public class FileDatabase extends BasicDatabase {
 				fk.setThatKeyName(data);
 			else if (name.equals("foreign_columns")
 					|| name.equals("referencing_columns"))
-				fk.setThatColumns((String[]) arrayBuffer.toArray(STRARRAY));
+				fk.setThatColumns(arrayBuffer.toArray(STRARRAY));
 			else if (name.equals("update_rule"))
 				fk.setUpdateRule(data);
 			else if (name.equals("delete_rule"))
@@ -612,22 +606,22 @@ public class FileDatabase extends BasicDatabase {
 			else if (name.equals("index_name"))
 				index.setName(data);
 			else if (name.equals("index_columns"))
-				index.setColumns((String[]) arrayBuffer.toArray(STRARRAY));
+				index.setColumns(arrayBuffer.toArray(STRARRAY));
 			else if (name.equals("unique"))
 				index.setUnique(parseBoolean(data));
 			else if (name.equals("data"))
 				table.setData(tr);
 			else if (name.equals("row")) {
 				int n = tr.getColumnCount();
-				String[] sa = (String[]) arrayBuffer.toArray(new String[n]);
+				String[] sa = arrayBuffer.toArray(new String[n]);
 				Object[] oa = new Object[n];
-				Class byteArrayClass = new byte[1].getClass();
+				Class<?> byteArrayClass = new byte[1].getClass();
 				for (int i = 0; i < n; i++) {
 					String s = sa[i];
 					if (s == null)
 						continue;
 					TypeSpec spec = tr.getTypeSpec(i);
-					Class k = spec.jdbcJavaClass;
+					Class<?> k = spec.jdbcJavaClass;
 					try {
 						if (k == String.class
 								|| java.sql.Clob.class.isAssignableFrom(k))
@@ -658,8 +652,7 @@ public class FileDatabase extends BasicDatabase {
 				}
 				tr.addRow(oa);
 			} else if (name.equals("column_names")) {
-				table.setColumnNames((String[]) arrayBuffer.toArray(
-													new String[columnCount]));
+				table.setColumnNames(arrayBuffer.toArray(new String[columnCount]));
 			} else if (name.equals("size")) {
 				try {
 					spec.size = Integer.parseInt(data);
@@ -733,11 +726,9 @@ public class FileDatabase extends BasicDatabase {
 			} else if (name.equals("type_spec")) {
 				arrayBuffer.add(spec);
 			} else if (name.equals("type_specs")) {
-				table.setTypeSpecs((TypeSpec[]) arrayBuffer.toArray(
-													new TypeSpec[columnCount]));
+				table.setTypeSpecs(arrayBuffer.toArray(new TypeSpec[columnCount]));
 			} else if (name.equals("is_nullable")) {
-				table.setIsNullable((String[]) arrayBuffer.toArray(
-													new String[columnCount]));
+				table.setIsNullable(arrayBuffer.toArray(new String[columnCount]));
 			} else if (name.startsWith("_")) {
 				int n;
 				try {
@@ -765,8 +756,7 @@ public class FileDatabase extends BasicDatabase {
 			showSchemas = false;
 			showTableTypes = false;
 
-			for (Iterator iter = tables.iterator(); iter.hasNext();) {
-				FileTable ft = (FileTable) iter.next();
+			for (FileTable ft : tables) {
 				if (ft.getCatalog() != null)
 					showCatalogs = true;
 				if (ft.getSchema() != null)
@@ -807,8 +797,8 @@ public class FileDatabase extends BasicDatabase {
 			return super.objectToString(spec, o);
 		if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMP")) {
 			try {
-				Method m = spec.jdbcJavaClass.getMethod("timestampValue", null);
-				java.sql.Timestamp ts = (java.sql.Timestamp) m.invoke(o, null);
+				Method m = spec.jdbcJavaClass.getMethod("timestampValue", (Class[]) null);
+				java.sql.Timestamp ts = (java.sql.Timestamp) m.invoke(o, (Object[]) null);
 				return ts.toString();
 			} catch (Exception e) {}
 		}

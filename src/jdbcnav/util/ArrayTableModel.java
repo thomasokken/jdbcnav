@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -28,7 +28,7 @@ import jdbcnav.model.TypeSpecTableModel;
 public class ArrayTableModel extends AbstractTableModel
 							 implements SortedTableModel, TypeSpecTableModel {
 	private String[] names;
-	private Class[] classes;
+	private Class<?>[] classes;
 	private TypeSpec[] typeSpecs;
 	private Object[][] data;
 	private int[] sortPriority;
@@ -41,7 +41,7 @@ public class ArrayTableModel extends AbstractTableModel
 		typeSpecs = new TypeSpec[columns];
 		for (int i = 0; i < columns; i++) {
 			names[i] = (String) data[0][i];
-			classes[i] = (Class) data[1][i];
+			classes[i] = (Class<?>) data[1][i];
 			typeSpecs[i] = (TypeSpec) data[2][i];
 		}
 		int rows = data.length - 3;
@@ -52,7 +52,7 @@ public class ArrayTableModel extends AbstractTableModel
 		init();
 	}
 
-	public ArrayTableModel(String[] names, Class[] classes,
+	public ArrayTableModel(String[] names, Class<?>[] classes,
 									TypeSpec[] typeSpecs, Object[][] data) {
 		this.names = names;
 		this.classes = classes;
@@ -71,7 +71,7 @@ public class ArrayTableModel extends AbstractTableModel
 		}
 	}
 
-	public Class getColumnClass(int col) {
+	public Class<?> getColumnClass(int col) {
 		return classes[col];
 	}
 
@@ -142,10 +142,8 @@ public class ArrayTableModel extends AbstractTableModel
 
 	private RowComparator rowComparator = new RowComparator();
 
-	private class RowComparator implements Comparator {
-		public int compare(Object A, Object B) {
-			Object[] a = (Object[]) A;
-			Object[] b = (Object[]) B;
+	private class RowComparator implements Comparator<Object[]> {
+		public int compare(Object[] a, Object[] b) {
 			for (int i = 0; i < sortPriority.length; i++) {
 				int col = sortPriority[i];
 				int res = MiscUtils.compareObjects(a[col], b[col], true);

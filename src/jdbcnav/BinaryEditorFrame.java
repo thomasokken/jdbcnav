@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -737,15 +737,15 @@ public class BinaryEditorFrame extends MyFrame {
 
 
 		private class AddrDocument implements Document, CaretListener {
-			private ArrayList elements;
-			private ArrayList listeners;
+			private ArrayList<Element> elements;
+			private ArrayList<DocumentListener> listeners;
 			private Element root;
 			private int dot = 0;
 			private int mark = 0;
 			public AddrDocument() {
 				root = new AddrRootElement();
-				elements = new ArrayList();
-				listeners = new ArrayList();
+				elements = new ArrayList<Element>();
+				listeners = new ArrayList<DocumentListener>();
 				int lines = (data.length + 15) / 16;
 				if (lines == 0)
 					lines = 1;
@@ -765,12 +765,9 @@ public class BinaryEditorFrame extends MyFrame {
 					RemovedEvent removed = new RemovedEvent(this, root,
 												start, length, newlines);
 					for (int i = newlines; i < oldlines; i++)
-						removed.add((Element) elements.remove(newlines));
-					for (Iterator iter = listeners.iterator(); iter.hasNext();){
-						DocumentListener listener =
-										(DocumentListener) iter.next();
+						removed.add(elements.remove(newlines));
+					for (DocumentListener listener : listeners)
 						listener.removeUpdate(removed);
-					}
 				} else {
 					int start = getLength();
 					int length = newlines * 9 - start;
@@ -781,11 +778,8 @@ public class BinaryEditorFrame extends MyFrame {
 						inserted.add(line);
 						elements.add(line);
 					}
-					for (Iterator iter = listeners.iterator(); iter.hasNext();){
-						DocumentListener listener =
-										(DocumentListener) iter.next();
+					for (DocumentListener listener : listeners)
 						listener.insertUpdate(inserted);
-					}
 				}
 			}
 			public void caretUpdate(CaretEvent e) {
@@ -959,7 +953,7 @@ public class BinaryEditorFrame extends MyFrame {
 					return AddrDocument.this;
 				}
 				public Element getElement(int index) {
-					return (Element) elements.get(index);
+					return elements.get(index);
 				}
 				public int getElementCount() {
 					return elements.size();
@@ -993,15 +987,15 @@ public class BinaryEditorFrame extends MyFrame {
 		
 		
 		private class HexDocument implements Document, CaretListener {
-			private ArrayList elements;
-			private ArrayList listeners;
+			private ArrayList<Element> elements;
+			private ArrayList<DocumentListener> listeners;
 			private Element root;
 			private int dot = 0;
 			private int mark = 0;
 			public HexDocument() {
 				root = new HexRootElement();
-				elements = new ArrayList();
-				listeners = new ArrayList();
+				elements = new ArrayList<Element>();
+				listeners = new ArrayList<DocumentListener>();
 				int lines = (data.length + 15) / 16;
 				if (lines == 0)
 					lines = 1;
@@ -1037,7 +1031,7 @@ public class BinaryEditorFrame extends MyFrame {
 										start + clen, end - start - clen,
 										newlines);
 					for (int i = newlines; i < oldlines; i++)
-						removed.add((Element) elements.remove(newlines));
+						removed.add(elements.remove(newlines));
 					fireRemoved(listeners, removed);
 				}
 
@@ -1309,7 +1303,7 @@ public class BinaryEditorFrame extends MyFrame {
 					return HexDocument.this;
 				}
 				public Element getElement(int index) {
-					return (Element) elements.get(index);
+					return elements.get(index);
 				}
 				public int getElementCount() {
 					return elements.size();
@@ -1343,15 +1337,15 @@ public class BinaryEditorFrame extends MyFrame {
 		
 		
 		private class AsciiDocument implements Document, CaretListener {
-			private ArrayList elements;
-			private ArrayList listeners;
+			private ArrayList<Element> elements;
+			private ArrayList<DocumentListener> listeners;
 			private Element root;
 			private int dot = 0;
 			private int mark = 0;
 			public AsciiDocument() {
 				root = new AsciiRootElement();
-				elements = new ArrayList();
-				listeners = new ArrayList();
+				elements = new ArrayList<Element>();
+				listeners = new ArrayList<DocumentListener>();
 				int lines = (data.length + 15) / 16;
 				if (lines == 0)
 					lines = 1;
@@ -1387,7 +1381,7 @@ public class BinaryEditorFrame extends MyFrame {
 										start + clen, end - start - clen,
 										newlines);
 					for (int i = newlines; i < oldlines; i++)
-						removed.add((Element) elements.remove(newlines));
+						removed.add(elements.remove(newlines));
 					fireRemoved(listeners, removed);
 				}
 
@@ -1606,7 +1600,7 @@ public class BinaryEditorFrame extends MyFrame {
 					return AsciiDocument.this;
 				}
 				public Element getElement(int index) {
-					return (Element) elements.get(index);
+					return elements.get(index);
 				}
 				public int getElementCount() {
 					return elements.size();
@@ -1705,7 +1699,7 @@ public class BinaryEditorFrame extends MyFrame {
 			private int start;
 			private int length;
 			private int index;
-			private ArrayList children = new ArrayList();
+			private ArrayList<Element> children = new ArrayList<Element>();
 			public RemovedEvent(Document doc, Element root,
 								int start, int length, int index) {
 				this.doc = doc;
@@ -1739,7 +1733,7 @@ public class BinaryEditorFrame extends MyFrame {
 				return null;
 			}
 			public Element[] getChildrenRemoved() {
-				return (Element[]) children.toArray(new Element[0]);
+				return children.toArray(new Element[0]);
 			}
 			public Element getElement() {
 				return root;
@@ -1761,7 +1755,7 @@ public class BinaryEditorFrame extends MyFrame {
 			private int start;
 			private int length;
 			private int index;
-			private ArrayList children = new ArrayList();
+			private ArrayList<Element> children = new ArrayList<Element>();
 			public InsertedEvent(Document doc, Element root,
 								 int start, int length, int index) {
 				this.doc = doc;
@@ -1792,7 +1786,7 @@ public class BinaryEditorFrame extends MyFrame {
 			// DocumentEvent.ElementChange methods
 
 			public Element[] getChildrenAdded() {
-				return (Element[]) children.toArray(new Element[0]);
+				return children.toArray(new Element[0]);
 			}
 			public Element[] getChildrenRemoved() {
 				return null;
@@ -1811,25 +1805,19 @@ public class BinaryEditorFrame extends MyFrame {
 		}
 
 
-		private static void fireChanged(ArrayList listeners, DocumentEvent event) {
-			for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-				DocumentListener listener = (DocumentListener) iter.next();
+		private static void fireChanged(ArrayList<DocumentListener> listeners, DocumentEvent event) {
+			for (DocumentListener listener : listeners)
 				listener.changedUpdate(event);
-			}
 		}
 
-		private static void fireInserted(ArrayList listeners, DocumentEvent event) {
-			for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-				DocumentListener listener = (DocumentListener) iter.next();
+		private static void fireInserted(ArrayList<DocumentListener> listeners, DocumentEvent event) {
+			for (DocumentListener listener : listeners)
 				listener.insertUpdate(event);
-			}
 		}
 
-		private static void fireRemoved(ArrayList listeners, DocumentEvent event) {
-			for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-				DocumentListener listener = (DocumentListener) iter.next();
+		private static void fireRemoved(ArrayList<DocumentListener> listeners, DocumentEvent event) {
+			for (DocumentListener listener : listeners)
 				listener.removeUpdate(event);
-			}
 		}
 	}
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -42,12 +42,12 @@ public class Boot {
 	// String representations of directories and zip files that the user
 	// has requested to be added to the path. We use this to filter out
 	// duplicates.
-	private static TreeSet classPath = new TreeSet();
+	private static TreeSet<String> classPath = new TreeSet<String>();
 
 	// List of JarFiles and File objects (representing directories) to search,
 	// and the corresponding URL prefixes
-	private static ArrayList activeHandles = new ArrayList();
-	private static ArrayList activeUrls = new ArrayList();
+	private static ArrayList<Object> activeHandles = new ArrayList<Object>();
+	private static ArrayList<String> activeUrls = new ArrayList<String>();
 
 	private static String fileSep = System.getProperty("file.separator");
 	private static String pathSep = System.getProperty("path.separator");
@@ -172,7 +172,7 @@ public class Boot {
 			}
 
 			// Look for it in our "classpath"
-			for (Iterator iter = activeHandles.iterator(); iter.hasNext();) {
+			for (Iterator<Object> iter = activeHandles.iterator(); iter.hasNext();) {
 				Object handle = iter.next();
 				try {
 					if (handle instanceof JarFile)
@@ -258,7 +258,7 @@ public class Boot {
 			return findNextResource(name, new IntHolder(-1));
 		}
 
-		protected Enumeration findResources(String name) {
+		protected Enumeration<URL> findResources(String name) {
 			if (!name.startsWith("/"))
 				name = "/" + name;
 			return new ResourceEnumeration(name);
@@ -283,7 +283,7 @@ public class Boot {
 			// Scan the remaining classpath
 			while (index.value < activeHandles.size()) {
 				Object handle = activeHandles.get(index.value);
-				String urlPrefix = (String) activeUrls.get(index.value);
+				String urlPrefix = activeUrls.get(index.value);
 				index.value++;
 				if (handle instanceof JarFile) {
 					JarFile jar = (JarFile) handle;
@@ -321,11 +321,11 @@ public class Boot {
 			}
 		}
 
-		private class ResourceEnumeration implements Enumeration {
+		private class ResourceEnumeration implements Enumeration<URL> {
 			private IntHolder index;
 			private String name;
 			private boolean finished;
-			private Object next;
+			private URL next;
 			public ResourceEnumeration(String name) {
 				index = new IntHolder(-1);
 				this.name = name;
@@ -342,15 +342,15 @@ public class Boot {
 					finished = true;
 				return !finished;
 			}
-			public Object nextElement() {
+			public URL nextElement() {
 				if (finished)
 					throw new NoSuchElementException();
 				if (next != null) {
-					Object ret = next;
+					URL ret = next;
 					next = null;
 					return ret;
 				}
-				Object ret = findNextResource(name, index);
+				URL ret = findNextResource(name, index);
 				if (ret == null) {
 					finished = true;
 					throw new NoSuchElementException();

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -63,7 +63,7 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
 				|| dbType.equalsIgnoreCase("mediumint unsigned")
 				|| dbType.equalsIgnoreCase("bigint unsigned")) {
 			spec.type = TypeSpec.FIXED;
-			spec.size = size.intValue();
+			spec.size = size;
 			spec.size_in_bits = false;
 			spec.scale = 0;
 			spec.scale_in_bits = false;
@@ -88,9 +88,9 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
 				|| dbType.equalsIgnoreCase("numeric")
 				|| dbType.equalsIgnoreCase("fixed")) {
 			spec.type = TypeSpec.FIXED;
-			spec.size = size.intValue();
+			spec.size = size;
 			spec.size_in_bits = false;
-			spec.scale = scale.intValue();
+			spec.scale = scale;
 			spec.scale_in_bits = false;
 		} else if (dbType.equalsIgnoreCase("date")) {
 			spec.type = TypeSpec.DATE;
@@ -113,14 +113,14 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
 			// type exists at all... Anyway, I map it to a number, for
 			// export purposes.
 			spec.type = TypeSpec.FIXED;
-			spec.size = size.intValue();
+			spec.size = size;
 			spec.size_in_bits = false;
 			spec.scale = 0;
 			spec.scale_in_bits = false;
 		} else if (dbType.equalsIgnoreCase("char")
 				|| dbType.equalsIgnoreCase("character")) {
 			spec.type = TypeSpec.CHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equalsIgnoreCase("varchar")
 				|| dbType.equalsIgnoreCase("character varying")) {
 			// Despite the richness of character types claimed in the MySQL
@@ -135,22 +135,22 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
 			// TODO: it is possible to run DESCRIBE over JDBC; it returns
 			// a ResultSet in which char and binary *are* distinguishable.
 			spec.type = TypeSpec.VARCHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equalsIgnoreCase("nchar")
 				|| dbType.equalsIgnoreCase("national char")
 				|| dbType.equalsIgnoreCase("national character")) {
 			spec.type = TypeSpec.NCHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equalsIgnoreCase("national varchar")
 				|| dbType.equalsIgnoreCase("national character varying")) {
 			spec.type = TypeSpec.VARNCHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equalsIgnoreCase("binary")) {
 			spec.type = TypeSpec.RAW;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equalsIgnoreCase("varbinary")) {
 			spec.type = TypeSpec.VARRAW;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equalsIgnoreCase("tinytext")) {
 			spec.type = TypeSpec.VARCHAR;
 			spec.size = 255;

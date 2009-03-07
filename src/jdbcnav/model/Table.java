@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -21,7 +21,7 @@ package jdbcnav.model;
 import jdbcnav.ResultSetTableModel;
 import jdbcnav.util.NavigatorException;
 
-public interface Table extends Comparable {
+public interface Table extends Comparable<Table> {
 	Database getDatabase();
 	String getCatalog();
 	String getSchema();

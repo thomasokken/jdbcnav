@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -69,7 +69,7 @@ public class TableFrame extends QueryResultFrame {
 
 		// Apply FK highlight color
 		ForeignKey[] fks = dbTable.getForeignKeys();
-		TreeSet fkcol = new TreeSet();
+		TreeSet<String> fkcol = new TreeSet<String>();
 		for (int i = 0; i < fks.length; i++) {
 			ForeignKey fk = fks[i];
 			for (int j = 0; j < fk.getColumnCount(); j++)
@@ -394,7 +394,7 @@ public class TableFrame extends QueryResultFrame {
 		private boolean allowAutoScroll = true;
 		private int[] keyIndex;
 		private Object[] keyValue;
-		private ArrayList rowsToSelect = new ArrayList();
+		private ArrayList<Integer> rowsToSelect = new ArrayList<Integer>();
 		private Rectangle selectRect;
 
 		public RowSelectionHandler(int[] keyIndex, Object[] keyValue) {
@@ -423,7 +423,7 @@ public class TableFrame extends QueryResultFrame {
 							if (o1 == null ? o2 != null : !o1.equals(o2))
 								break matchvalue;
 						}
-						rowsToSelect.add(new Integer(i));
+						rowsToSelect.add(i);
 						workToDo = true;
 					}
 				}
@@ -457,8 +457,7 @@ public class TableFrame extends QueryResultFrame {
 			if (rowsToSelect.size() == 0)
 				return;
 			boolean needToScroll = false;
-			for (Iterator iter = rowsToSelect.iterator(); iter.hasNext();) {
-				int row = ((Integer) iter.next()).intValue();
+			for (int row : rowsToSelect) {
 				table.addRowSelectionInterval(row, row);
 				if (allowAutoScroll) {
 					Rectangle r2 = table.getCellRect(row, -1, true);
@@ -506,7 +505,7 @@ public class TableFrame extends QueryResultFrame {
 		private int[] colIndexes;
 		private String[] colNames;
 		private boolean allowNull;
-		private ArrayList listeners = new ArrayList();
+		private ArrayList<StateListener> listeners = new ArrayList<StateListener>();
 		public FkData(Data data, boolean allowNull,
 							String[] oldNames, String[] newNames) {
 			this.data = data;
@@ -563,10 +562,11 @@ public class TableFrame extends QueryResultFrame {
 		public void removeStateListener(StateListener listener) {
 			listeners.remove(listener);
 		}
+		@SuppressWarnings(value={"unchecked"})
 		public void stateChanged(int state, int row) {
-			ArrayList al = (ArrayList) listeners.clone();
+			ArrayList<StateListener> al = (ArrayList<StateListener>) listeners.clone();
 			for (int i = 0; i < al.size(); i++)
-				((StateListener) al.get(i)).stateChanged(state, row + (allowNull ? 1 : 0));
+				al.get(i).stateChanged(state, row + (allowNull ? 1 : 0));
 			if (state == FINISHED)
 				listeners.clear();
 		}

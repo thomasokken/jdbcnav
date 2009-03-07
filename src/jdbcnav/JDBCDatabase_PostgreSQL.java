@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -135,7 +135,7 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 			spec.exp_of_2 = true;
 		} else if (dbType.equals("numeric")
 				|| dbType.equals("decimal")) {
-			if (size.intValue() == 65535 && scale.intValue() == 65531) {
+			if (size == 65535 && scale == 65531) {
 				// TODO: This type does not fit in the current TypeSpec
 				// model. It is an arbitrary-precision (up to 1000 digits)
 				// number without scale coercion, or, to put it differently,
@@ -152,9 +152,9 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 				spec.exp_of_2 = true;
 			} else {
 				spec.type = TypeSpec.FIXED;
-				spec.size = size.intValue();
+				spec.size = size;
 				spec.size_in_bits = false;
-				spec.scale = scale.intValue();
+				spec.scale = scale;
 				spec.scale_in_bits = false;
 			}
 		} else if (dbType.equals("money")) {
@@ -169,38 +169,38 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 			spec.type = TypeSpec.DATE;
 		} else if (dbType.equals("time")) {
 			spec.type = TypeSpec.TIME;
-			spec.size = scale.intValue();
+			spec.size = scale;
 		} else if (dbType.equals("time with time zone")
 				|| dbType.equals("timetz")) {
 			spec.type = TypeSpec.TIME_TZ;
-			spec.size = scale.intValue();
+			spec.size = scale;
 		} else if (dbType.equals("timestamp")) {
 			spec.type = TypeSpec.TIMESTAMP;
-			spec.size = scale.intValue();
+			spec.size = scale;
 		} else if (dbType.equals("timestamp with time zone")
 				|| dbType.equals("timestamptz")) {
 			spec.type = TypeSpec.TIMESTAMP_TZ;
-			spec.size = scale.intValue();
+			spec.size = scale;
 		} else if (dbType.equals("interval")) {
 			// Yuck; PostgreSQL does not distinguish between
 			// INTERVAL YEAR TO MONTH and INTERVAL DAY TO SECOND; it has one
 			// type that is basically INTERVAL YEAR TO SECOND.
 			spec.type = TypeSpec.INTERVAL_YS;
-			spec.size = scale.intValue();
+			spec.size = scale;
 		} else if (dbType.equals("bytea")) {
 			spec.type = TypeSpec.LONGVARRAW;
 		} else if (dbType.equals("char")
 				|| dbType.equals("bpchar")
 				|| dbType.equals("character")) {
 			spec.type = TypeSpec.CHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("varchar")
 				|| dbType.equals("character varying")) {
-			if (size.intValue() == 0)
+			if (size == 0)
 				spec.type = TypeSpec.LONGVARCHAR;
 			else {
 				spec.type = TypeSpec.VARCHAR;
-				spec.size = size.intValue();
+				spec.size = size;
 			}
 		} else if (dbType.equals("text")) {
 			spec.type = TypeSpec.LONGVARCHAR;
@@ -214,10 +214,10 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 
 		if (dbType.equals("numeric")
 				|| dbType.equals("decimal")) {
-			if (size.intValue() == 65535 && scale.intValue() == 65531) {
+			if (size == 65535 && scale == 65531) {
 				size = null;
 				scale = null;
-			} else if (scale.intValue() == 0)
+			} else if (scale == 0)
 				scale = null;
 		} else if (dbType.equals("interval")
 				|| dbType.equals("time")
@@ -242,7 +242,7 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 
 		if ((dbType.equals("varchar")
 					|| dbType.equals("character varying"))
-				&& size.intValue() == 0)
+				&& size == 0)
 			size = null;
 
 		if (dbType.equals("bpchar"))
@@ -266,19 +266,19 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 			long days = 0, hours = 0, minutes = 0;
 			double seconds = 0;
 			try {
-				Class c = o.getClass();
-				Method m = c.getMethod("getYears", null);
-				years = ((Integer) m.invoke(o, null)).intValue();
-				m = c.getMethod("getMonths", null);
-				months = ((Integer) m.invoke(o, null)).intValue();
-				m = c.getMethod("getDays", null);
-				days = ((Integer) m.invoke(o, null)).intValue();
-				m = c.getMethod("getHours", null);
-				hours = ((Integer) m.invoke(o, null)).intValue();
-				m = c.getMethod("getMinutes", null);
-				minutes = ((Integer) m.invoke(o, null)).intValue();
-				m = c.getMethod("getSeconds", null);
-				seconds = ((Double) m.invoke(o, null)).doubleValue();
+				Class<?> c = o.getClass();
+				Method m = c.getMethod("getYears", (Class[]) null);
+				years = (Integer) m.invoke(o, (Object[]) null);
+				m = c.getMethod("getMonths", (Class[]) null);
+				months = (Integer) m.invoke(o, (Object[]) null);
+				m = c.getMethod("getDays", (Class[]) null);
+				days = (Integer) m.invoke(o, (Object[]) null);
+				m = c.getMethod("getHours", (Class[]) null);
+				hours = (Integer) m.invoke(o, (Object[]) null);
+				m = c.getMethod("getMinutes", (Class[]) null);
+				minutes = (Integer) m.invoke(o, (Object[]) null);
+				m = c.getMethod("getSeconds", (Class[]) null);
+				seconds = (Double) m.invoke(o, (Object[]) null);
 			} catch (Exception e) {
 				return o;
 			}
@@ -309,14 +309,13 @@ public class JDBCDatabase_PostgreSQL extends JDBCDatabase {
 			n -= minutes * 60000000000L;
 			double seconds = n / 1000000000.0;
 			try {
-				Class c = Class.forName("org.postgresql.util.PGInterval");
-				Constructor cnstr = c.getConstructor(new Class [] {
+				Class<?> c = Class.forName("org.postgresql.util.PGInterval");
+				Constructor<?> cnstr = c.getConstructor(new Class [] {
 									int.class, int.class, int.class,
 									int.class, int.class, double.class });
 				return cnstr.newInstance(new Object[] {
-									new Integer(years), new Integer(months),
-									new Integer(days), new Integer(hours),
-									new Integer(minutes), new Double(seconds) });
+									years, months, days,
+									hours, minutes, seconds });
 			} catch (Exception e) {
 				e.printStackTrace();
 				return o;

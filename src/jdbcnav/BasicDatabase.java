@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -95,12 +95,11 @@ public abstract class BasicDatabase implements Database {
 	}
 
 	private void edit() {
-		Collection selection = browser.getSelectedNodes();
-		for (Iterator iter = selection.iterator(); iter.hasNext();) {
-			Object o = iter.next();
-			if (!(o instanceof MyNode))
+		Collection<BrowserNode> selection = browser.getSelectedNodes();
+		for (BrowserNode bn : selection) {
+			if (!(bn instanceof MyNode))
 				continue;
-			MyNode n = (MyNode) o;
+			MyNode n = (MyNode) bn;
 			if (!n.isLeaf())
 				continue;
 			MyNode target;
@@ -124,12 +123,11 @@ public abstract class BasicDatabase implements Database {
 	}
 
 	private void details() {
-		Collection selection = browser.getSelectedNodes();
-		for (Iterator iter = selection.iterator(); iter.hasNext();) {
-			Object o = iter.next();
-			if (!(o instanceof MyNode))
+		Collection<BrowserNode> selection = browser.getSelectedNodes();
+		for (BrowserNode bn : selection) {
+			if (!(bn instanceof MyNode))
 				continue;
-			MyNode n = (MyNode) o;
+			MyNode n = (MyNode) bn;
 			if (!n.isLeaf())
 				continue;
 			MyNode target;
@@ -170,7 +168,7 @@ public abstract class BasicDatabase implements Database {
 	}
 
 	private void generateScript2(int what, boolean fqtn, BrowserFrame other) {
-		Collection thisTS, otherTS;
+		Collection<Table> thisTS, otherTS;
 		try {
 			thisTS = getSelectedTables();
 			otherTS = null;
@@ -198,11 +196,11 @@ public abstract class BasicDatabase implements Database {
 	private class GenerateScript3 implements Runnable {
 		private int what;
 		private boolean fqtn;
-		private Collection thisTS;
-		private Collection otherTS;
+		private Collection<Table> thisTS;
+		private Collection<Table> otherTS;
 
-		public GenerateScript3(int what, boolean fqtn, Collection thisTS,
-													   Collection otherTS) {
+		public GenerateScript3(int what, boolean fqtn, Collection<Table> thisTS,
+													   Collection<Table> otherTS) {
 			this.what = what;
 			this.fqtn = fqtn;
 			this.thisTS = thisTS;
@@ -321,12 +319,11 @@ public abstract class BasicDatabase implements Database {
 	private void removeOrphans() {
 		if (orphanage == null)
 			return;
-		Collection selection = browser.getSelectedNodes();
-		for (Iterator iter = selection.iterator(); iter.hasNext();) {
-			Object o = iter.next();
-			if (!(o instanceof MyNode))
+		Collection<BrowserNode> selection = browser.getSelectedNodes();
+		for (BrowserNode bn : selection) {
+			if (!(bn instanceof MyNode))
 				continue;
-			MyNode n = (MyNode) o;
+			MyNode n = (MyNode) bn;
 			if (n.parent != orphanage || n.edit != null || n.details != null)
 				continue;
 			orphanage.removeChild(n);
@@ -388,19 +385,19 @@ public abstract class BasicDatabase implements Database {
 				else
 					res |= 2;
 		}
-		Iterator iter = n.getChildren();
+		Iterator<MyNode> iter = n.getChildren();
 		if (iter != null)
 			while (res != 3 && iter.hasNext())
-				res |= checkDirty((MyNode) iter.next());
+				res |= checkDirty(iter.next());
 		return res;
 	}
 
 	private void unloadModels(MyNode n) {
-		Iterator iter = n.getChildren();
-		ArrayList kidsToRemove = new ArrayList();
+		Iterator<MyNode> iter = n.getChildren();
+		ArrayList<MyNode> kidsToRemove = new ArrayList<MyNode>();
 		if (iter != null)
 			while (iter.hasNext()) {
-				MyNode child = (MyNode) iter.next();
+				MyNode child = iter.next();
 				if (child.isLeaf()) {
 					if (child.table != null) {
 						if (child.table.getQualifiedName().indexOf("...")
@@ -429,13 +426,13 @@ public abstract class BasicDatabase implements Database {
 				} else
 					unloadModels(child);
 			}
-		for (iter = kidsToRemove.iterator(); iter.hasNext();)
-			n.removeChild((MyNode) iter.next());
+		for (MyNode child : kidsToRemove)
+			n.removeChild(child);
 	}
 
 	private void reloadTree() {
 		Main.log(3, "BasicDatabase.reloadTree()");
-		Collection tables;
+		Collection<TableSpec> tables;
 		try {
 			tables = getTables();
 		} catch (NavigatorException e) {
@@ -443,8 +440,7 @@ public abstract class BasicDatabase implements Database {
 			return;
 		}
 		rootNode.markDeadRecursively();
-		for (Iterator iter = tables.iterator(); iter.hasNext();) {
-			TableSpec ts = (TableSpec) iter.next();
+		for (TableSpec ts : tables) {
 			Main.log(3, "catalog=\"" + ts.catalog + "\" schema=\"" + ts.schema + "\" type=\"" + ts.type + "\" name=\"" + ts.name + "\"");
 			MyNode n = rootNode;
 
@@ -488,7 +484,7 @@ public abstract class BasicDatabase implements Database {
 				tableNode.dead = false;
 		}
 
-		ArrayList newOrphans = new ArrayList();
+		ArrayList<String> newOrphans = new ArrayList<String>();
 		boolean orphanageDidNotExistYet = orphanage == null;
 		rootNode.reapRecursively(newOrphans);
 		if (orphanageDidNotExistYet && orphanage != null)
@@ -500,10 +496,10 @@ public abstract class BasicDatabase implements Database {
 				buf.append("The table\n\n");
 			else
 				buf.append("The tables\n\n");
-			Collections.sort(newOrphans, caseInsensitiveStringComparator);
-			for (Iterator iter = newOrphans.iterator(); iter.hasNext();) {
+			Collections.sort(newOrphans, String.CASE_INSENSITIVE_ORDER);
+			for (String orphanName : newOrphans) {
 				buf.append("	");
-				buf.append(iter.next());
+				buf.append(orphanName);
 				buf.append("\n");
 			}
 			if (newOrphans.size() == 1)
@@ -531,15 +527,6 @@ public abstract class BasicDatabase implements Database {
 		}
 	}
 
-	private static final Comparator caseInsensitiveStringComparator =
-					new Comparator() {
-						public int compare(Object a, Object b) {
-							String sa = (String) a;
-							String sb = (String) b;
-							return sa.compareToIgnoreCase(sb);
-						}
-					};
-
 	/**
 	 * This method is called whenever a "Refresh" operation removes a table
 	 * node from the tree model. If it returns 'true', the table is renamed
@@ -560,7 +547,7 @@ public abstract class BasicDatabase implements Database {
 	}
 
 
-	protected abstract Collection getTables() throws NavigatorException;
+	protected abstract Collection<TableSpec> getTables() throws NavigatorException;
 
 	public TableFrame showTableFrame(String qualifiedName) {
 		MyNode n = findTableNode(qualifiedName);
@@ -632,18 +619,16 @@ public abstract class BasicDatabase implements Database {
 	public boolean hasOrphans() {
 		if (orphanage == null)
 			return false;
-		Iterator iter = orphanage.getChildren();
+		Iterator<MyNode> iter = orphanage.getChildren();
 		return iter != null && iter.hasNext();
 	}
 
-	public Collection getSelectedTables() throws NavigatorException {
-		Collection nodes = browser.getSelectedNodes();
-		ArrayList tables = new ArrayList();
-		Iterator iter = nodes.iterator();
-		while (iter.hasNext()) {
-			Object o = iter.next();
-			if (o instanceof MyNode) {
-				MyNode n = (MyNode) o;
+	public Collection<Table> getSelectedTables() throws NavigatorException {
+		Collection<BrowserNode> nodes = browser.getSelectedNodes();
+		ArrayList<Table> tables = new ArrayList<Table>();
+		for (BrowserNode bn : nodes) {
+			if (bn instanceof MyNode) {
+				MyNode n = (MyNode) bn;
 				if (n.isLeaf())
 					tables.add(n.getTable());
 			}
@@ -714,7 +699,7 @@ public abstract class BasicDatabase implements Database {
 	}
 
 	public String[] parseQualifiedName(String qualifiedName) {
-		ArrayList al = new ArrayList();
+		ArrayList<String> al = new ArrayList<String>();
 		String q = getIdentifierQuoteString();
 		if (q.equals(" ")) {
 			StringTokenizer tok = new StringTokenizer(qualifiedName, ".");
@@ -742,15 +727,15 @@ public abstract class BasicDatabase implements Database {
 		int i = al.size();
 		String name, schema, catalog;
 		if (i > 0)
-			name = (String) al.get(--i);
+			name = al.get(--i);
 		else
 			name = null;
 		if (showSchemas() && i > 0)
-			schema = (String) al.get(--i);
+			schema = al.get(--i);
 		else
 			schema = null;
 		if (showCatalogs() && i > 0)
-			catalog = (String) al.get(--i);
+			catalog = al.get(--i);
 		else
 			catalog = null;
 
@@ -805,9 +790,9 @@ public abstract class BasicDatabase implements Database {
 				return null;
 		}
 		if (showTableTypes()) {
-			Iterator iter = dn.getChildren();
+			Iterator<MyNode> iter = dn.getChildren();
 			while (iter.hasNext()) {
-				MyNode dn2 = (MyNode) iter.next();
+				MyNode dn2 = iter.next();
 				MyNode tn = dn2.getChildNamed(name);
 				if (tn != null)
 					return tn;
@@ -819,8 +804,8 @@ public abstract class BasicDatabase implements Database {
 
 	private MyNode findTableNodeBruteForce(String catalog, String schema,
 											String name, MyNode n) {
-		for (Iterator iter = n.getChildren(); iter.hasNext();) {
-			MyNode c = (MyNode) iter.next();
+		for (Iterator<MyNode> iter = n.getChildren(); iter.hasNext();) {
+			MyNode c = iter.next();
 			if (c.isLeaf()) {
 				if (!c.name.equalsIgnoreCase(name))
 					continue;
@@ -845,27 +830,25 @@ public abstract class BasicDatabase implements Database {
 		return null;
 	}
 
-	private static final Comparator myStringComparator =
-			new Comparator() {
+	private static final Comparator<String> myStringComparator =
+			new Comparator<String>() {
 				// ORPHANAGE comes last, null comes last but before
 				// ORPHANAGE, and everything else is case insensitive
 				// alphabetical.
-				public int compare(Object a, Object b) {
-					String sa = (String) a;
-					String sb = (String) b;
-					return sa == ORPHANAGE
-								? sb == ORPHANAGE
+				public int compare(String a, String b) {
+					return a == ORPHANAGE
+								? b == ORPHANAGE
 									? 0
 									: 1
-								: sb == ORPHANAGE
+								: b == ORPHANAGE
 									? -1
-									: sa == null
-										? sb == null
+									: a == null
+										? b == null
 											? 0
 											: 1
-										: sb == null
+										: b == null
 											? -1
-											: sa.compareToIgnoreCase(sb);
+											: a.compareToIgnoreCase(b);
 				}
 			};
 
@@ -876,7 +859,7 @@ public abstract class BasicDatabase implements Database {
 		public String name;
 		public boolean dead;
 		// Node stuff
-		public TreeMap children;
+		public TreeMap<String, MyNode> children;
 		// Leaf stuff
 		public String qualifiedName;
 		public Table table;
@@ -913,7 +896,7 @@ public abstract class BasicDatabase implements Database {
 			return table;
 		}
 
-		public Iterator getChildren() {
+		public Iterator<MyNode> getChildren() {
 			if (children == null)
 				return null;
 			else
@@ -932,8 +915,8 @@ public abstract class BasicDatabase implements Database {
 		public boolean busy() {
 			if (children == null)
 				return edit != null || details != null;
-			for (Iterator iter = children.values().iterator(); iter.hasNext();)
-				if (((MyNode) iter.next()).busy())
+			for (MyNode n : children.values())
+				if (n.busy())
 					return true;
 			return false;
 		}
@@ -944,7 +927,7 @@ public abstract class BasicDatabase implements Database {
 			dead = false;
 			child.parent = this;
 			if (children == null)
-				children = new TreeMap(myStringComparator);
+				children = new TreeMap<String, MyNode>(myStringComparator);
 			children.put(child.name, child);
 			if (displayNode != null) {
 				// Aargh. The keys in the TreeMap are sorted! Isn't there
@@ -952,9 +935,8 @@ public abstract class BasicDatabase implements Database {
 				// set? (Good thing this code does not get executed when the
 				// tree is first built!)
 				int index = 0;
-				for (Iterator iter = children.values().iterator();
-													iter.hasNext();) {
-					if (child == iter.next()) {
+				for (MyNode n : children.values()) {
+					if (child == n) {
 						displayNode.childAddedAt(index, child);
 						break;
 					}
@@ -969,9 +951,8 @@ public abstract class BasicDatabase implements Database {
 				// an efficient way to find a key's index within the key
 				// set?
 				int index = 0;
-				for (Iterator iter = children.values().iterator();
-													iter.hasNext();) {
-					if (child == iter.next()) {
+				for (MyNode n : children.values()) {
+					if (child == n) {
 						displayNode.childRemovedAt(index);
 						break;
 					}
@@ -985,7 +966,7 @@ public abstract class BasicDatabase implements Database {
 			if (children == null)
 				return null;
 			else
-				return (MyNode) children.get(name);
+				return children.get(name);
 		}
 
 		public void markDeadRecursively() {
@@ -994,18 +975,16 @@ public abstract class BasicDatabase implements Database {
 			if (edit == null && details == null)
 				dead = true;
 			if (children != null)
-				for (Iterator iter = children.values().iterator(); iter.hasNext();)
-					((MyNode) iter.next()).markDeadRecursively();
+				for (MyNode n : children.values())
+					n.markDeadRecursively();
 		}
 
-		public void reapRecursively(ArrayList newOrphans) {
+		public void reapRecursively(ArrayList<String> newOrphans) {
 			if (children != null) {
 				int index = 0;
-				ArrayList removed = null;
-				for (Iterator iter = children.entrySet().iterator();
-														iter.hasNext();) {
-					Map.Entry entry = (Map.Entry) iter.next();
-					MyNode child = (MyNode) entry.getValue();
+				ArrayList<String> removed = null;
+				for (Map.Entry<String, MyNode> entry : children.entrySet()) {
+					MyNode child = entry.getValue();
 					child.reapRecursively(newOrphans);
 					if (child.dead) {
 						if (displayNode != null)
@@ -1015,7 +994,7 @@ public abstract class BasicDatabase implements Database {
 						// Iterators returned by TreeMap do not support calling
 						// next() again after remove().
 						if (removed == null)
-							removed = new ArrayList();
+							removed = new ArrayList<String>();
 						removed.add(entry.getKey());
 						if (child.table != null)
 							if (shouldMoveToOrphanage(child.table)) {
@@ -1029,9 +1008,8 @@ public abstract class BasicDatabase implements Database {
 					}
 				}
 				if (removed != null)
-					for (Iterator r_iter = removed.iterator();
-														r_iter.hasNext();)
-						children.remove((String) r_iter.next());
+					for (String childName : removed)
+						children.remove(childName);
 			}
 		}
 	}
@@ -1052,7 +1030,7 @@ public abstract class BasicDatabase implements Database {
 				|| spec.type == TypeSpec.INTERVAL_YS)
 			return ((Interval) o).toString(spec);
 	
-		Class klass = spec.jdbcJavaClass;
+		Class<?> klass = spec.jdbcJavaClass;
 
 		if (java.sql.Date.class.isAssignableFrom(klass)
 				|| java.sql.Time.class.isAssignableFrom(klass)
@@ -1105,7 +1083,7 @@ public abstract class BasicDatabase implements Database {
 					|| spec.type == TypeSpec.INTERVAL_YS)
 				return new Interval(spec, s);
 
-			Class klass = spec.jdbcJavaClass;
+			Class<?> klass = spec.jdbcJavaClass;
 			if (java.sql.Time.class.isAssignableFrom(klass))
 				return java.sql.Time.valueOf(s);
 			if (java.sql.Date.class.isAssignableFrom(klass))
@@ -1115,7 +1093,7 @@ public abstract class BasicDatabase implements Database {
 			if (java.util.Date.class.isAssignableFrom(klass))
 				return new java.util.Date(java.sql.Timestamp.valueOf(s).getTime());
 
-			java.lang.reflect.Constructor cnstr =
+			java.lang.reflect.Constructor<?> cnstr =
 						klass.getConstructor(new Class[] { String.class });
 			return cnstr.newInstance(new Object[] { s });
 		} catch (Exception e) {
@@ -1124,7 +1102,7 @@ public abstract class BasicDatabase implements Database {
 			// use this constructor if it is available, though, but for 1.4
 			// compatibility, I have to invoke it using reflection.
 			try {
-				java.lang.reflect.Constructor cnstr =
+				java.lang.reflect.Constructor<?> cnstr =
 						IllegalArgumentException.class.getConstructor(
 										new Class[] { Throwable.class });
 				throw (IllegalArgumentException)

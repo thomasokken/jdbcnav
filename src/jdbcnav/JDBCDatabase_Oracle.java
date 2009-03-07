@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -84,8 +84,8 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 	 * tables with names like BIN$JW/jUvqZ0KbgQKjAagAJqw==$0
 	 * So, I query SYS.ALL_TABLES, SYS.ALL_VIEWS, and SYS.ALL_SYNONYMS instead.
 	 */
-	protected Collection getTables() throws NavigatorException {
-		ArrayList tables = new ArrayList();
+	protected Collection<TableSpec> getTables() throws NavigatorException {
+		ArrayList<TableSpec> tables = new ArrayList<TableSpec>();
 		Statement stmt = null;
 		final String[][] typeQueryMap = new String[][] {
 			{ "TABLE", "select owner, table_name from sys.all_tables" },
@@ -187,7 +187,7 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 			String schema = table.getSchema();
 			PrimaryKey pk = table.getPrimaryKey();
 			String pkName = pk == null ? null : pk.getName();
-			ArrayList maybeIndexes = new ArrayList();
+			ArrayList<BasicIndex> maybeIndexes = new ArrayList<BasicIndex>();
 
 			stmt = con.prepareStatement("select index_name, uniqueness from user_indexes where table_owner = ? and table_name = ? order by index_name");
 			stmt.setString(1, schema);
@@ -208,10 +208,9 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 			stmt = null;
 
 			stmt = con.prepareStatement("select column_name from user_ind_columns where index_name = ? order by column_position");
-			ArrayList indexes = new ArrayList();
-			for (Iterator iter = maybeIndexes.iterator(); iter.hasNext();) {
-				BasicIndex index = (BasicIndex) iter.next();
-				ArrayList columns = new ArrayList();
+			ArrayList<Index> indexes = new ArrayList<Index>();
+			for (BasicIndex index : maybeIndexes) {
+				ArrayList<String> columns = new ArrayList<String>();
 				stmt.setString(1, index.getName());
 				rs = stmt.executeQuery();
 				while (rs.next())
@@ -222,13 +221,13 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 				// index. Dunno what those are, actually, but we don't want
 				// them reported as indexes in the table details window.
 				if (!columns.isEmpty()) {
-					index.setColumns((String[]) columns.toArray(new String[0]));
+					index.setColumns(columns.toArray(new String[0]));
 					indexes.add(index);
 				}
 			}
 			stmt.close();
 			stmt = null;
-			return (Index[]) indexes.toArray(new Index[0]);
+			return indexes.toArray(new Index[0]);
 		} catch (SQLException e) {
 			throw new NavigatorException(e);
 		} finally {
@@ -254,18 +253,18 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 		boolean[] done = new boolean[columns.length];
 		int leftToDo = columns.length;
 
-		TreeMap map = new TreeMap();
+		TreeMap<String, Integer> map = new TreeMap<String, Integer>();
 		for (int i = 0; i < columns.length; i++)
-			map.put(columns[i].toUpperCase(), new Integer(i));
+			map.put(columns[i].toUpperCase(), i);
 
 		try {
 			DatabaseMetaData dbmd = con.getMetaData();
 			rs = dbmd.getColumns(catalog, schema, name, null);
 			while (rs.next()) {
 				String colname = rs.getString("COLUMN_NAME");
-				Integer col = (Integer) map.get(colname.toUpperCase());
+				Integer col = map.get(colname.toUpperCase());
 				if (col != null) {
-					int c = col.intValue();
+					int c = col;
 					if (!done[c]) {
 						String type = rs.getString("TYPE_NAME");
 						res[c] = type.equals("LONG")
@@ -482,19 +481,19 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 
 		if (dbType.equals("CHAR")) {
 			spec.type = TypeSpec.CHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("VARCHAR2")) {
 			spec.type = TypeSpec.VARCHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("NCHAR")) {
 			spec.type = TypeSpec.NCHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("NVARCHAR2")) {
 			spec.type = TypeSpec.VARNCHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("NUMBER")) {
 			if (scale == null
-					|| scale.intValue() == -127 && size.intValue() == 0) {
+					|| scale == -127 && size == 0) {
 				spec.type = TypeSpec.FLOAT;
 				// TODO: Is it really 38 decimal digits,
 				// or is it actually 126 bits?
@@ -503,24 +502,24 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 				spec.min_exp = -130;
 				spec.max_exp = 125;
 				spec.exp_of_2 = false;
-			} else if (scale.intValue() == -127) {
+			} else if (scale == -127) {
 				// FLOAT and NUMBER as returned by ResultSetMetaData
 				spec.type = TypeSpec.FLOAT;
-				spec.size = size.intValue();
+				spec.size = size;
 				spec.size_in_bits = true;
 				spec.min_exp = -130;
 				spec.max_exp = 125;
 				spec.exp_of_2 = false;
 			} else {
 				spec.type = TypeSpec.FIXED;
-				spec.size = size.intValue();
+				spec.size = size;
 				spec.size_in_bits = false;
-				spec.scale = scale.intValue();
+				spec.scale = scale;
 				spec.scale_in_bits = false;
 			}
 		} else if (dbType.equals("FLOAT")) {
 			spec.type = TypeSpec.FLOAT;
-			spec.size = size.intValue();
+			spec.size = size;
 			spec.size_in_bits = true;
 			spec.min_exp = -130;
 			spec.max_exp = 125;
@@ -545,26 +544,26 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 			spec.type = TypeSpec.LONGVARRAW;
 		} else if (dbType.equals("RAW")) {
 			spec.type = TypeSpec.VARRAW;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (javaType.equals("java.sql.Timestamp")) {
 			spec.type = TypeSpec.TIMESTAMP;
 			spec.size = 0;
 		} else if (javaType.equals("oracle.sql.TIMESTAMP")
 				|| javaType.equals("oracle.sql.TIMESTAMPLTZ")) {
 			spec.type = TypeSpec.TIMESTAMP;
-			spec.size = scale.intValue();
+			spec.size = scale;
 		} else if (javaType.equals("oracle.sql.TIMESTAMPTZ")) {
 			spec.type = TypeSpec.TIMESTAMP_TZ;
-			spec.size = scale.intValue();
+			spec.size = scale;
 		} else if (dbType.equals("INTERVALYM")
 				|| dbType.startsWith("INTERVAL YEAR")) {
 			spec.type = TypeSpec.INTERVAL_YM;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("INTERVALDS")
 				|| dbType.startsWith("INTERVAL DAY")) {
 			spec.type = TypeSpec.INTERVAL_DS;
-			spec.size = size.intValue();
-			spec.scale = scale.intValue();
+			spec.size = size;
+			spec.scale = scale;
 		} else if (dbType.equals("BLOB")) {
 			spec.type = TypeSpec.LONGVARRAW;
 		} else if (dbType.equals("CLOB")) {
@@ -603,7 +602,7 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 			} else if (dbType.equals("NUMBER")) {
 				if (scale == null)
 					size = null;
-				else if (scale.intValue() == 0)
+				else if (scale == 0)
 					scale = null;
 			}
 			if (size == null)
@@ -625,11 +624,11 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 		}
 		public String toString() {
 			try {
-				Class bfileClass = bfile.getClass();
-				Method m = bfileClass.getMethod("getDirAlias", null);
-				String dir = (String) m.invoke(bfile, null);
-				m = bfileClass.getMethod("getName", null);
-				String name = (String) m.invoke(bfile, null);
+				Class<?> bfileClass = bfile.getClass();
+				Method m = bfileClass.getMethod("getDirAlias", (Class[]) null);
+				String dir = (String) m.invoke(bfile, (Object[]) null);
+				m = bfileClass.getMethod("getName", (Class[]) null);
+				String name = (String) m.invoke(bfile, (Object[]) null);
 				return "Bfile ('" + dir + "', '" + name + "')";
 			} catch (NoSuchMethodException e) {
 				// From Class.getMethod()
@@ -647,30 +646,30 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 			}
 		}
 		public String sqlString() {
-			Class bfileClass = bfile.getClass();
+			Class<?> bfileClass = bfile.getClass();
 			String dir = "?";
 			String name = "?";
 			try {
-				Method m = bfileClass.getMethod("getDirAlias", null);
-				dir = (String) m.invoke(bfile, null);
+				Method m = bfileClass.getMethod("getDirAlias", (Class[]) null);
+				dir = (String) m.invoke(bfile, (Object[]) null);
 			} catch (Exception e) {}
 			try {
-				Method m = bfileClass.getMethod("getName", null);
-				name = (String) m.invoke(bfile, null);
+				Method m = bfileClass.getMethod("getName", (Class[]) null);
+				name = (String) m.invoke(bfile, (Object[]) null);
 			} catch (Exception e) {}
 			return "bfilename('" + dir + "', '" + name + "')";
 		}
 		public byte[] load() {
-			Class c = bfile.getClass();
+			Class<?> c = bfile.getClass();
 			InputStream is = null;
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			byte[] buf = new byte[8192];
 			boolean error = false;
 			try {
-				Method m = c.getMethod("openFile", null);
-				m.invoke(bfile, null);
-				m = c.getMethod("getBinaryStream", null);
-				is = (InputStream) m.invoke(bfile, null);
+				Method m = c.getMethod("openFile", (Class[]) null);
+				m.invoke(bfile, (Object[]) null);
+				m = c.getMethod("getBinaryStream", (Class[]) null);
+				is = (InputStream) m.invoke(bfile, (Object[]) null);
 				int n;
 				while ((n = is.read(buf)) != -1)
 					bos.write(buf, 0, n);
@@ -689,8 +688,8 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 						is.close();
 					} catch (IOException e) {}
 				try {
-					Method m = c.getMethod("closeFile", null);
-					m.invoke(bfile, null);
+					Method m = c.getMethod("closeFile", (Class[]) null);
+					m.invoke(bfile, (Object[]) null);
 				} catch (Exception e) {}
 			}
 			byte[] data = bos.toByteArray();
@@ -713,11 +712,11 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 			Timestamp ts = (Timestamp) o;
 			return new DateTime(ts.getTime(), 0, null);
 		}
-		Class klass = o.getClass();
+		Class<?> klass = o.getClass();
 		if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMP")) {
 			try {
-				Method m = klass.getMethod("getBytes", null);
-				byte[] b = (byte[]) m.invoke(o, null);
+				Method m = klass.getMethod("getBytes", (Class[]) null);
+				byte[] b = (byte[]) m.invoke(o, (Object[]) null);
 				m = klass.getMethod("toString",
 						new Class[] { new byte[1].getClass() });
 				String s = (String) m.invoke(null, new Object[] { b });
@@ -728,8 +727,8 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 		}
 		if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPTZ")) {
 			try {
-				Method m = klass.getMethod("getBytes", null);
-				byte[] b = (byte[]) m.invoke(o, null);
+				Method m = klass.getMethod("getBytes", (Class[]) null);
+				byte[] b = (byte[]) m.invoke(o, (Object[]) null);
 				m = klass.getMethod("toString",
 					new Class[] { Connection.class, new byte[1].getClass() });
 				String s = (String) m.invoke(null, new Object[] { con, b });
@@ -740,8 +739,8 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 		}
 		if (spec.jdbcJavaType.equals("oracle.sql.TIMESTAMPLTZ")) {
 			try {
-				Method m = klass.getMethod("getBytes", null);
-				byte[] b = (byte[]) m.invoke(o, null);
+				Method m = klass.getMethod("getBytes", (Class[]) null);
+				byte[] b = (byte[]) m.invoke(o, (Object[]) null);
 				m = klass.getMethod("toString",
 					new Class[] { Connection.class, new byte[1].getClass() });
 				String s = (String) m.invoke(null, new Object[] { con, b });
@@ -788,8 +787,8 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 			Timestamp ts = new Timestamp(dt.time);
 			ts.setNanos(dt.nanos);
 			try {
-				Class c = Class.forName("oracle.sql.TIMESTAMP");
-				Constructor cnstr = c.getConstructor(new Class[] { Timestamp.class });
+				Class<?> c = Class.forName("oracle.sql.TIMESTAMP");
+				Constructor<?> cnstr = c.getConstructor(new Class[] { Timestamp.class });
 				return cnstr.newInstance(new Object[] { ts });
 			} catch (Exception e) {
 				return o;
@@ -801,8 +800,8 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 			ts.setNanos(dt.nanos);
 			Calendar cal = new GregorianCalendar(dt.tz);
 			try {
-				Class c = Class.forName("oracle.sql.TIMESTAMPTZ");
-				Constructor cnstr = c.getConstructor(new Class[] { Connection.class, Timestamp.class, Calendar.class });
+				Class<?> c = Class.forName("oracle.sql.TIMESTAMPTZ");
+				Constructor<?> cnstr = c.getConstructor(new Class[] { Connection.class, Timestamp.class, Calendar.class });
 				return cnstr.newInstance(new Object[] { con, ts, cal });
 			} catch (Exception e) {
 				return o;
@@ -813,8 +812,8 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 			Timestamp ts = new Timestamp(dt.time);
 			ts.setNanos(dt.nanos);
 			try {
-				Class c = Class.forName("oracle.sql.TIMESTAMPLTZ");
-				Constructor cnstr = c.getConstructor(new Class[] { Connection.class, Timestamp.class });
+				Class<?> c = Class.forName("oracle.sql.TIMESTAMPLTZ");
+				Constructor<?> cnstr = c.getConstructor(new Class[] { Connection.class, Timestamp.class });
 				return cnstr.newInstance(new Object[] { con, ts });
 			} catch (Exception e) {
 				return o;
@@ -836,8 +835,8 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 					s += "000000000".substring(fracdigits);
 			}
 			try {
-				Class c = Class.forName("oracle.sql.INTERVALDS");
-				Constructor cnstr = c.getConstructor(new Class[] { String.class });
+				Class<?> c = Class.forName("oracle.sql.INTERVALDS");
+				Constructor<?> cnstr = c.getConstructor(new Class[] { String.class });
 				return cnstr.newInstance(new Object[] { s });
 			} catch (Exception e) {
 				return o;
@@ -846,8 +845,8 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 		if (spec.jdbcJavaType.equals("oracle.sql.INTERVALYM")) {
 			Interval inter = (Interval) o;
 			try {
-				Class c = Class.forName("oracle.sql.INTERVALYM");
-				Constructor cnstr = c.getConstructor(new Class[] { String.class });
+				Class<?> c = Class.forName("oracle.sql.INTERVALYM");
+				Constructor<?> cnstr = c.getConstructor(new Class[] { String.class });
 				return cnstr.newInstance(new Object[] { inter.toString(spec) });
 			} catch (Exception e) {
 				return o;

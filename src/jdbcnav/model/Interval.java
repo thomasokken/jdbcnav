@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
 /**
  * This class implements a database-neutral Interval representation.
  */
-public class Interval implements Comparable {
+public class Interval implements Comparable<Interval> {
 	public int months;
 	public long nanos;
 
@@ -204,8 +204,7 @@ public class Interval implements Comparable {
 		return months == that.months && nanos == that.nanos;
 	}
 
-	public int compareTo(Object o) {
-		Interval that = (Interval) o;
+	public int compareTo(Interval that) {
 		if (months < that.months)
 			return -1;
 		else if (months > that.months)

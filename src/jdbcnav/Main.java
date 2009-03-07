@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -40,13 +40,13 @@ import jdbcnav.util.MenuLayout;
 public class Main extends JFrame {
 
 	private static Main instance;
-	private static ArrayList frameList = new ArrayList();
+	private static ArrayList<MyFrame> frameList = new ArrayList<MyFrame>();
 	private static Cursor arrowAndHourglassCursor;
 
 	private static BufferedImage splash;
 	private static String version;
 	private static String copyright =
-				"(C) 2001-2008 Thomas Okken -- thomas_okken@yahoo.com";
+				"(C) 2001-2009 Thomas Okken -- thomas_okken@yahoo.com";
 	private static String website =
 				"http://jdbcnav.sourceforge.net/";
 
@@ -145,6 +145,7 @@ public class Main extends JFrame {
 					}
 				};
 
+	@SuppressWarnings(value={"unchecked"})
 	public static void main(String[] args) {
 		Preferences prefs = Preferences.getPreferences();
 		String lafName = prefs.getLookAndFeelName();
@@ -172,13 +173,11 @@ public class Main extends JFrame {
 		initArrowAndHourglassCursor();
 
 		Main.log(1, "jdbcnav version: " + version);
-		for (Iterator iter = prefs.getClassPath().iterator(); iter.hasNext();)
-			Main.log(1, "jdbcnav classpath item \"" + iter.next() + "\"");
+		for (String item : prefs.getClassPath())
+			Main.log(1, "jdbcnav classpath item \"" + item + "\"");
 		Properties props = System.getProperties();
-		for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
-			Map.Entry entry = (Map.Entry) iter.next();
+		for (Map.Entry entry : props.entrySet())
 			Main.log(1, "system property " + entry.getKey() + " = \"" + entry.getValue() + "\"");
-		}
 
 		MyTable.setTypeColor(1, prefs.getPkHighlightColor());
 		MyTable.setTypeColor(2, prefs.getFkHighlightColor());
@@ -199,7 +198,7 @@ public class Main extends JFrame {
 			ps.println(timestampFormat.format(new java.util.Date()) + ": " + s);
 	}
 
-	private static ArrayList callbacks = new ArrayList();
+	private static ArrayList<Runnable> callbacks = new ArrayList<Runnable>();
 	public static void callWhenDesktopReady(Runnable r) {
 		callbacks.add(r);
 	}
@@ -263,11 +262,8 @@ public class Main extends JFrame {
 						int drifty = initialLoc.y - loc.y;
 						Preferences.getPreferences()
 								   .setDrift(new Point(driftx, drifty));
-						for (Iterator iter = callbacks.iterator();
-														iter.hasNext();) {
-							Runnable r = (Runnable) iter.next();
+						for (Runnable r : callbacks)
 							r.run();
-						}
 						callbacks = null;
 						if (splash != null)
 							((AboutGlassPane) getGlassPane()).startTimeout();
@@ -664,7 +660,7 @@ public class Main extends JFrame {
 					index = 0;
 			}
 		}
-		f = (MyFrame) frameList.get(index);
+		f = frameList.get(index);
 		f.deiconifyAndRaise();
 	}
 
@@ -850,7 +846,7 @@ public class Main extends JFrame {
 	}
 
 	private static class BrowserList implements Scriptable {
-		private ArrayList browsers = new ArrayList();
+		private ArrayList<Scriptable> browsers = new ArrayList<Scriptable>();
 		public void delete(int index) {
 			//
 		}
@@ -866,13 +862,14 @@ public class Main extends JFrame {
 		}
 		public Object get(String name, Scriptable start) {
 			if (name.equals("length"))
-				return new Integer(browsers.size());
+				return browsers.size();
 			else
 				return NOT_FOUND;
 		}
 		public String getClassName() {
 			return "BrowserList";
 		}
+		@SuppressWarnings(value={"unchecked"})
 		public Object getDefaultValue(Class hint) {
 			StringBuffer buf = new StringBuffer();
 			buf.append("BrowserList[");

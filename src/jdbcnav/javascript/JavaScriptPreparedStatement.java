@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -58,7 +58,7 @@ public class JavaScriptPreparedStatement implements Scriptable {
 				if (hasResultSet)
 					return new JavaScriptResultSet(pstmt.getResultSet());
 				else
-					return new Integer(pstmt.getUpdateCount());
+					return pstmt.getUpdateCount();
 			} catch (SQLException e) {
 				throw new WrappedException(e);
 			}
@@ -139,6 +139,7 @@ public class JavaScriptPreparedStatement implements Scriptable {
 		return "PreparedStatement";
 	}
 
+	@SuppressWarnings(value={"unchecked"})
 	public Object getDefaultValue(Class hint) {
 		return "PreparedStatement";
 	}

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -37,8 +37,8 @@ public class BrowserFrame extends MyFrame {
 	private JPopupMenu popupMenu;
 	private JTree tree;
 	private TreeSelectionModel selectionModel;
-	private static ArrayList instances = new ArrayList();
-	private static WeakHashMap models = new WeakHashMap();
+	private static ArrayList<BrowserFrame> instances = new ArrayList<BrowserFrame>();
+	private static WeakHashMap<MyCBM, Object> models = new WeakHashMap<MyCBM, Object>();
 	private File file;
 
 	public BrowserFrame(Database db) {
@@ -130,7 +130,7 @@ public class BrowserFrame extends MyFrame {
 								Object o = path.getLastPathComponent();
 								if (o instanceof MyTreeNode) {
 									MyTreeNode n = (MyTreeNode) o;
-									ArrayList al = new ArrayList();
+									ArrayList<BrowserNode> al = new ArrayList<BrowserNode>();
 									al.add(n.getBrowserNode());
 									BrowserFrame.this.db.executeCommand(-1);
 								}
@@ -222,8 +222,8 @@ public class BrowserFrame extends MyFrame {
 		pack();
 		Main.addBrowser(n);
 		instances.add(this);
-		for (Iterator iter = models.keySet().iterator(); iter.hasNext();)
-			((MyCBM) iter.next()).addElement(this);
+		for (MyCBM cbm : models.keySet())
+			cbm.addElement(this);
 	}
 
 	private class CommandMenuListener implements ActionListener {
@@ -242,8 +242,8 @@ public class BrowserFrame extends MyFrame {
 
 	public ComboBoxModel getOtherInstances() {
 		MyCBM cbm = new MyCBM();
-		for (Iterator iter = instances.iterator(); iter.hasNext();)
-			cbm.addElement(iter.next());
+		for (BrowserFrame bf : instances)
+			cbm.addElement(bf);
 		models.put(cbm, null);
 		return cbm;
 	}
@@ -315,14 +315,14 @@ public class BrowserFrame extends MyFrame {
 	public void dispose() {
 		Main.removeBrowser((Scriptable) tree.getModel().getRoot());
 		instances.remove(this);
-		for (Iterator iter = models.keySet().iterator(); iter.hasNext();)
-			((MyCBM) iter.next()).removeElement(this);
+		for (MyCBM cbm : models.keySet())
+			cbm.removeElement(this);
 		db.close();
 		super.dispose();
 	}
 
-	public Collection getSelectedNodes() {
-		ArrayList selection = new ArrayList();
+	public Collection<BrowserNode> getSelectedNodes() {
+		ArrayList<BrowserNode> selection = new ArrayList<BrowserNode>();
 		TreePath[] paths = tree.getSelectionPaths();
 		if (paths == null)
 			return selection;
@@ -338,7 +338,7 @@ public class BrowserFrame extends MyFrame {
 	}
 
 	private void commit() {
-		Collection dirty = db.getDirtyTables();
+		Collection<Table> dirty = db.getDirtyTables();
 		if (dirty == null || dirty.isEmpty()) {
 			Toolkit.getDefaultToolkit().beep();
 			JOptionPane.showInternalMessageDialog(Main.getDesktop(),
@@ -351,7 +351,7 @@ public class BrowserFrame extends MyFrame {
 	}
 
 	private void rollback() {
-		Collection dirty = db.getDirtyTables();
+		Collection<Table> dirty = db.getDirtyTables();
 		if (dirty == null || dirty.isEmpty()) {
 			Toolkit.getDefaultToolkit().beep();
 			JOptionPane.showInternalMessageDialog(Main.getDesktop(),
@@ -457,7 +457,7 @@ public class BrowserFrame extends MyFrame {
 
 	private class CommitFunction extends BasicFunction {
 		public Object call(Object[] args) {
-			ArrayList tables = new ArrayList();
+			ArrayList<Table> tables = new ArrayList<Table>();
 			for (int i = 0; i < args.length; i++) {
 				if (!(args[i] instanceof Table))
 					throw new EvaluatorException(
@@ -490,7 +490,7 @@ public class BrowserFrame extends MyFrame {
 										BrowserNode.DisplayNode, Scriptable {
 
 		private MyTreeNode parent;
-		private ArrayList kids;
+		private ArrayList<TreeNode> kids;
 		private BrowserNode browserNode;
 
 		public MyTreeNode(MyTreeNode parent, BrowserNode browserNode) {
@@ -507,6 +507,7 @@ public class BrowserFrame extends MyFrame {
 		///// TreeNode /////
 		////////////////////
 
+		@SuppressWarnings(value={"unchecked"})
 		public Enumeration children() {
 			return new IteratorEnumeration(kids().iterator());
 		}
@@ -516,7 +517,7 @@ public class BrowserFrame extends MyFrame {
 		}
 		
 		public TreeNode getChildAt(int index) {
-			return (TreeNode) kids().get(index);
+			return kids().get(index);
 		}
 		
 		public int getChildCount() {
@@ -552,7 +553,7 @@ public class BrowserFrame extends MyFrame {
 		public void childRemovedAt(int index) {
 			if (kids == null)
 				return;
-			MyTreeNode deadKid = (MyTreeNode) kids.remove(index);
+			TreeNode deadKid = kids.remove(index);
 			((DefaultTreeModel) tree.getModel()).nodesWereRemoved(
 													this,
 													new int[] { index },
@@ -560,7 +561,7 @@ public class BrowserFrame extends MyFrame {
 		}
 
 		public void show() {
-			ArrayList al = new ArrayList();
+			ArrayList<Object> al = new ArrayList<Object>();
 			MyTreeNode n = this;
 			while (n != null) {
 				al.add(0, n);
@@ -591,13 +592,13 @@ public class BrowserFrame extends MyFrame {
 			return browserNode.getName();
 		}
 
-		private ArrayList kids() {
+		private ArrayList<TreeNode> kids() {
 			if (kids == null) {
-				kids = new ArrayList();
-				Iterator iter = browserNode.getChildren();
+				kids = new ArrayList<TreeNode>();
+				Iterator<? extends BrowserNode> iter = browserNode.getChildren();
 				if (iter != null)
 					while (iter.hasNext()) {
-						BrowserNode bn = (BrowserNode) iter.next();
+						BrowserNode bn = iter.next();
 						kids.add(new MyTreeNode(this, bn));
 					}
 			}
@@ -644,8 +645,7 @@ public class BrowserFrame extends MyFrame {
 			else if (name.equals("commit"))
 				return commitFunction;
 			else {
-				for (Iterator iter = kids().iterator(); iter.hasNext();) {
-					Object kid = iter.next();
+				for (TreeNode kid : kids) {
 					if (kid.toString().equalsIgnoreCase(name)) {
 						try {
 							Table t = ((MyTreeNode) kid).browserNode.getTable();
@@ -664,6 +664,7 @@ public class BrowserFrame extends MyFrame {
 		public String getClassName() {
 			return getClass().getName();
 		}
+		@SuppressWarnings(value={"unchecked"})
 		public Object getDefaultValue(Class hint) {
 			if (isLeaf())
 				return toString();
@@ -710,11 +711,9 @@ public class BrowserFrame extends MyFrame {
 			else if (name.equals("commit"))
 				return true;
 			else {
-				for (Iterator iter = kids().iterator(); iter.hasNext();) {
-					Object kid = iter.next();
+				for (TreeNode kid : kids)
 					if (kid.toString().equalsIgnoreCase(name))
 						return true;
-				}
 				return false;
 			}
 		}

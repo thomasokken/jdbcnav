@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -24,16 +24,16 @@ import java.util.*;
 public class BackgroundLoadData implements Data {
 	private String[] columnNames;
 	private TypeSpec[] typeSpecs;
-	private ArrayList data;
-	private ArrayList listeners;
+	private ArrayList<Object[]> data;
+	private ArrayList<StateListener> listeners;
 	private int state;
 	private long lastUpdateTime;
 
 	public BackgroundLoadData(String[] columnNames, TypeSpec[] typeSpecs) {
 		this.columnNames = columnNames;
 		this.typeSpecs = typeSpecs;
-		data = new ArrayList();
-		listeners = new ArrayList();
+		data = new ArrayList<Object[]>();
+		listeners = new ArrayList<StateListener>();
 		state = LOADING;
 		lastUpdateTime = new Date().getTime();
 	}
@@ -59,7 +59,7 @@ public class BackgroundLoadData implements Data {
 	}
 
 	public synchronized Object getValueAt(int row, int col) {
-		return ((Object[]) data.get(row))[col];
+		return data.get(row)[col];
 	}
 
 	//////////////////////////////////////
@@ -83,13 +83,11 @@ public class BackgroundLoadData implements Data {
 			return;
 		this.state = state;
 		int rows = data.size();
-		ArrayList l = listeners;
+		ArrayList<StateListener> l = listeners;
 		if (state == FINISHED)
 			listeners = null;
-		for (Iterator iter = l.iterator(); iter.hasNext();) {
-			StateListener listener = (StateListener) iter.next();
+		for (StateListener listener : l)
 			listener.stateChanged(state, rows);
-		}
 	}
 
 	public synchronized int getState() {
@@ -105,9 +103,7 @@ public class BackgroundLoadData implements Data {
 			return;
 		lastUpdateTime = now;
 		int newRows = data.size();
-		for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-			StateListener listener = (StateListener) iter.next();
+		for (StateListener listener : listeners)
 			listener.stateChanged(state, newRows);
-		}
 	}
 }

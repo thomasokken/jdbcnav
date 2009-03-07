@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -37,7 +37,7 @@ public class JDBCDatabase extends BasicDatabase {
 	private String name;
 	private String internalDriverName;
 	protected Connection con;
-	private ArrayList editedTables = new ArrayList();
+	private ArrayList<Table> editedTables = new ArrayList<Table>();
 
 
 	public static void open(Database.OpenCallback opencb) {
@@ -58,8 +58,8 @@ public class JDBCDatabase extends BasicDatabase {
 			InternalDriverMap.getDatabaseClassName(internalDriverName);
 
 		try {
-			Class klass = Class.forName(className);
-			Constructor cnstr = klass.getConstructor(
+			Class<?> klass = Class.forName(className);
+			Constructor<?> cnstr = klass.getConstructor(
 				new Class[] { String.class, String.class, Connection.class });
 			return (JDBCDatabase) cnstr.newInstance(
 				new Object[] { name, internalDriverName, con });
@@ -138,28 +138,24 @@ public class JDBCDatabase extends BasicDatabase {
 	}
 
 	public boolean needsCommit() {
-		for (Iterator iter = editedTables.iterator(); iter.hasNext();) {
-			Table table = (Table) iter.next();
+		for (Table table : editedTables)
 			if (table.needsCommit())
 				return true;
-		}
 		return false;
 	}
 
-	public Collection getDirtyTables() {
-		ArrayList dirty = new ArrayList();
-		for (Iterator iter = editedTables.iterator(); iter.hasNext();) {
-			Table table = (Table) iter.next();
+	public Collection<Table> getDirtyTables() {
+		ArrayList<Table> dirty = new ArrayList<Table>();
+		for (Table table : editedTables)
 			if (table.needsCommit())
 				dirty.add(table);
-		}
 		Collections.sort(dirty);
 		return dirty;
 	}
 
 	protected boolean shouldMoveToOrphanage(Table table) {
-		for (Iterator iter = editedTables.iterator(); iter.hasNext();) {
-			Table t = (Table) iter.next();
+		for (Iterator<Table> iter = editedTables.iterator(); iter.hasNext();) {
+			Table t = iter.next();
 			if (table == t) {
 				iter.remove();
 				return table.needsCommit();
@@ -168,7 +164,7 @@ public class JDBCDatabase extends BasicDatabase {
 		return false;
 	}
 
-	public void commitTables(Collection tables) throws NavigatorException {
+	public void commitTables(Collection<Table> tables) throws NavigatorException {
 		boolean autoCommit = true;
 		NavigatorException we = null;
 		DiffCallback dcb = new DiffCallback();
@@ -182,9 +178,8 @@ public class JDBCDatabase extends BasicDatabase {
 		// is merely a vehicle for a reference to the model's 'original'
 		// array)).
 
-		ArrayList pausedTables = new ArrayList();
-		for (Iterator iter = tables.iterator(); iter.hasNext();) {
-			Table table = (Table) iter.next();
+		ArrayList<Table> pausedTables = new ArrayList<Table>();
+		for (Table table : tables) {
 			ResultSetTableModel model = table.getModel();
 			if (model.getState() == Data.LOADING) {
 				model.setState(Data.PAUSED);
@@ -196,14 +191,12 @@ public class JDBCDatabase extends BasicDatabase {
 			autoCommit = con.getAutoCommit();
 			con.setAutoCommit(false);
 			if (tables.size() == 1) {
-				Table table = (Table) tables.iterator().next();
+				Table table = tables.iterator().next();
 				table.getModel().commit(dcb);
 			} else {
-				ArrayList oldtables = new ArrayList();
-				for (Iterator iter = tables.iterator(); iter.hasNext();) {
-					Table t = (Table) iter.next();
+				ArrayList<Table> oldtables = new ArrayList<Table>();
+				for (Table t : tables)
 					oldtables.add(new OriginalTable(t));
-				}
 				MultiTableDiff.diff(dcb, oldtables, tables, false);
 			}
 			con.commit();
@@ -214,8 +207,7 @@ public class JDBCDatabase extends BasicDatabase {
 		}
 
 		dcb.cleanup();
-		for (Iterator iter = pausedTables.iterator(); iter.hasNext();) {
-			Table table = (Table) iter.next();
+		for (Table table : pausedTables) {
 			ResultSetTableModel model = table.getModel();
 			model.setState(Data.LOADING);
 		}
@@ -238,10 +230,8 @@ public class JDBCDatabase extends BasicDatabase {
 
 		// All went well; tell all the table models to discard their 'undo'
 		// state.
-		for (Iterator iter = tables.iterator(); iter.hasNext();) {
-			Table t = (Table) iter.next();
+		for (Table t : tables)
 			t.getModel().postCommit();
-		}
 	}
 
 	private class OriginalTable extends BasicTable {
@@ -379,8 +369,8 @@ public class JDBCDatabase extends BasicDatabase {
 
 
 	private class DiffCallback implements TableChangeHandler {
-		private TreeMap insertStatements = new TreeMap();
-		private TreeMap deleteStatements = new TreeMap();
+		private TreeMap<Table, PreparedStatement> insertStatements = new TreeMap<Table, PreparedStatement>();
+		private TreeMap<Table, PreparedStatement> deleteStatements = new TreeMap<Table, PreparedStatement>();
 
 		public DiffCallback() {
 			//
@@ -388,8 +378,7 @@ public class JDBCDatabase extends BasicDatabase {
 
 		public void insertRow(Table table, Object[] row)
 													throws NavigatorException {
-			PreparedStatement insertStatement =
-							(PreparedStatement) insertStatements.get(table);
+			PreparedStatement insertStatement = insertStatements.get(table);
 			String[] names = table.getColumnNames();
 			int columns = names.length;
 			if (insertStatement == null) {
@@ -467,8 +456,7 @@ public class JDBCDatabase extends BasicDatabase {
 						} catch (SQLException e) {}
 				}
 			} else {
-				PreparedStatement deleteStatement =
-						(PreparedStatement) deleteStatements.get(table);
+				PreparedStatement deleteStatement = deleteStatements.get(table);
 				if (deleteStatement == null) {
 					StringBuffer buf = new StringBuffer();
 					buf.append("delete from ");
@@ -578,20 +566,14 @@ public class JDBCDatabase extends BasicDatabase {
 		}
 
 		public void cleanup() {
-			Iterator iter = insertStatements.values().iterator();
-			while (iter.hasNext()) {
-				PreparedStatement pstmt = (PreparedStatement) iter.next();
+			for (PreparedStatement pstmt : insertStatements.values())
 				try {
 					pstmt.close();
 				} catch (SQLException e) {}
-			}
-			iter = deleteStatements.values().iterator();
-			while (iter.hasNext()) {
-				PreparedStatement pstmt = (PreparedStatement) iter.next();
+			for (PreparedStatement pstmt : deleteStatements.values())
 				try {
 					pstmt.close();
 				} catch (SQLException e) {}
-			}
 		}
 	}
 
@@ -606,8 +588,8 @@ public class JDBCDatabase extends BasicDatabase {
 		}
 	}
 
-	protected Collection getTables() throws NavigatorException {
-		ArrayList tables = new ArrayList();
+	protected Collection<TableSpec> getTables() throws NavigatorException {
+		ArrayList<TableSpec> tables = new ArrayList<TableSpec>();
 		ResultSet rs = null;
 		try {
 			DatabaseMetaData dbmd = con.getMetaData();
@@ -643,7 +625,7 @@ public class JDBCDatabase extends BasicDatabase {
 			DatabaseMetaData dbmd = con.getMetaData();
 			rs = dbmd.getPrimaryKeys(parts[0], parts[1], parts[2]);
 			String keyName = null;
-			ArrayList colName = new ArrayList();
+			ArrayList<String> colName = new ArrayList<String>();
 			while (rs.next()) {
 				String n = rs.getString("COLUMN_NAME");
 				short i = rs.getShort("KEY_SEQ");
@@ -658,8 +640,7 @@ public class JDBCDatabase extends BasicDatabase {
 			if (colName.size() != 0) {
 				BasicPrimaryKey pk = new BasicPrimaryKey();
 				pk.setName(keyName);
-				pk.setColumns((String[]) colName.toArray(
-										new String[colName.size()]));
+				pk.setColumns(colName.toArray(new String[colName.size()]));
 				return pk;
 			} else
 				return null;
@@ -686,8 +667,8 @@ public class JDBCDatabase extends BasicDatabase {
 								false,
 								false);
 			String prevName = null;
-			ArrayList indexes = new ArrayList();
-			ArrayList columns = null;
+			ArrayList<Index> indexes = new ArrayList<Index>();
+			ArrayList<String> columns = null;
 			BasicIndex index = null;
 			while (rs.next()) {
 				String name = rs.getString("INDEX_NAME");
@@ -695,12 +676,11 @@ public class JDBCDatabase extends BasicDatabase {
 					continue;
 				if (!name.equals(prevName)) {
 					if (index != null) {
-						index.setColumns((String[]) columns.toArray(
-																new String[0]));
+						index.setColumns(columns.toArray(new String[0]));
 						indexes.add(index);
 					}
 					index = new BasicIndex();
-					columns = new ArrayList();
+					columns = new ArrayList<String>();
 					index.setName(name);
 					index.setUnique(!rs.getBoolean("NON_UNIQUE"));
 				}
@@ -708,10 +688,10 @@ public class JDBCDatabase extends BasicDatabase {
 				prevName = name;
 			}
 			if (index != null) {
-				index.setColumns((String[]) columns.toArray(new String[0]));
+				index.setColumns(columns.toArray(new String[0]));
 				indexes.add(index);
 			}
-			return (Index[]) indexes.toArray(new Index[0]);
+			return indexes.toArray(new Index[0]);
 		} catch (SQLException e) {
 			throw new NavigatorException(e);
 		} finally {
@@ -731,7 +711,7 @@ public class JDBCDatabase extends BasicDatabase {
 		String schema = parts[1];
 		String name = parts[2];
 		ResultSet rs = null;
-		ArrayList results = new ArrayList();
+		ArrayList<FKResultSetRow> results = new ArrayList<FKResultSetRow>();
 		try {
 			DatabaseMetaData dbmd = con.getMetaData();
 			if (imported)
@@ -800,16 +780,16 @@ public class JDBCDatabase extends BasicDatabase {
 		else
 			Collections.sort(results, FKResultSetRowComparator.forExport);
 
-		ArrayList fks = new ArrayList();
-		ArrayList currFk = new ArrayList();
+		ArrayList<ForeignKey> fks = new ArrayList<ForeignKey>();
+		ArrayList<FKPart> currFk = new ArrayList<FKPart>();
 
 		short prevKeySeq = 0;
-		Iterator iter = results.iterator();
+		Iterator<FKResultSetRow> iter = results.iterator();
 		FKResultSetRow rsr = null;
 
 		while (true) {
 			boolean done = !iter.hasNext();
-			FKResultSetRow nextRsr = done ? null : (FKResultSetRow) iter.next();
+			FKResultSetRow nextRsr = done ? null : iter.next();
 			boolean flushKey = done;
 
 			if (!done) {
@@ -823,7 +803,7 @@ public class JDBCDatabase extends BasicDatabase {
 				String[] thisColumns = new String[keySize];
 				String[] thatColumns = new String[keySize];
 				for (int i = 0; i < currFk.size(); i++) {
-					FKPart fkp = (FKPart) currFk.get(i);
+					FKPart fkp = currFk.get(i);
 					thisColumns[i] = fkp.thisColumn;
 					thatColumns[i] = fkp.thatColumn;
 				}
@@ -856,7 +836,7 @@ public class JDBCDatabase extends BasicDatabase {
 		if (n == 0)
 			return new ForeignKey[0];
 		else
-			return (ForeignKey[]) fks.toArray(new ForeignKey[n]);
+			return fks.toArray(new ForeignKey[n]);
 	}
 
 	private static String ruleString(short rule) {
@@ -889,7 +869,7 @@ public class JDBCDatabase extends BasicDatabase {
 		short keySeq;
 	}
 
-	private static class FKResultSetRowComparator implements Comparator {
+	private static class FKResultSetRowComparator implements Comparator<FKResultSetRow> {
 		public static final FKResultSetRowComparator forImport
 									= new FKResultSetRowComparator(true);
 		public static final FKResultSetRowComparator forExport
@@ -898,25 +878,23 @@ public class JDBCDatabase extends BasicDatabase {
 		private FKResultSetRowComparator(boolean impord) {
 			this.impord = impord;
 		}
-		public int compare(Object a, Object b) {
-			FKResultSetRow ra = (FKResultSetRow) a;
-			FKResultSetRow rb = (FKResultSetRow) b;
-			int res = strcmp(ra.thatCatalog, rb.thatCatalog);
+		public int compare(FKResultSetRow a, FKResultSetRow b) {
+			int res = strcmp(a.thatCatalog, b.thatCatalog);
 			if (res != 0)
 				return res;
-			res = strcmp(ra.thatSchema, rb.thatSchema);
+			res = strcmp(a.thatSchema, b.thatSchema);
 			if (res != 0)
 				return res;
-			res = ra.thatName.compareTo(rb.thatName);
+			res = a.thatName.compareTo(b.thatName);
 			if (res != 0)
 				return res;
 			if (impord)
-				res = strcmp(ra.thisKeyName, rb.thisKeyName);
+				res = strcmp(a.thisKeyName, b.thisKeyName);
 			else
-				res = strcmp(ra.thatKeyName, rb.thatKeyName);
+				res = strcmp(a.thatKeyName, b.thatKeyName);
 			if (res != 0)
 				return res;
-			return ra.keySeq - rb.keySeq;
+			return a.keySeq - b.keySeq;
 		}
 		private static int strcmp(String a, String b) {
 			return a == null ? b == null ? 0 : 1
@@ -1237,8 +1215,8 @@ public class JDBCDatabase extends BasicDatabase {
 					size = Integer.MAX_VALUE;
 				else
 					size = rsmd.getPrecision(i + 1);
-				typeSpecs[i] = makeTypeSpec(dbType, new Integer(size),
-										new Integer(scale), sqlType, javaType);
+				typeSpecs[i] = makeTypeSpec(dbType, size,
+										scale, sqlType, javaType);
 
 				if (resultSetContainsTableInfo()) {
 					String catalog2 = rsmd.getCatalogName(i + 1);
@@ -1330,13 +1308,13 @@ public class JDBCDatabase extends BasicDatabase {
 			bd.setColumnNames(columnNames);
 			bd.setTypeSpecs(typeSpecs);
 
-			ArrayList data = new ArrayList();
+			ArrayList<Object[]> data = new ArrayList<Object[]>();
 			boolean noClone = lobsOutliveResultSets() || table == null;
 			while (rs.next()) {
 				Object[] row = new Object[columns];
 				for (int i = 0; i < columns; i++)
 					row[i] = rs.getObject(i + 1);
-				Object[] orig_row = noClone ? null : (Object[]) row.clone();
+				Object[] orig_row = noClone ? null : row.clone();
 				for (int i = 0; i < columns; i++) {
 					Object o = row[i];
 					row[i] = wrapLob(table, columnNames, orig_row, i,
@@ -1491,12 +1469,12 @@ public class JDBCDatabase extends BasicDatabase {
 				schema = showSchemas() ? parts[1] : null;
 				name = parts[2];
 
-				ArrayList columnNamesList = new ArrayList();
-				ArrayList dbTypesList = new ArrayList();
-				ArrayList columnSizesList = new ArrayList();
-				ArrayList columnScalesList = new ArrayList();
-				ArrayList sqlTypesList = new ArrayList();
-				ArrayList isNullableList = new ArrayList();
+				ArrayList<String> columnNamesList = new ArrayList<String>();
+				ArrayList<String> dbTypesList = new ArrayList<String>();
+				ArrayList<Integer> columnSizesList = new ArrayList<Integer>();
+				ArrayList<Integer> columnScalesList = new ArrayList<Integer>();
+				ArrayList<Integer> sqlTypesList = new ArrayList<Integer>();
+				ArrayList<String> isNullableList = new ArrayList<String>();
 
 				ResultSet rs = null;
 				DatabaseMetaData dbmd = null;
@@ -1536,13 +1514,13 @@ public class JDBCDatabase extends BasicDatabase {
 						if (rs.wasNull())
 							columnSizesList.add(null);
 						else
-							columnSizesList.add(new Integer(size));
+							columnSizesList.add(size);
 						int scale = rs.getInt("DECIMAL_DIGITS");
 						if (rs.wasNull())
 							columnScalesList.add(null);
 						else
-							columnScalesList.add(new Integer(scale));
-						sqlTypesList.add(new Integer(rs.getInt("DATA_TYPE")));
+							columnScalesList.add(scale);
+						sqlTypesList.add(rs.getInt("DATA_TYPE"));
 						isNullableList.add(rs.getString("IS_NULLABLE"));
 						cols++;
 					}
@@ -1555,30 +1533,29 @@ public class JDBCDatabase extends BasicDatabase {
 						} catch (SQLException e) {}
 				}
 
-				columnNames = (String[]) columnNamesList.toArray(
-															new String[cols]);
+				columnNames = columnNamesList.toArray(new String[cols]);
 
 				typeSpecs = new TypeSpec[cols];
 				String[] javaTypes = JDBCDatabase.this.getJavaTypes(
 															qualifiedName);
 				for (int i = 0; i < cols; i++) {
-					String dbType = (String) dbTypesList.get(i);
-					Integer size = (Integer) columnSizesList.get(i);
-					Integer scale = (Integer) columnScalesList.get(i);
-					int sqlType = ((Integer) sqlTypesList.get(i)).intValue();
+					String dbType = dbTypesList.get(i);
+					Integer size = columnSizesList.get(i);
+					Integer scale = columnScalesList.get(i);
+					int sqlType = sqlTypesList.get(i);
 					typeSpecs[i] = makeTypeSpec(dbType, size, scale, sqlType,
 																javaTypes[i]);
 				}
 				fixTypeSpecs(qualifiedName, typeSpecs);
 
-				isNullable= (String[]) isNullableList.toArray(new String[cols]);
+				isNullable= isNullableList.toArray(new String[cols]);
 
 				pk = JDBCDatabase.this.getPrimaryKey(qualifiedName);
 				fks = JDBCDatabase.this.getFK(qualifiedName, true);
 				rks = JDBCDatabase.this.getFK(qualifiedName, false);
 				indexes = JDBCDatabase.this.getIndexes(this);
 
-				TreeSet keyColumns = new TreeSet(String.CASE_INSENSITIVE_ORDER);
+				TreeSet<String> keyColumns = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 				if (pk != null) {
 					int n = pk.getColumnCount();
 					for (int i = 0; i < n; i++)
@@ -1590,7 +1567,7 @@ public class JDBCDatabase extends BasicDatabase {
 					for (int j = 0; j < n; j++)
 						keyColumns.add(fk.getThisColumnName(j));
 				}
-				TreeSet indexColumns = new TreeSet(
+				TreeSet<String> indexColumns = new TreeSet<String>(
 												String.CASE_INSENSITIVE_ORDER);
 				for (int i = 0; i < indexes.length; i++) {
 					Index idx = indexes[i];
@@ -1779,8 +1756,7 @@ public class JDBCDatabase extends BasicDatabase {
 
 		private void configNameChanged() {
 			String name = (String) configNameCB.getSelectedItem();
-			Preferences.ConnectionConfig config =
-							(Preferences.ConnectionConfig) configs.get(name);
+			Preferences.ConnectionConfig config = configs.get(name);
 			if (config != null) {
 				driverTF.setText(config.driver);
 				urlTF.setText(config.url);
@@ -2021,8 +1997,8 @@ public class JDBCDatabase extends BasicDatabase {
 		private static class ConfigList extends AbstractListModel
 										implements ComboBoxModel {
 			private Preferences prefs = Preferences.getPreferences();
-			private ArrayList names = new ArrayList();
-			private ArrayList configs = new ArrayList();
+			private ArrayList<String> names = new ArrayList<String>();
+			private ArrayList<Preferences.ConnectionConfig> configs = new ArrayList<Preferences.ConnectionConfig>();
 			private String selectedName;
 
 			public ConfigList() {
@@ -2030,7 +2006,7 @@ public class JDBCDatabase extends BasicDatabase {
 				if (names.isEmpty())
 					selectedName = "";
 				else
-					selectedName = (String) names.get(0);
+					selectedName = names.get(0);
 			}
 			
 			public void reload() {
@@ -2045,8 +2021,8 @@ public class JDBCDatabase extends BasicDatabase {
 			}
 
 			private void load() {
-				Collection pconfigs = prefs.getConnectionConfigs();
-				for (Iterator iter = pconfigs.iterator(); iter.hasNext();) {
+				Collection<Object> pconfigs = prefs.getConnectionConfigs();
+				for (Iterator<Object> iter = pconfigs.iterator(); iter.hasNext();) {
 					String name = (String) iter.next();
 					Preferences.ConnectionConfig config =
 								(Preferences.ConnectionConfig) iter.next();
@@ -2100,7 +2076,7 @@ public class JDBCDatabase extends BasicDatabase {
 				if (index == -1)
 					return null;
 				else
-					return (Preferences.ConnectionConfig) configs.get(index);
+					return configs.get(index);
 			}
 
 			public void remove(String name) {
@@ -2230,8 +2206,8 @@ public class JDBCDatabase extends BasicDatabase {
 			} else
 				pkColNames = table.getColumnNames();
 
-			ArrayList keyIndexInTable = new ArrayList();
-			ArrayList keyIndexInData = new ArrayList();
+			ArrayList<Integer> keyIndexInTable = new ArrayList<Integer>();
+			ArrayList<Integer> keyIndexInData = new ArrayList<Integer>();
 			TypeSpec[] specs = table.getTypeSpecs();
 			boolean first = true;
 			String[] colNames = table.getColumnNames();
@@ -2263,8 +2239,8 @@ public class JDBCDatabase extends BasicDatabase {
 					buf.append(" is null");
 				else {
 					buf.append(" = ?");
-					keyIndexInTable.add(new Integer(i));
-					keyIndexInData.add(new Integer(j));
+					keyIndexInTable.add(i);
+					keyIndexInData.add(j);
 				}
 				break;
 			}
@@ -2274,8 +2250,8 @@ public class JDBCDatabase extends BasicDatabase {
 			try {
 				stmt = con.prepareStatement(buf.toString());
 				for (int i = 0; i < keyIndexInTable.size(); i++) {
-					int ti = ((Integer) keyIndexInTable.get(i)).intValue();
-					int di = ((Integer) keyIndexInData.get(i)).intValue();
+					int ti = keyIndexInTable.get(i);
+					int di = keyIndexInData.get(i);
 					setObject(stmt, ti + 1, di, values[di], table);
 				}
 				rs = stmt.executeQuery();
@@ -2517,7 +2493,7 @@ public class JDBCDatabase extends BasicDatabase {
 					Object[] row = new Object[columns];
 					for (int i = 0; i < columns; i++)
 						row[i] = rs.getObject(i + 1);
-					Object[] orig_row = noClone ? null : (Object[]) row.clone();
+					Object[] orig_row = noClone ? null : row.clone();
 					for (int i = 0; i < columns; i++) {
 						Object o = row[i];
 						row[i] = wrapLob(table, columnNames, orig_row, i,

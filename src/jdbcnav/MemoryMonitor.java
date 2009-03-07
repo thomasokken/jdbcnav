@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -33,8 +33,8 @@ public class MemoryMonitor implements Runnable {
 	public void run() {
 		while (true) {
 			byte[] bigArray = new byte[RESERVE_BYTES];
-			ReferenceQueue rq = new ReferenceQueue();
-			new SoftReference(bigArray, rq);
+			ReferenceQueue<byte[]> rq = new ReferenceQueue<byte[]>();
+			new SoftReference<byte[]>(bigArray, rq);
 			bigArray = null;
 			boolean cleared = false;
 			do {

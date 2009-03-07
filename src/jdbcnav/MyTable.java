@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -35,9 +35,9 @@ public class MyTable extends JTable {
 	private static final String ILLEGAL = new String("illegal");
 
 	private int highlightIndex = 0;
-	private ArrayList userInteractionListeners = new ArrayList();
+	private ArrayList<UserInteractionListener> userInteractionListeners = new ArrayList<UserInteractionListener>();
 	private boolean[] notNull;
-	private ArrayList columnTypeMap;
+	private ArrayList<Integer> columnTypeMap;
 	private EditHandler editHandler = null;
 
 	public MyTable(TableModel dm) {
@@ -105,7 +105,7 @@ public class MyTable extends JTable {
 
 	public void setModel(TableModel dm) {
 		notNull = new boolean[dm.getColumnCount()];
-		columnTypeMap = new ArrayList();
+		columnTypeMap = new ArrayList<Integer>();
 		super.setModel(dm);
 	}
 
@@ -242,19 +242,18 @@ public class MyTable extends JTable {
 	}
 
 	public void setColumnType(int column, int type) {
-		Integer t = new Integer(type);
 		try {
-			columnTypeMap.set(column, t);
+			columnTypeMap.set(column, type);
 		} catch (IndexOutOfBoundsException e) {
 			while (column > columnTypeMap.size())
-				columnTypeMap.add(new Integer(0));
-			columnTypeMap.add(t);
+				columnTypeMap.add(0);
+			columnTypeMap.add(type);
 		}
 	}
 
 	public int getColumnType(int column) {
 		try {
-			return ((Integer) columnTypeMap.get(column)).intValue();
+			return columnTypeMap.get(column);
 		} catch (IndexOutOfBoundsException e) {
 			return 0;
 		}
@@ -282,7 +281,7 @@ public class MyTable extends JTable {
 	 * so as long as that renderer exists, this method will never return
 	 * <code>null</code>.
 	 */
-	public TableCellRenderer getDefaultRenderer(Class columnClass) {
+	public TableCellRenderer getDefaultRenderer(Class<?> columnClass) {
 		TableCellRenderer tcr = null;
 		if (columnClass != null)
 			tcr = getDefaultRenderer2(columnClass);
@@ -293,17 +292,17 @@ public class MyTable extends JTable {
 							defaultRenderersByColumnClass.get(Object.class);
 	}
 
-	private TableCellRenderer getDefaultRenderer2(Class columnClass) {
+	private TableCellRenderer getDefaultRenderer2(Class<?> columnClass) {
 		Object renderer = defaultRenderersByColumnClass.get(columnClass);
 		if (renderer != null)
 			return (TableCellRenderer) renderer;
-		Class[] interfaces = columnClass.getInterfaces();
+		Class<?>[] interfaces = columnClass.getInterfaces();
 		for (int i = 0; i < interfaces.length; i++) {
 			TableCellRenderer tcr = getDefaultRenderer2(interfaces[i]);
 			if (tcr != null)
 				return tcr;
 		}
-		Class superclass = columnClass.getSuperclass();
+		Class<?> superclass = columnClass.getSuperclass();
 		if (superclass == null)
 			return null;
 		else
@@ -327,7 +326,7 @@ public class MyTable extends JTable {
 	 * so as long as that editor exists, this method will never return
 	 * <code>null</code>.
 	 */
-	public TableCellEditor getDefaultEditor(Class columnClass) {
+	public TableCellEditor getDefaultEditor(Class<?> columnClass) {
 		TableCellEditor tce = null;
 		if (columnClass != null)
 			tce = getDefaultEditor2(columnClass);
@@ -338,17 +337,17 @@ public class MyTable extends JTable {
 							defaultEditorsByColumnClass.get(Object.class);
 	}
 
-	private TableCellEditor getDefaultEditor2(Class columnClass) {
+	private TableCellEditor getDefaultEditor2(Class<?> columnClass) {
 		Object editor = defaultEditorsByColumnClass.get(columnClass);
 		if (editor != null)
 			return (TableCellEditor) editor;
-		Class[] interfaces = columnClass.getInterfaces();
+		Class<?>[] interfaces = columnClass.getInterfaces();
 		for (int i = 0; i < interfaces.length; i++) {
 			TableCellEditor tce = getDefaultEditor2(interfaces[i]);
 			if (tce != null)
 				return tce;
 		}
-		Class superclass = columnClass.getSuperclass();
+		Class<?> superclass = columnClass.getSuperclass();
 		if (superclass == null)
 			return null;
 		else
@@ -369,22 +368,18 @@ public class MyTable extends JTable {
 		userInteractionListeners.remove(listener);
 	}
 
+	@SuppressWarnings(value={"unchecked"})
 	private void eventInScrollBarHappened() {
-		ArrayList listeners = (ArrayList) userInteractionListeners.clone();
-		for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-			UserInteractionListener listener =
-									(UserInteractionListener) iter.next();
+		ArrayList<UserInteractionListener> listeners = (ArrayList<UserInteractionListener>) userInteractionListeners.clone();
+		for (UserInteractionListener listener : listeners)
 			listener.eventInScrollBar();
-		}
 	}
 
+	@SuppressWarnings(value={"unchecked"})
 	private void eventInTableHappened() {
-		ArrayList listeners = (ArrayList) userInteractionListeners.clone();
-		for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-			UserInteractionListener listener =
-									(UserInteractionListener) iter.next();
+		ArrayList<UserInteractionListener> listeners = (ArrayList<UserInteractionListener>) userInteractionListeners.clone();
+		for (UserInteractionListener listener : listeners)
 			listener.eventInTable();
-		}
 	}
 
 	public void addNotify() {
@@ -459,7 +454,7 @@ public class MyTable extends JTable {
 									notNull[col] ? Font.BOLD : Font.PLAIN));
 
 				try {
-					int type = ((Integer) columnTypeMap.get(col)).intValue();
+					int type = columnTypeMap.get(col);
 					if (type == 3)
 						type = 1;
 					Color bg = FastTableCellRenderer.getTypeColor(type, true);
@@ -553,8 +548,8 @@ public class MyTable extends JTable {
 
 	private static class GenericEditor extends DefaultCellEditor {
 
-		private Class[] argTypes = new Class[]{String.class};
-		private java.lang.reflect.Constructor constructor;
+		private Class<?>[] argTypes = new Class[]{String.class};
+		private java.lang.reflect.Constructor<?> constructor;
 		protected Object value;
 
 		public GenericEditor() {
@@ -592,7 +587,7 @@ public class MyTable extends JTable {
 			this.value = null;
 			((JComponent)getComponent()).setBorder(new LineBorder(Color.black));
 			try {
-				Class type = table.getColumnClass(column);
+				Class<?> type = table.getColumnClass(column);
 				// Since our obligation is to produce a value which is
 				// assignable for the required type it is OK to use the
 				// String constructor for columns which are declared
@@ -621,9 +616,9 @@ public class MyTable extends JTable {
 
 	private static class DateEditor extends GenericEditor {
 
-		private Class klass;
+		private Class<?> klass;
 
-		public DateEditor(Class klass) {
+		public DateEditor(Class<?> klass) {
 			this.klass = klass;
 		}
 
@@ -745,9 +740,9 @@ public class MyTable extends JTable {
 		private static FontMetrics nonNullFontMetrics;
 		private static Font nullFont;
 		private static FontMetrics nullFontMetrics;
-		private static ArrayList unselectedBackground = new ArrayList();
-		private static ArrayList unselectedForeground = new ArrayList();
-		private static ArrayList unselectedNullColor = new ArrayList();
+		private static ArrayList<Color> unselectedBackground = new ArrayList<Color>();
+		private static ArrayList<Color> unselectedForeground = new ArrayList<Color>();
+		private static ArrayList<Color> unselectedNullColor = new ArrayList<Color>();
 		private static Color selectedBackground;
 		private static Color selectedForeground;
 		private static Color selectedNullColor;
@@ -832,9 +827,9 @@ public class MyTable extends JTable {
 		public static Color getTypeColor(int type, boolean isBackground) {
 			try {
 				if (isBackground)
-					return (Color) unselectedBackground.get(type);
+					return unselectedBackground.get(type);
 				else
-					return (Color) unselectedForeground.get(type);
+					return unselectedForeground.get(type);
 			} catch (IndexOutOfBoundsException e) {
 				return null;
 			}
@@ -851,7 +846,7 @@ public class MyTable extends JTable {
 			this.hasFocus = hasFocus;
 			column = table.convertColumnIndexToModel(column);
 			if (column < ((MyTable) table).columnTypeMap.size())
-				type = ((Integer) ((MyTable) table).columnTypeMap.get(column)).intValue();
+				type = ((MyTable) table).columnTypeMap.get(column);
 			else
 				type = 0;
 			// Special type for columns that are both PK and FK; we don't want
@@ -888,12 +883,12 @@ public class MyTable extends JTable {
 			if (hasFocus) {
 				g.setColor(selectedBackground);
 				g.drawRect(0, 0, d.width - 1, d.height - 1);
-				g.setColor((Color) unselectedBackground.get(type));
+				g.setColor(unselectedBackground.get(type));
 				g.fillRect(1, 1, d.width - 2, d.height - 2);
 				if (value == null || value == ILLEGAL)
-					g.setColor((Color) unselectedNullColor.get(type));
+					g.setColor(unselectedNullColor.get(type));
 				else
-					g.setColor((Color) unselectedForeground.get(type));
+					g.setColor(unselectedForeground.get(type));
 			} else if (isSelected) {
 				g.setColor(selectedBackground);
 				g.fillRect(0, 0, d.width, d.height);
@@ -902,12 +897,12 @@ public class MyTable extends JTable {
 				else
 					g.setColor(selectedForeground);
 			} else {
-				g.setColor((Color) unselectedBackground.get(type));
+				g.setColor(unselectedBackground.get(type));
 				g.fillRect(0, 0, d.width, d.height);
 				if (value == null || value == ILLEGAL)
-					g.setColor((Color) unselectedNullColor.get(type));
+					g.setColor(unselectedNullColor.get(type));
 				else
-					g.setColor((Color) unselectedForeground.get(type));
+					g.setColor(unselectedForeground.get(type));
 			}
 			Font f;
 			FontMetrics fm;

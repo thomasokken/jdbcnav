@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -25,16 +25,16 @@ import java.util.*;
  * Theoretically, that would be the job of java.sql.Date, java.sql.Time,
  * and java.sql.Timestamp, but those don't handle time zones properly.
  */
-public class DateTime implements Comparable {
+public class DateTime implements Comparable<DateTime> {
 	public static final int ZONE_ID = 0;
 	public static final int ZONE_SHORT = 1;
 	public static final int ZONE_LONG = 2;
 	public static final int ZONE_OFFSET = 3;
 	public static final int ZONE_NONE = 4;
 
-	private static HashMap zoneMap;
+	private static HashMap<String, TimeZone> zoneMap;
 	static {
-		zoneMap = new HashMap();
+		zoneMap = new HashMap<String, TimeZone>();
 		String[] ids = TimeZone.getAvailableIDs();
 		for (int i = 0; i < ids.length; i++) {
 			String id = ids[i];
@@ -125,7 +125,7 @@ public class DateTime implements Comparable {
 			}
 		}
 		if (tzname.length() > 0)
-			tz = (TimeZone) zoneMap.get(tzname.toString());
+			tz = zoneMap.get(tzname.toString());
 		GregorianCalendar cal = new GregorianCalendar(
 									tz == null ? TimeZone.getDefault() : tz);
 		cal.set(year, month - 1, day, hour, minute, second);
@@ -243,8 +243,7 @@ public class DateTime implements Comparable {
 			&& (tz == null ? that.tz == null : tz.equals(that.tz));
 	}
 
-	public int compareTo(Object o) {
-		DateTime that = (DateTime) o;
+	public int compareTo(DateTime that) {
 		if (time < that.time)
 			return -1;
 		else if (time > that.time)

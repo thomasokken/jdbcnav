@@ -266,7 +266,7 @@ public class MyGridBagLayout implements LayoutManager2,
 	 * @serial
 	 * @see java.awt.GridBagConstraints
 	 */
-  protected Hashtable comptable;
+  protected Hashtable<Component, MyGridBagConstraints> comptable;
 
 	/**
 	 * This field holds a gridbag constraints instance
@@ -359,7 +359,7 @@ public class MyGridBagLayout implements LayoutManager2,
    * Creates a grid bag layout manager.
    */
   public MyGridBagLayout () {
-	comptable = new Hashtable();
+	comptable = new Hashtable<Component, MyGridBagConstraints>();
 	defaultConstraints = new MyGridBagConstraints();
   }
 
@@ -369,7 +369,7 @@ public class MyGridBagLayout implements LayoutManager2,
    * @param		  constraints the constraints to be applied.
    */
   public void setConstraints(Component comp, MyGridBagConstraints constraints) {
-	comptable.put(comp, constraints.clone());
+	comptable.put(comp, (MyGridBagConstraints) constraints.clone());
   }
 
   /**
@@ -381,10 +381,10 @@ public class MyGridBagLayout implements LayoutManager2,
    *				  object is returned.
    */
   public MyGridBagConstraints getConstraints(Component comp) {
-	MyGridBagConstraints constraints = (MyGridBagConstraints)comptable.get(comp);
+	MyGridBagConstraints constraints = comptable.get(comp);
 	if (constraints == null) {
 	  setConstraints(comp, defaultConstraints);
-	  constraints = (MyGridBagConstraints)comptable.get(comp);
+	  constraints = comptable.get(comp);
 	}
 	return (MyGridBagConstraints)constraints.clone();
   }
@@ -397,10 +397,10 @@ public class MyGridBagLayout implements LayoutManager2,
    * @return	  the contraints for the specified component.
    */
   protected MyGridBagConstraints lookupConstraints(Component comp) {
-	MyGridBagConstraints constraints = (MyGridBagConstraints)comptable.get(comp);
+	MyGridBagConstraints constraints = comptable.get(comp);
 	if (constraints == null) {
 	  setConstraints(comp, defaultConstraints);
-	  constraints = (MyGridBagConstraints)comptable.get(comp);
+	  constraints = comptable.get(comp);
 	}
 	return constraints;
   }

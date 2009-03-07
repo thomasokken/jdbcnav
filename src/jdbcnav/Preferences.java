@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -69,12 +69,12 @@ public class Preferences {
 
 	// Contains config names at even-numbered indices,
 	// followed by the corresponding ConnectionConfig objects.
-	private ArrayList connectionConfigs = new ArrayList();
+	private ArrayList<Object> connectionConfigs = new ArrayList<Object>();
 
 	// Encrypted configs read from .jdbcnavrc, which we haven't yet been
 	// able to decrypt because the user hasn't deigned to tell us the
 	// password yet.
-	private ArrayList encryptedConfigs = new ArrayList();
+	private ArrayList<byte[]> encryptedConfigs = new ArrayList<byte[]>();
 
 	// Look-and-Feel name
 	private String lafName = null;
@@ -86,7 +86,7 @@ public class Preferences {
 	// Contains system properties: names at even-numbered indices,
 	// followed by the corresponding values. Names and values are
 	// Strings.
-	private ArrayList systemProps = new ArrayList();
+	private ArrayList<String> systemProps = new ArrayList<String>();
 
 	// Top-level window geometry
 	private static final int WINDOW_X = 0;
@@ -96,10 +96,10 @@ public class Preferences {
 	private static final int DRIFT_HIST_LEN = 5;
 	private Point windowLocation = new Point(WINDOW_X, WINDOW_Y);
 	private Dimension windowSize = new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT);
-	private ArrayList drift = new ArrayList();
+	private ArrayList<Point> drift = new ArrayList<Point>();
 
 	// Class Path
-	private ArrayList classPath;
+	private ArrayList<String> classPath;
 
 	// Password for encrypting connection configs in the .jdbcnavrc file
 	private SecretKeySpec key;
@@ -118,7 +118,7 @@ public class Preferences {
 
 	private Preferences() {
 		try {
-			Class bootClass = Class.forName("jdbcnavboot.Boot");
+			Class<?> bootClass = Class.forName("jdbcnavboot.Boot");
 			addClassPathItemMethod = bootClass.getMethod("addClassPathItem",
 												new Class[] { String.class });
 		} catch (ClassNotFoundException e) {
@@ -143,7 +143,7 @@ public class Preferences {
 			// building here only comes into play if the user did not
 			// have a .jdbcnavrc file yet, or if they manually deleted
 			// the "classpath" element from it.
-			classPath = new ArrayList();
+			classPath = new ArrayList<String>();
 			classPath.add("CLASSPATH");
 			addClassPathItem("CLASSPATH");
 		}
@@ -199,18 +199,17 @@ public class Preferences {
 	public Point getDrift() {
 		// Return the drift value that has the most occurrences
 		// in the 'drift' list
-		HashMap map = new HashMap();
+		HashMap<Point, Integer> map = new HashMap<Point, Integer>();
 		int maxCount = 0;
 		Point maxCountedDrift = new Point(0, 0);
-		for (Iterator iter = drift.iterator(); iter.hasNext();) {
-			Point dr = (Point) iter.next();
-			Integer count = (Integer) map.get(dr);
-			int c = count == null ? 1 : count.intValue() + 1;
+		for (Point dr : drift) {
+			Integer count = map.get(dr);
+			int c = count == null ? 1 : count + 1;
 			if (c > maxCount) {
 				maxCount = c;
 				maxCountedDrift = dr;
 			}
-			map.put(dr, new Integer(c));
+			map.put(dr, c);
 		}
 		return maxCountedDrift;
 	}
@@ -223,7 +222,7 @@ public class Preferences {
 
 	public String getSystemPropertiesAsText() {
 		StringBuffer buf = new StringBuffer();
-		for (Iterator iter = systemProps.iterator(); iter.hasNext();) {
+		for (Iterator<String> iter = systemProps.iterator(); iter.hasNext();) {
 			buf.append(iter.next());
 			buf.append('=');
 			buf.append(iter.next());
@@ -249,7 +248,7 @@ public class Preferences {
 	}
 
 
-	public Collection getConnectionConfigs() {
+	public Collection<Object> getConnectionConfigs() {
 		return Collections.unmodifiableCollection(connectionConfigs);
 	}
 
@@ -282,17 +281,15 @@ public class Preferences {
 	}
 
 
-	public ArrayList getClassPath() {
+	public ArrayList<String> getClassPath() {
 		return classPath;
 	}
 
-	public void setClassPath(ArrayList classPath) {
+	public void setClassPath(ArrayList<String> classPath) {
 		this.classPath = classPath;
 		if (addClassPathItemMethod != null) {
-			for (Iterator iter = classPath.iterator(); iter.hasNext();) {
-				String item = (String) iter.next();
+			for (String item : classPath)
 				addClassPathItem(item);
-			}
 		}
 	}
 
@@ -319,7 +316,7 @@ public class Preferences {
 				m.invoke(null, new Object[] { null });
 			} catch (Exception e) {}
 			try {
-				Class c = Class.forName("oracle.jdbc.driver.OracleLog");
+				Class<?> c = Class.forName("oracle.jdbc.driver.OracleLog");
 				Method m = c.getMethod(
 						"setLogStream", new Class[] { PrintStream.class });
 				m.invoke(null, new Object[] { null });
@@ -347,16 +344,16 @@ public class Preferences {
 					m.invoke(null, new Object[] { logStream });
 				} catch (Exception e) {}
 				try {
-					Class c = Class.forName("oracle.jdbc.driver.OracleLog");
+					Class<?> c = Class.forName("oracle.jdbc.driver.OracleLog");
 					Method m = c.getMethod(
 							"setLogStream", new Class[] { PrintStream.class });
 					m.invoke(null, new Object[] { logStream });
 				} catch (Exception e) {}
 			}
 			try {
-				Class c = Class.forName("oracle.jdbc.driver.OracleLog");
+				Class<?> c = Class.forName("oracle.jdbc.driver.OracleLog");
 				Method m = c.getMethod("setLogVolume", new Class[] {int.class});
-				m.invoke(null, new Object[] { new Integer(newLevel) });
+				m.invoke(null, new Object[] { newLevel });
 			} catch (Exception e) {}
 			logLevel = newLevel;
 		}
@@ -500,7 +497,7 @@ public class Preferences {
 				windowYDrift = null;
 			} else if (name.equals("classpath")) {
 				inClassPath = true;
-				classPath = new ArrayList();
+				classPath = new ArrayList<String>();
 			}
 			buf = null;
 		}
@@ -568,7 +565,7 @@ public class Preferences {
 					}
 				else if (name.equals("x-drift") || name.equals("y-drift")) {
 					StringTokenizer tok = new StringTokenizer(value, " ,");
-					ArrayList list = new ArrayList();
+					ArrayList<Integer> list = new ArrayList<Integer>();
 					while (tok.hasMoreTokens())
 						try {
 							list.add(new Integer(tok.nextToken()));
@@ -576,7 +573,7 @@ public class Preferences {
 					int n = list.size();
 					int[] ia = new int[n];
 					for (int i = 0; i < n; i++)
-						ia[i] = ((Integer) list.get(i)).intValue();
+						ia[i] = list.get(i);
 					if (name.equals("x-drift"))
 						windowXDrift = ia;
 					else
@@ -743,8 +740,7 @@ public class Preferences {
 			StringBuffer xbuf = new StringBuffer();
 			StringBuffer ybuf = new StringBuffer();
 			boolean comma = false;
-			for (Iterator iter = drift.iterator(); iter.hasNext();) {
-				Point dr = (Point) iter.next();
+			for (Point dr : drift) {
 				if (comma) {
 					xbuf.append(",");
 					ybuf.append(",");
@@ -776,9 +772,9 @@ public class Preferences {
 			xml.writeComment("System Properties; these are passed to "
 							 + "System.setProperty()");
 			xml.openTag("system-properties");
-			for (Iterator iter = systemProps.iterator(); iter.hasNext();) {
-				String name = (String) iter.next();
-				String value = (String) iter.next();
+			for (Iterator<String> iter = systemProps.iterator(); iter.hasNext();) {
+				String name = iter.next();
+				String value = iter.next();
 				xml.openTag("system-property");
 				xml.wholeTag("name", name);
 				xml.wholeTag("value", value);
@@ -809,7 +805,7 @@ public class Preferences {
 				}
 
 				xml2.openTag("connection-configs");
-				for (Iterator iter = connectionConfigs.iterator();
+				for (Iterator<Object> iter = connectionConfigs.iterator();
 															iter.hasNext();){
 					String name = (String) iter.next();
 					ConnectionConfig config = (ConnectionConfig) iter.next();
@@ -837,9 +833,8 @@ public class Preferences {
 				}
 			}
 
-			for (Iterator iter = encryptedConfigs.iterator(); iter.hasNext();) {
+			for (byte[] ba : encryptedConfigs) {
 				xml.openTag("encrypted-connection-configs");
-				byte[] ba = (byte[]) iter.next();
 				StringBuffer sbuf = new StringBuffer();
 				for (int i = 0; i < ba.length; i++) {
 					byte b = ba[i];
@@ -874,10 +869,8 @@ public class Preferences {
 		xml.writeComment("environment variable should be inserted at that");
 		xml.writeComment("point in the sequence.						 ");
 		xml.openTag("classpath");
-		for (Iterator iter = classPath.iterator(); iter.hasNext();) {
-			String item = (String) iter.next();
+		for (String item : classPath)
 			xml.wholeTag("item", item);
-		}
 		xml.closeTag();
 
 		xml.newLine();
@@ -919,8 +912,8 @@ public class Preferences {
 	private void tryToDecryptConfigs() {
 		boolean tears = false;
 		boolean joy = false;
-		for (Iterator iter = encryptedConfigs.iterator(); iter.hasNext();) {
-			byte[] encryptedConfig = (byte[]) iter.next();
+		for (Iterator<byte[]> iter = encryptedConfigs.iterator(); iter.hasNext();) {
+			byte[] encryptedConfig = iter.next();
 			boolean success = false;
 			try {
 				byte[] decryptedConfig = decrypt(encryptedConfig);

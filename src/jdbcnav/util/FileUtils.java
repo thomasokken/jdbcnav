@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -96,14 +96,14 @@ public class FileUtils {
 		}
 	}
 
-	private static HashMap entityMap;
+	private static HashMap<String, String> entityMap;
 	private static String[] entityTable;
 
 	static {
 		// These are all from "Webmaster in a Nutshell" (1st Edition)
 		// except for the ones flagged "Non-standard"
 		// (which is not to imply that the others *are* all standard!).
-		entityMap = new HashMap();
+		entityMap = new HashMap<String, String>();
 		entityMap.put("quot", "\"");
 		entityMap.put("amp", "&");
 		entityMap.put("lt", "<");
@@ -207,10 +207,9 @@ public class FileUtils {
 
 		// Now initialize an array for the reverse mapping
 		entityTable = new String[256];
-		for (Iterator iter = entityMap.entrySet().iterator(); iter.hasNext();) {
-			Map.Entry me = (Map.Entry) iter.next();
-			String entity = (String) me.getKey();
-			char c = ((String) me.getValue()).charAt(0);
+		for (Map.Entry<String, String> me : entityMap.entrySet()) {
+			String entity = me.getKey();
+			char c = me.getValue().charAt(0);
 			entityTable[c] = entity;
 		}
 
@@ -280,7 +279,7 @@ public class FileUtils {
 							buf.append(";");
 						}
 					} else {
-						String s = (String) entityMap.get(e);
+						String s = entityMap.get(e);
 						if (s != null)
 							buf.append(s);
 						else {

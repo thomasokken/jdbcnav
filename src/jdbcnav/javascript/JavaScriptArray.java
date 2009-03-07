@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -44,6 +44,7 @@ public class JavaScriptArray implements Scriptable {
 	public String getClassName() {
 		return "JavaScriptArray";
 	}
+	@SuppressWarnings(value={"unchecked"})
 	public Object getDefaultValue(Class hint) {
 		StringBuffer buf = new StringBuffer();
 		buf.append("[ ");

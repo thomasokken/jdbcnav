@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -51,7 +51,7 @@ public class PreferencesFrame extends MyFrame {
 
 	private static ColorChooser pkColorChooser = null;
 	private static ColorChooser fkColorChooser = null;
-	private static ArrayList highlightColorChangeListeners = new ArrayList();
+	private static ArrayList<Component> highlightColorChangeListeners = new ArrayList<Component>();
 
 	public PreferencesFrame() {
 		super("Preferences", true, true, true, true);
@@ -386,11 +386,8 @@ public class PreferencesFrame extends MyFrame {
 		pkHighC = c;
 		pkHighColL.setIcon(new SolidColorIcon(c, 40, 20));
 		MyTable.setTypeColor(1, c);
-		for (Iterator iter = highlightColorChangeListeners.iterator();
-				iter.hasNext();) {
-			Component hccl = (Component) iter.next();
+		for (Component hccl : highlightColorChangeListeners)
 			hccl.repaint();
-		}
 	}
 
 	private void changeFkHighCol() {
@@ -414,11 +411,8 @@ public class PreferencesFrame extends MyFrame {
 		fkHighC = c;
 		fkHighColL.setIcon(new SolidColorIcon(c, 40, 20));
 		MyTable.setTypeColor(2, c);
-		for (Iterator iter = highlightColorChangeListeners.iterator();
-				iter.hasNext();) {
-			Component hccl = (Component) iter.next();
+		for (Component hccl : highlightColorChangeListeners)
 			hccl.repaint();
-		}
 	}
 
 	private void ok() {
@@ -480,11 +474,12 @@ public class PreferencesFrame extends MyFrame {
 	}
 
 	private class ClassPathTableModel extends AbstractTableModel {
-		private ArrayList items;
-		public ClassPathTableModel(ArrayList items) {
-			this.items = (ArrayList) items.clone();
+		private ArrayList<String> items;
+		@SuppressWarnings(value={"unchecked"})
+		public ClassPathTableModel(ArrayList<String> items) {
+			this.items = (ArrayList<String>) items.clone();
 		}
-		public ArrayList getItems() {
+		public ArrayList<String> getItems() {
 			return items;
 		}
 		public int getRowCount() {
@@ -493,7 +488,7 @@ public class PreferencesFrame extends MyFrame {
 		public int getColumnCount() {
 			return 1;
 		}
-		public Class getColumnClass(int column) {
+		public Class<?> getColumnClass(int column) {
 			return String.class;
 		}
 		public boolean isCellEditable(int row, int column) {
@@ -504,7 +499,7 @@ public class PreferencesFrame extends MyFrame {
 		}
 		public void setValueAt(Object obj, int row, int column) {
 			String newVal = String.valueOf(obj);
-			String oldVal = (String) items.get(row);
+			String oldVal = items.get(row);
 			if (!newVal.equals(oldVal)) {
 				items.set(row, newVal);
 				fireTableCellUpdated(row, column);
@@ -513,7 +508,7 @@ public class PreferencesFrame extends MyFrame {
 		public int[] up(int[] sel) {
 			int remove = sel[0] - 1;
 			int insert = sel[sel.length - 1];
-			String s = (String) items.remove(remove);
+			String s = items.remove(remove);
 			fireTableRowsDeleted(remove, remove);
 			items.add(insert, s);
 			fireTableRowsInserted(insert, insert);
@@ -524,7 +519,7 @@ public class PreferencesFrame extends MyFrame {
 		public int[] down(int[] sel) {
 			int remove = sel[sel.length - 1] + 1;
 			int insert = sel[0];
-			String s = (String) items.remove(remove);
+			String s = items.remove(remove);
 			fireTableRowsDeleted(remove, remove);
 			items.add(insert, s);
 			fireTableRowsInserted(insert, insert);

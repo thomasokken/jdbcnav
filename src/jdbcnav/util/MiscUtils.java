@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -24,21 +24,6 @@ import java.sql.Types;
 import java.util.*;
 
 public class MiscUtils {
-	public static final Comparator caseInsensitiveComparator =
-				new Comparator() {
-					public int compare(Object a, Object b) {
-						if (a == null)
-							return b == null ? 0 : -1;
-						else if (b == null)
-							return 1;
-						else {
-							String sa = (String) a;
-							String sb = (String) b;
-							return sa.compareToIgnoreCase(sb);
-						}
-					}
-				};
-
 	public static boolean strEq(String a, String b) {
 		return a == null ? b == null : a.equalsIgnoreCase(b);
 	}
@@ -52,6 +37,7 @@ public class MiscUtils {
 			return a.compareToIgnoreCase(b);
 	}
 	
+	@SuppressWarnings(value={"unchecked"})
 	public static int compareObjects(Object a, Object b, boolean ignoreCase) {
 		if (a == null)
 			return b == null ? 0 : 1;

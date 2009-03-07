@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -29,33 +29,33 @@ import jdbcnav.util.NavigatorException;
 
 
 public class MultiTableDiff {
-	public static void populate(TableChangeHandler tch, Collection tablesColl,
+	public static void populate(TableChangeHandler tch, Collection<Table> tablesColl,
 								boolean waitUntilReady)
 												throws NavigatorException {
 		new MultiTableDiff().diff2(tch, tablesColl, null, waitUntilReady, true);
 	}
 
-	public static void diff(TableChangeHandler tch, Collection oldColl,
-							Collection newColl, boolean waitUntilReady)
+	public static void diff(TableChangeHandler tch, Collection<Table> oldColl,
+							Collection<Table> newColl, boolean waitUntilReady)
 												throws NavigatorException {
 		new MultiTableDiff().diff2(tch, oldColl, newColl, waitUntilReady, true);
 	}
 
-	public static void diff(TableChangeHandler tch, Collection oldColl,
-							Collection newColl, boolean waitUntilReady,
+	public static void diff(TableChangeHandler tch, Collection<Table> oldColl,
+							Collection<Table> newColl, boolean waitUntilReady,
 							boolean returnNewTables)
 												throws NavigatorException {
 		new MultiTableDiff().diff2(tch, oldColl, newColl, waitUntilReady,
 								   returnNewTables);
 	}
 
-	private TreeMap oldcells;
-	private TreeMap newcells;
-	private ArrayList oldtables;
-	private ArrayList newtables;
+	private TreeMap<Table, ArrayList<Object[]>> oldcells;
+	private TreeMap<Table, ArrayList<Object[]>> newcells;
+	private ArrayList<Table> oldtables;
+	private ArrayList<Table> newtables;
 
-	private void diff2(TableChangeHandler tch, Collection oldColl,
-					   Collection newColl, boolean waitUntilReady,
+	private void diff2(TableChangeHandler tch, Collection<Table> oldColl,
+					   Collection<Table> newColl, boolean waitUntilReady,
 					   boolean returnNewTables) throws NavigatorException {
 
 		// The waitUntilReady parameter specifies whether to wait for tables
@@ -73,15 +73,14 @@ public class MultiTableDiff {
 		// It is our caller's responsibility to pause or cancel loads that are
 		// in progress before calling us.
 
-		oldcells = new TreeMap();
-		newcells = new TreeMap();
-		oldtables = new ArrayList();
-		newtables = new ArrayList();
+		oldcells = new TreeMap<Table, ArrayList<Object[]>>();
+		newcells = new TreeMap<Table, ArrayList<Object[]>>();
+		oldtables = new ArrayList<Table>();
+		newtables = new ArrayList<Table>();
 		Database olddb = null;
 		Database newdb = null;
 
-		for (Iterator iter = oldColl.iterator(); iter.hasNext();) {
-			Table t1 = (Table) iter.next();
+		for (Table t1 : oldColl) {
 			if (olddb == null)
 				olddb = t1.getDatabase();
 			else if (olddb != t1.getDatabase())
@@ -106,8 +105,7 @@ public class MultiTableDiff {
 				//	  unqualified name (since these names are used to match
 				//	  the 'old' and 'new' tables).
 				Table t2 = null;
-				for (Iterator iter2 = newColl.iterator(); iter2.hasNext();) {
-					Table t = (Table) iter2.next();
+				for (Table t : newColl) {
 					if (t1.getName().equalsIgnoreCase(t.getName())) {
 						t2 = t;
 						break;
@@ -158,19 +156,19 @@ public class MultiTableDiff {
 		do {
 			notDone = false;
 			didSomething = false;
-			Iterator iter1 = oldtables.iterator();
-			Iterator iter2 = newtables.iterator();
+			Iterator<Table> iter1 = oldtables.iterator();
+			Iterator<Table> iter2 = newtables.iterator();
 			while (iter1.hasNext()) {
-				Table t1 = (Table) iter1.next();
-				Table t2 = (Table) iter2.next();
-				ArrayList cells1 = (ArrayList) oldcells.get(t1);
-				ArrayList cells2 = (ArrayList) newcells.get(t2);
+				Table t1 = iter1.next();
+				Table t2 = iter2.next();
+				ArrayList<Object[]> cells1 = oldcells.get(t1);
+				ArrayList<Object[]> cells2 = newcells.get(t2);
 				int rows1 = cells1.size();
 				int rows2 = cells2.size();
-				ArrayList deletedKey = new ArrayList();
-				ArrayList updatedRow = new ArrayList();
-				ArrayList insertedRow = new ArrayList();
-				ArrayList foundIndex = new ArrayList();
+				ArrayList<Object[]> deletedKey = new ArrayList<Object[]>();
+				ArrayList<Object[]> updatedRow = new ArrayList<Object[]>();
+				ArrayList<Object[]> insertedRow = new ArrayList<Object[]>();
+				ArrayList<Integer> foundIndex = new ArrayList<Integer>();
 
 				for (int j = 0; j < rows1; j++) {
 					Object[] key = indexToPK(t1, cells1, j);
@@ -180,19 +178,18 @@ public class MultiTableDiff {
 						Object[] row2 = indexToRow(cells2, k);
 						if (!Arrays.equals(row1, row2))
 							updatedRow.add(row2);
-						foundIndex.add(new Integer(k));
+						foundIndex.add(k);
 					} else
 						deletedKey.add(key);
 				}
 				Collections.sort(foundIndex);
 				for (int j = 0; j < rows2; j++) {
-					if (Collections.binarySearch(foundIndex,
-													new Integer(j)) < 0)
+					if (Collections.binarySearch(foundIndex, j) < 0)
 						insertedRow.add(indexToRow(cells2, j));
 				}
 
 				for (int j = 0; j < deletedKey.size(); j++) {
-					Object[] key = (Object[]) deletedKey.get(j);
+					Object[] key = deletedKey.get(j);
 					boolean doit = false;
 					if (canDeleteKey(t1, key))
 						doit = true;
@@ -209,7 +206,7 @@ public class MultiTableDiff {
 				}
 
 				for (int j = 0; j < updatedRow.size(); j++) {
-					Object[] row = (Object[]) updatedRow.get(j);
+					Object[] row = updatedRow.get(j);
 					boolean doit = false;
 					if (canUpdateRow(t1, cells1, row))
 						doit = true;
@@ -228,7 +225,7 @@ public class MultiTableDiff {
 				}
 
 				for (int j = 0; j < insertedRow.size(); j++) {
-					Object[] row = (Object[]) insertedRow.get(j);
+					Object[] row = insertedRow.get(j);
 					boolean doit = false;
 					if (canInsertRow(t1, cells1, row))
 						doit = true;
@@ -271,21 +268,19 @@ public class MultiTableDiff {
 		} while (notDone && didSomething);
 	}
 
-	private static Table findTable(ArrayList set, String catalog, String schema,
+	private static Table findTable(ArrayList<Table> set, String catalog, String schema,
 															String name) {
-		for (Iterator iter = set.iterator(); iter.hasNext();) {
-			Table t = (Table) iter.next();
+		for (Table t : set)
 			if (MiscUtils.strEq(catalog, t.getCatalog())
 					&& MiscUtils.strEq(schema, t.getSchema())
 					&& MiscUtils.strEq(name, t.getName()))
 				return t;
-		}
 		return null;
 	}
 
-	private static ArrayList makeCellArray(Table table, boolean waitUntilReady,
+	private static ArrayList<Object[]> makeCellArray(Table table, boolean waitUntilReady,
 									boolean empty) throws NavigatorException {
-		ArrayList cells = new ArrayList();
+		ArrayList<Object[]> cells = new ArrayList<Object[]>();
 		if (!empty) {
 			ResultSetTableModel model = table.getModel();
 			if (model != null) {
@@ -314,14 +309,12 @@ public class MultiTableDiff {
 		return cells;
 	}
 
-	private static class RowComparator implements Comparator {
+	private static class RowComparator implements Comparator<Object[]> {
 		private int[] key;
 		public RowComparator(Table table) throws NavigatorException {
 			key = table.getPKColumns();
 		}
-		public int compare(Object A, Object B) {
-			Object[] a = (Object[]) A;
-			Object[] b = (Object[]) B;
+		public int compare(Object[] a, Object[] b) {
 			for (int i = 0; i < key.length; i++) {
 				int col = key[i];
 				int res = MiscUtils.compareObjects(a[col], b[col], false);
@@ -332,17 +325,17 @@ public class MultiTableDiff {
 		}
 	}
 
-	private static Object[] indexToPK(Table table, ArrayList cells, int index)
+	private static Object[] indexToPK(Table table, ArrayList<Object[]> cells, int index)
 												throws NavigatorException {
 		int[] key = table.getPKColumns();
 		Object[] res = new Object[key.length];
-		Object[] row = (Object[]) cells.get(index);
+		Object[] row = cells.get(index);
 		for (int i = 0; i < key.length; i++)
 			res[i] = row[key[i]];
 		return res;
 	}
 
-	private static int pkToIndex(Table table, ArrayList cells, Object[] key)
+	private static int pkToIndex(Table table, ArrayList<Object[]> cells, Object[] key)
 												throws NavigatorException {
 		Object[] row = new Object[table.getColumnCount()];
 		int[] pkColumns = table.getPKColumns();
@@ -351,34 +344,34 @@ public class MultiTableDiff {
 		return rowToIndex(table, cells, row);
 	}
 
-	private static Object[] indexToRow(ArrayList cells, int index) {
-		return (Object[]) cells.get(index);
+	private static Object[] indexToRow(ArrayList<Object[]> cells, int index) {
+		return cells.get(index);
 	}
 
-	private static int rowToIndex(Table table, ArrayList cells, Object[] row)
+	private static int rowToIndex(Table table, ArrayList<Object[]> cells, Object[] row)
 													throws NavigatorException {
 		return Collections.binarySearch(cells, row, new RowComparator(table));
 	}
 
 	private static int[] rkToIndexes(Table thisTable, Table thatTable,
-							ArrayList thatCells, int rkIndex, Object[] key)
+							ArrayList<Object[]> thatCells, int rkIndex, Object[] key)
 													throws NavigatorException {
 		int[] rkColumns = thisTable.getRKColumns(rkIndex, thatTable);
-		ArrayList al = new ArrayList();
+		ArrayList<Integer> al = new ArrayList<Integer>();
 		outer:
 		for (int i = 0; i < thatCells.size(); i++) {
-			Object[] row = (Object[]) thatCells.get(i);
+			Object[] row = thatCells.get(i);
 			for (int j = 0; j < rkColumns.length; j++) {
 				Object o = row[rkColumns[j]];
 				if (o == null ? key[j] != null : !o.equals(key[j]))
 					continue outer;
 			}
-			al.add(new Integer(i));
+			al.add(i);
 		}
 		int sz = al.size();
 		int[] res = new int[sz];
 		for (int i = 0; i < sz; i++)
-			res[i] = ((Integer) al.get(i)).intValue();
+			res[i] = al.get(i);
 		return res;
 	}
 
@@ -393,7 +386,7 @@ public class MultiTableDiff {
 			if (t == null)
 				// Table is not in table set; ignore this constraint
 				continue;
-			ArrayList cells = (ArrayList) oldcells.get(t);
+			ArrayList<Object[]> cells = oldcells.get(t);
 			int[] index2 = rkToIndexes(table, t, cells, i, key);
 			if (index2.length == 0)
 				// No matching rows
@@ -404,14 +397,14 @@ public class MultiTableDiff {
 		return true;
 	}
 
-	private boolean canUpdateRow(Table table, ArrayList cells,
+	private boolean canUpdateRow(Table table, ArrayList<Object[]> cells,
 									Object[] row) throws NavigatorException {
 		if (rowToIndex(table, cells, row) < 0)
 			return false;
 		return checkForeignKeys(table, row);
 	}
 
-	private boolean canInsertRow(Table table, ArrayList cells,
+	private boolean canInsertRow(Table table, ArrayList<Object[]> cells,
 									Object[] row) throws NavigatorException {
 		// Check the primary key for non-nullness and uniqueness
 		// *only* if it is a real primary key; we must not perform
@@ -452,7 +445,7 @@ public class MultiTableDiff {
 			}
 			if (keyIsNull)
 				continue;
-			ArrayList c = (ArrayList) oldcells.get(t);
+			ArrayList<Object[]> c = oldcells.get(t);
 			int index2 = pkToIndex(t, c, key);
 			if (index2 < 0)
 				// No matching rows

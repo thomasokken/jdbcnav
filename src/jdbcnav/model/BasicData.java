@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -24,7 +24,7 @@ import java.util.*;
 public class BasicData implements Data {
 	private String[] columnNames;
 	private TypeSpec[] typeSpecs;
-	private ArrayList data;
+	private ArrayList<Object[]> data;
 
 	public BasicData() {
 		//
@@ -39,7 +39,7 @@ public class BasicData implements Data {
 			columnNames[i] = src.getColumnName(i);
 			typeSpecs[i] = src.getTypeSpec(i);
 		}
-		data = new ArrayList();
+		data = new ArrayList<Object[]>();
 		for (int i = 0; i < rows; i++) {
 			Object[] row = new Object[cols];
 			for (int j = 0; j < cols; j++) {
@@ -62,7 +62,7 @@ public class BasicData implements Data {
 		this.typeSpecs = typeSpecs;
 	}
 
-	public void setData(ArrayList data) {
+	public void setData(ArrayList<Object[]> data) {
 		this.data = data;
 	}
 
@@ -70,11 +70,12 @@ public class BasicData implements Data {
 		data.add(row);
 	}
 
+	@SuppressWarnings(value={"unchecked"})
 	public Object clone() {
 		BasicData that = new BasicData();
-		that.columnNames = (String[]) columnNames.clone();
-		that.typeSpecs = (TypeSpec[]) typeSpecs.clone();
-		that.data = (ArrayList) data.clone();
+		that.columnNames = columnNames.clone();
+		that.typeSpecs = typeSpecs.clone();
+		that.data = (ArrayList<Object[]>) data.clone();
 		return that;
 	}
 
@@ -99,7 +100,7 @@ public class BasicData implements Data {
 	}
 
 	public Object getValueAt(int row, int col) {
-		return ((Object[]) data.get(row))[col];
+		return data.get(row)[col];
 	}
 
 

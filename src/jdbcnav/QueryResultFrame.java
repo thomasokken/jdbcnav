@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -488,7 +488,7 @@ public class QueryResultFrame extends MyFrame
 						"Confirm", JOptionPane.YES_NO_OPTION,
 						JOptionPane.QUESTION_MESSAGE) == JOptionPane.NO_OPTION)
 				return;
-			ArrayList list = new ArrayList();
+			ArrayList<Table> list = new ArrayList<Table>();
 			list.add(dbTable);
 			try {
 				dbTable.getDatabase().commitTables(list);
@@ -498,7 +498,7 @@ public class QueryResultFrame extends MyFrame
 			return;
 		}
 
-		Collection dirty = dbTable.getDatabase().getDirtyTables();
+		Collection<Table> dirty = dbTable.getDatabase().getDirtyTables();
 		if (dirty.size() == 1 && dirty.iterator().next() == dbTable) {
 			Toolkit.getDefaultToolkit().beep();
 			if (JOptionPane.showInternalConfirmDialog(Main.getDesktop(),
@@ -508,7 +508,7 @@ public class QueryResultFrame extends MyFrame
 						"Confirm", JOptionPane.YES_NO_OPTION,
 						JOptionPane.QUESTION_MESSAGE) == JOptionPane.NO_OPTION)
 				return;
-			ArrayList list = new ArrayList();
+			ArrayList<Table> list = new ArrayList<Table>();
 			list.add(dbTable);
 			try {
 				dbTable.getDatabase().commitTables(list);
@@ -862,7 +862,7 @@ public class QueryResultFrame extends MyFrame
 			String name = getTitle() + " [" + row + ", " + column + "]";
 			Object o = model.getValueAt(row, column);
 			TypeSpec spec = model.getTypeSpec(column);
-			Class k = spec.jdbcJavaClass;
+			Class<?> k = spec.jdbcJavaClass;
 			
 			if (o instanceof BlobWrapper)
 				o = ((BlobWrapper) o).load();
@@ -984,7 +984,7 @@ public class QueryResultFrame extends MyFrame
 				dispose();
 				return;
 			}
-			ArrayList list = new ArrayList();
+			ArrayList<Table> list = new ArrayList<Table>();
 			list.add(dbTable);
 			try {
 				dbTable.getDatabase().commitTables(list);
@@ -1013,7 +1013,7 @@ public class QueryResultFrame extends MyFrame
 			return;
 		}
 		
-		Collection dirty = dbTable.getDatabase().getDirtyTables();
+		Collection<Table> dirty = dbTable.getDatabase().getDirtyTables();
 		if (dirty == null || dirty.size() == 0) {
 			// Hmm, apparently the table is no longer dirty. This can happen
 			// if the user causes it to be committed while the JOptionPane is
@@ -1026,7 +1026,7 @@ public class QueryResultFrame extends MyFrame
 			// dbTable is the only dirty table in this database connection.
 			// Never mind the MultiCommitDialog step; just commit it with
 			// no further ado.
-			ArrayList list = new ArrayList();
+			ArrayList<Table> list = new ArrayList<Table>();
 			list.add(dbTable);
 			try {
 				dbTable.getDatabase().commitTables(list);

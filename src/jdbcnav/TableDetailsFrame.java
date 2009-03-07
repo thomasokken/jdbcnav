@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -160,14 +160,14 @@ public class TableDetailsFrame extends MyFrame {
 	private TableModel buildTableModel() {
 		String[] names = new String[] { "#", "Name", "Type", "Size",
 								"Scale", "Nulls", "SQL Type", "Java Type" };
-		Class[] classes = new Class[] { Integer.class, String.class,
+		Class<?>[] classes = new Class[] { Integer.class, String.class,
 								String.class, Integer.class, Integer.class,
 								String.class, String.class, String.class };
 		int columns = dbTable.getColumnCount();
 		Object[][] data = new Object[columns][8];
 		for (int i = 0; i < columns; i++) {
 			TypeSpec spec = dbTable.getTypeSpecs()[i];
-			data[i][0] = new Integer(i + 1);
+			data[i][0] = i + 1;
 			data[i][1] = dbTable.getColumnNames()[i];
 			data[i][2] = spec.jdbcDbType;
 			data[i][3] = spec.jdbcSize;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -28,12 +28,12 @@ import java.util.*;
 public class XMLWriter {
 	private PrintWriter pw;
 	private int indent;
-	private ArrayList pendingTags;
+	private ArrayList<String> pendingTags;
 
 	public XMLWriter(PrintWriter pw) {
 		this.pw = pw;
 		indent = 0;
-		pendingTags = new ArrayList();
+		pendingTags = new ArrayList<String>();
 		pw.println("<?xml version=\"1.0\" ?>");
 	}
 
@@ -66,7 +66,7 @@ public class XMLWriter {
 	 * the indentation level.
 	 */
 	public void closeTag() {
-		String tagName = (String) pendingTags.remove(pendingTags.size() - 1);
+		String tagName = pendingTags.remove(pendingTags.size() - 1);
 		indent -= 2;
 		writeIndent();
 		writeEndTag(tagName);
@@ -82,7 +82,7 @@ public class XMLWriter {
 	 * <code>openTagNoNewline()</code>).
 	 */
 	public void closeTagNoIndent() {
-		String tagName = (String) pendingTags.remove(pendingTags.size() - 1);
+		String tagName = pendingTags.remove(pendingTags.size() - 1);
 		indent -= 2;
 		writeEndTag(tagName);
 		pw.println();
@@ -97,12 +97,12 @@ public class XMLWriter {
 	 * <br>
 	 * The string is encoded using <code>writeValue()</code>.
 	 */
-	public void wholeTag(String tagName, String tagValue) {
+	public void wholeTag(String tagName, Object tagValue) {
 		if (tagValue == null)
 			return;
 		writeIndent();
 		writeStartTag(tagName);
-		writeValue(tagValue);
+		writeValue(tagValue.toString());
 		writeEndTag(tagName);
 		pw.println();
 	}

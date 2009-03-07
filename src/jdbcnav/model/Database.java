@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -66,9 +66,9 @@ public interface Database {
 
 	boolean needsCommit();
 	boolean hasOrphans();
-	Collection getDirtyTables();
-	void commitTables(Collection tables) throws NavigatorException;
-	Collection getSelectedTables() throws NavigatorException;
+	Collection<Table> getDirtyTables();
+	void commitTables(Collection<Table> tables) throws NavigatorException;
+	Collection<Table> getSelectedTables() throws NavigatorException;
 
 	// runQuery() may return either a Data object or a Table, depending on
 	// whether or not the output from the query represents an updatable view

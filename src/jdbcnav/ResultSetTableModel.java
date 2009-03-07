@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -49,25 +49,25 @@ public class ResultSetTableModel extends AbstractTableModel
 	private MyTable table;
 	private String[] headers;
 	private TypeSpec[] specs;
-	private ArrayList cells = new ArrayList();
-	private ArrayList sequence = new ArrayList();
+	private ArrayList<Object[]> cells = new ArrayList<Object[]>();
+	private ArrayList<Integer> sequence = new ArrayList<Integer>();
 	private int columns;
 	private int colIndex[];
 	private int[] sortPriority;
 	private boolean[] sortAscending;
 	private boolean editable;
-	private ArrayList original;
-	private ArrayList undoListeners;
-	private ArrayList undoStack;
+	private ArrayList<Object[]> original;
+	private ArrayList<UndoListener> undoListeners;
+	private ArrayList<Edit> undoStack;
 	private int undoStackIndex = -1;
 	
 	public ResultSetTableModel(Data data, Table dbTable) {
 		this.dbTable = dbTable;
 		editable = dbTable != null && dbTable.isEditable();
 		if (editable) {
-			original = new ArrayList();
-			undoListeners = new ArrayList();
-			undoStack = new ArrayList();
+			original = new ArrayList<Object[]>();
+			undoListeners = new ArrayList<UndoListener>();
+			undoStack = new ArrayList<Edit>();
 		}
 		columns = data.getColumnCount();
 		colIndex = new int[columns];
@@ -177,7 +177,7 @@ public class ResultSetTableModel extends AbstractTableModel
 						for (int j = 0; j < columns; j++)
 							row[j] = data.getValueAt(i, j);
 						cells.add(row);
-						sequence.add(new Integer(cells.size() - 1));
+						sequence.add(cells.size() - 1);
 						if (editable)
 							original.add(row.clone());
 					}
@@ -228,15 +228,15 @@ public class ResultSetTableModel extends AbstractTableModel
 	}
 	
 	public synchronized Object getValueAt(int row, int column) {
-		int realRow = ((Integer) sequence.get(row)).intValue();
-		return ((Object[]) cells.get(realRow))[column];
+		int realRow = sequence.get(row);
+		return cells.get(realRow)[column];
 	}
 	
 	public synchronized String getColumnName(int column) {
 		return headers[column];
 	}
 	
-	public synchronized Class getColumnClass(int column) {
+	public synchronized Class<?> getColumnClass(int column) {
 		TypeSpec spec = specs[column];
 		if (spec.type == TypeSpec.CLASS)
 			return spec.jdbcJavaClass;
@@ -268,8 +268,8 @@ public class ResultSetTableModel extends AbstractTableModel
 																String why) {
 		if (!editable)
 			return;
-		int realRow = ((Integer) sequence.get(row)).intValue();
-		Object[] currRow = (Object[]) cells.get(realRow);
+		int realRow = sequence.get(row);
+		Object[] currRow = cells.get(realRow);
 		Object prev = currRow[column];
 
 		if (value == null ? prev == null : value.equals(prev))
@@ -280,7 +280,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	}
 
 	public synchronized String[] getHeaders() {
-		return (String[]) headers.clone();
+		return headers.clone();
 	}
 
 	public synchronized boolean isDirty() {
@@ -306,18 +306,18 @@ public class ResultSetTableModel extends AbstractTableModel
 		// versions of the same table, as we do when generating a populate
 		// script).
 
-		ArrayList deleted = new ArrayList();
-		ArrayList modified = new ArrayList();
-		ArrayList modifiedBak = new ArrayList();
-		ArrayList inserted = new ArrayList();
+		ArrayList<Object[]> deleted = new ArrayList<Object[]>();
+		ArrayList<Object[]> modified = new ArrayList<Object[]>();
+		ArrayList<Object[]> modifiedBak = new ArrayList<Object[]>();
+		ArrayList<Object[]> inserted = new ArrayList<Object[]>();
 		int currRows = cells.size();
 		int prevRows = original.size();
 		for (int i = 0; i < prevRows; i++) {
-			if (sequence.indexOf(new Integer(i)) == -1)
+			if (sequence.indexOf(i) == -1)
 				deleted.add(original.get(i));
 			else {
-				Object[] current = (Object[]) cells.get(i);
-				Object[] backup = (Object[]) original.get(i);
+				Object[] current = cells.get(i);
+				Object[] backup = original.get(i);
 				for (int j = 0; j < columns; j++)
 					if (backup[j] == null ? current[j] != null
 										  : !backup[j].equals(current[j])) {
@@ -328,7 +328,7 @@ public class ResultSetTableModel extends AbstractTableModel
 			}
 		}
 		for (int i = prevRows; i < currRows; i++)
-			if (sequence.indexOf(new Integer(i)) != -1)
+			if (sequence.indexOf(i) != -1)
 				inserted.add(cells.get(i));
 
 		PrimaryKey dpk = dbTable.getPrimaryKey();
@@ -352,19 +352,19 @@ public class ResultSetTableModel extends AbstractTableModel
 				}
 
 		for (int i = 0; i < deleted.size(); i++) {
-			Object[] row = (Object[]) deleted.get(i);
+			Object[] row = deleted.get(i);
 			Object[] key = new Object[pk.length];
 			for (int j = 0; j < key.length; j++)
 				key[j] = row[pkIndex[j]];
 			tch.deleteRow(dbTable, key);
 		}
 		for (int i = 0; i < modified.size(); i++) {
-			Object[] row = (Object[]) modified.get(i);
-			Object[] bak = (Object[]) modifiedBak.get(i);
+			Object[] row = modified.get(i);
+			Object[] bak = modifiedBak.get(i);
 			tch.updateRow(dbTable, bak, row);
 		}
 		for (int i = 0; i < inserted.size(); i++) {
-			Object[] row = (Object[]) inserted.get(i);
+			Object[] row = inserted.get(i);
 			tch.insertRow(dbTable, row);
 		}
 	}
@@ -375,13 +375,13 @@ public class ResultSetTableModel extends AbstractTableModel
 		if (!isDirty())
 			return;
 		clearUndoStack();
-		ArrayList newCells = new ArrayList();
+		ArrayList<Object[]> newCells = new ArrayList<Object[]>();
 		original.clear();
 		for (int i = 0; i < sequence.size(); i++) {
-			int row = ((Integer) sequence.get(i)).intValue();
-			Object[] current = (Object[]) cells.get(row);
+			int row = sequence.get(i);
+			Object[] current = cells.get(row);
 			newCells.add(current);
-			sequence.set(i, new Integer(i));
+			sequence.set(i, i);
 			original.add(current.clone());
 		}
 		cells = newCells;
@@ -396,8 +396,8 @@ public class ResultSetTableModel extends AbstractTableModel
 		int rows = original.size();
 		sequence.clear();
 		for (int i = 0; i < rows; i++) {
-			sequence.add(new Integer(i));
-			cells.set(i, ((Object[]) original.get(i)).clone());
+			sequence.add(i);
+			cells.set(i, original.get(i).clone());
 		}
 		for (int i = cells.size() - 1; i >= rows; i--)
 			cells.remove(i);
@@ -441,7 +441,7 @@ public class ResultSetTableModel extends AbstractTableModel
 		if (len == 0)
 			return;
 		for (int i = 0; i < len; i++)
-			selection[i] = ((Integer) sequence.get(selection[i])).intValue();
+			selection[i] = sequence.get(selection[i]);
 		Arrays.sort(selection);
 	}
 
@@ -452,7 +452,7 @@ public class ResultSetTableModel extends AbstractTableModel
 		int seqlen = sequence.size();
 		int[] reverseSequence = new int[seqlen];
 		for (int i = 0; i < seqlen; i++)
-			reverseSequence[((Integer) sequence.get(i)).intValue()] = i;
+			reverseSequence[sequence.get(i)] = i;
 		for (int i = 0; i < len; i++)
 			selection[i] = reverseSequence[selection[i]];
 		Arrays.sort(selection);
@@ -473,22 +473,20 @@ public class ResultSetTableModel extends AbstractTableModel
 	public synchronized String getUndoTitle() {
 		if (undoStackIndex == -1)
 			return null;
-		Edit e = (Edit) undoStack.get(undoStackIndex);
+		Edit e = undoStack.get(undoStackIndex);
 		return e.getUndoTitle();
 	}
 
 	public synchronized String getRedoTitle() {
 		if (undoStackIndex >= undoStack.size() - 1)
 			return null;
-		Edit e = (Edit) undoStack.get(undoStackIndex + 1);
+		Edit e = undoStack.get(undoStackIndex + 1);
 		return e.getRedoTitle();
 	}
 
 	private synchronized void undoRedoTitleChanged() {
-		for (Iterator iter = undoListeners.iterator(); iter.hasNext();) {
-			UndoListener listener = (UndoListener) iter.next();
+		for (UndoListener listener : undoListeners)
 			listener.undoRedoTitleChanged();
-		}
 	}
 
 	private synchronized boolean canUndo() {
@@ -501,7 +499,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	
 	public synchronized void undo() {
 		if (canUndo()) {
-			Edit e = (Edit) undoStack.get(undoStackIndex--);
+			Edit e = undoStack.get(undoStackIndex--);
 			e.undo();
 			undoRedoTitleChanged();
 		}
@@ -509,7 +507,7 @@ public class ResultSetTableModel extends AbstractTableModel
 
 	public synchronized void redo() {
 		if (canRedo()) {
-			Edit e = (Edit) undoStack.get(++undoStackIndex);
+			Edit e = undoStack.get(++undoStackIndex);
 			e.redo();
 			undoRedoTitleChanged();
 		}
@@ -522,10 +520,10 @@ public class ResultSetTableModel extends AbstractTableModel
 		if (viewRow == -1) {
 			viewRow = sequence.size() - 1;
 			beforeModelRow = -1;
-			sequence.add(new Integer(modelRow));
+			sequence.add(modelRow);
 		} else {
-			beforeModelRow = ((Integer) sequence.get(viewRow)).intValue();
-			sequence.add(viewRow, new Integer(modelRow));
+			beforeModelRow = sequence.get(viewRow);
+			sequence.add(viewRow, modelRow);
 		}
 		editHappened(new InsertRowEdit(beforeModelRow));
 		safelyFireTableRowsInserted(viewRow, viewRow);
@@ -543,8 +541,8 @@ public class ResultSetTableModel extends AbstractTableModel
 			if (following == sequence.size())
 				precedes[i] = -1;
 			else
-				precedes[i] = ((Integer) sequence.get(following)).intValue();
-			removed[i] = ((Integer) sequence.get(rows[i])).intValue();
+				precedes[i] = sequence.get(following);
+			removed[i] = sequence.get(rows[i]);
 		}
 		for (int i = length - 1; i >= 0; i--)
 			sequence.remove(rows[i]);
@@ -557,6 +555,7 @@ public class ResultSetTableModel extends AbstractTableModel
 			safelyFireTableDataChanged();
 	}
 
+	@SuppressWarnings(value={"unchecked"})
 	public synchronized void pasteRow(Object[][] grid,
 										String[] mapping, boolean setNull) {
 		Object[] colIndex = new Object[grid[0].length];
@@ -568,19 +567,18 @@ public class ResultSetTableModel extends AbstractTableModel
 			String clipColName = mapping[col];
 			if (clipColName == null)
 				continue;
-			Integer clipColNum = new Integer(col);
 			for (int i = 0; i < grid[0].length; i++)
 				if (clipColName.equalsIgnoreCase((String) grid[0][i])) {
 					Object idx = colIndex[i];
 					if (idx == null)
-						colIndex[i] = clipColNum;
+						colIndex[i] = col;
 					else if (idx instanceof Integer) {
-						ArrayList al = new ArrayList();
-						al.add(idx);
-						al.add(clipColNum);
+						ArrayList<Integer> al = new ArrayList<Integer>();
+						al.add((Integer) idx);
+						al.add(col);
 						colIndex[i] = al;
 					} else
-						((ArrayList) colIndex[i]).add(clipColNum);
+						((ArrayList<Integer>) colIndex[i]).add(col);
 				}
 			if (dpk != null)
 				for (int i = 0; i < dpk.getColumnCount(); i++)
@@ -593,7 +591,7 @@ public class ResultSetTableModel extends AbstractTableModel
 		if (dpk != null && pkFound < dpk.getColumnCount())
 			pkIndex = null;
 
-		ArrayList pasted = new ArrayList();
+		ArrayList<Object[]> pasted = new ArrayList<Object[]>();
 		for (int i = 3; i < grid.length; i++) {
 			Object[] row = new Object[columns];
 			if (!setNull)
@@ -604,11 +602,11 @@ public class ResultSetTableModel extends AbstractTableModel
 				if (idx == null)
 					continue;
 				else if (idx instanceof Integer)
-					row[((Integer) idx).intValue()] = grid[i][j];
+					row[(Integer) idx] = grid[i][j];
 				else {
 					Object o = grid[i][j];
-					for (Iterator iter = ((ArrayList) idx).iterator(); iter.hasNext();)
-						row[((Integer) iter.next()).intValue()] = o;
+					for (int n : (ArrayList<Integer>) idx)
+						row[n] = o;
 				}
 			}
 			pasted.add(row);
@@ -635,20 +633,18 @@ public class ResultSetTableModel extends AbstractTableModel
 
 	private RowComparator rowComparator = new RowComparator();
 
-	private class RowComparator implements Comparator {
-		public int compare(Object A, Object B) {
-			Object a = cells.get(((Integer) A).intValue());
-			Object b = cells.get(((Integer) B).intValue());
+	private class RowComparator implements Comparator<Integer> {
+		public int compare(Integer A, Integer B) {
+			Object[] a = cells.get(A);
+			Object[] b = cells.get(B);
 			if (a == null)
 				return b == null ? 0 :
 						sortAscending[sortPriority[0]] ? 1 : -1;
 			else if (b == null)
 				return sortAscending[sortPriority[0]] ? -1 : 1;
-			Object[] aa = (Object[]) a;
-			Object[] bb = (Object[]) b;
 			for (int i = 0; i < sortPriority.length; i++) {
 				int col = sortPriority[i];
-				int res = MiscUtils.compareObjects(aa[col], bb[col], true);
+				int res = MiscUtils.compareObjects(a[col], b[col], true);
 				if (res != 0)
 					return sortAscending[col] ? res : -res;
 			}
@@ -682,7 +678,7 @@ public class ResultSetTableModel extends AbstractTableModel
 				}
 
 				int rows = getRowCount();
-				Class byteArrayClass = new byte[1].getClass();
+				Class<?> byteArrayClass = new byte[1].getClass();
 				for (int i = 0; i < rows; i++) {
 					for (int j = 0; j < columns; j++) {
 						Object o = getValueAt(i, j);
@@ -691,7 +687,7 @@ public class ResultSetTableModel extends AbstractTableModel
 								o = ((BlobWrapper) o).load();
 							else if (o instanceof ClobWrapper)
 								o = ((ClobWrapper) o).load();
-							Class k = specs[j].jdbcJavaClass;
+							Class<?> k = specs[j].jdbcJavaClass;
 							String s;
 							if (k == String.class
 									|| java.sql.Clob.class.isAssignableFrom(k))
@@ -723,7 +719,7 @@ public class ResultSetTableModel extends AbstractTableModel
 	public synchronized void doImport(File file, int importMode,
 												String[] colName) {
 		LineNumberReader in = null;
-		ArrayList imported = new ArrayList();
+		ArrayList<Object[]> imported = new ArrayList<Object[]>();
 		int[] pkIndex = null;
 
 		try {
@@ -733,10 +729,10 @@ public class ResultSetTableModel extends AbstractTableModel
 			if (colName == null) {
 				line = readLines(in);
 				tok = new CSVTokenizer(line);
-				ArrayList al = new ArrayList();
+				ArrayList<String> al = new ArrayList<String>();
 				while (tok.hasMoreTokens())
 					al.add(tok.nextToken());
-				colName = (String[]) al.toArray(new String[al.size()]);
+				colName = al.toArray(new String[al.size()]);
 			}
 			int[] colIndex = new int[colName.length];
 			for (int i = 0; i < colName.length; i++) {
@@ -773,7 +769,7 @@ public class ResultSetTableModel extends AbstractTableModel
 			TypeSpec[] specs = new TypeSpec[columns];
 			for (int i = 0; i < columns; i++)
 				specs[i] = getTypeSpec(i);
-			Class byteArrayClass = new byte[1].getClass();
+			Class<?> byteArrayClass = new byte[1].getClass();
 
 			while ((line = readLines(in)) != null) {
 				Object[] row = new Object[columns];
@@ -794,7 +790,7 @@ public class ResultSetTableModel extends AbstractTableModel
 					if (i == -1)
 						// Column in imported file does not exist in table
 						continue;
-					Class k = specs[i].jdbcJavaClass;
+					Class<?> k = specs[i].jdbcJavaClass;
 					if (k == String.class
 							|| java.sql.Clob.class.isAssignableFrom(k))
 						row[i] = s;
@@ -912,13 +908,13 @@ public class ResultSetTableModel extends AbstractTableModel
 		}
 
 		public void undo() {
-			((Object[]) cells.get(row))[column] = before;
-			safelyFireTableCellUpdated(sequence.indexOf(new Integer(row)), column);
+			cells.get(row)[column] = before;
+			safelyFireTableCellUpdated(sequence.indexOf(row), column);
 		}
 
 		public void redo() {
-			((Object[]) cells.get(row))[column] = after;
-			safelyFireTableCellUpdated(sequence.indexOf(new Integer(row)), column);
+			cells.get(row)[column] = after;
+			safelyFireTableCellUpdated(sequence.indexOf(row), column);
 		}
 	}
 
@@ -939,7 +935,7 @@ public class ResultSetTableModel extends AbstractTableModel
 
 		public void undo() {
 			int index = cells.size() - 1;
-			int row = sequence.indexOf(new Integer(index));
+			int row = sequence.indexOf(index);
 			sequence.remove(row);
 			cells.remove(index);
 			safelyFireTableRowsDeleted(row, row);
@@ -951,10 +947,10 @@ public class ResultSetTableModel extends AbstractTableModel
 			int viewRow;
 			if (row == -1) {
 				viewRow = sequence.size() - 1;
-				sequence.add(new Integer(modelRow));
+				sequence.add(modelRow);
 			} else {
-				viewRow = sequence.indexOf(new Integer(row));
-				sequence.add(viewRow, new Integer(modelRow));
+				viewRow = sequence.indexOf(row);
+				sequence.add(viewRow, modelRow);
 			}
 			safelyFireTableRowsInserted(viewRow, viewRow);
 		}
@@ -989,24 +985,24 @@ public class ResultSetTableModel extends AbstractTableModel
 			for (int i = removed.length - 1; i >= 0; i--) {
 				int insertPos = precedes[i];
 				if (insertPos == -1)
-					sequence.add(new Integer(removed[i]));
+					sequence.add(removed[i]);
 				else {
-					insertPos = sequence.indexOf(new Integer(insertPos));
-					sequence.add(insertPos, new Integer(removed[i]));
+					insertPos = sequence.indexOf(insertPos);
+					sequence.add(insertPos, removed[i]);
 				}
 			}
 			safelyFireTableDataChanged();
 		}
 
 		public void redo() {
-			sequence.removeAll(new ArrayCollection(removed));
+			sequence.removeAll(new ArrayCollection<Integer>(removed));
 			safelyFireTableDataChanged();
 		}
 	}
 
 	private class PasteRowEdit extends AssertiveImportEdit {
 		private boolean plural;
-		public PasteRowEdit(ArrayList pasted, int[] pkIndex, boolean setNull) {
+		public PasteRowEdit(ArrayList<Object[]> pasted, int[] pkIndex, boolean setNull) {
 			super(pasted, pkIndex, setNull);
 			plural = pasted.size() != 1;
 		}
@@ -1018,11 +1014,12 @@ public class ResultSetTableModel extends AbstractTableModel
 		}
 	}
 
+	@SuppressWarnings(value={"unchecked"})
 	private class ViciousImportEdit implements Edit {
-		private ArrayList seq;
-		private ArrayList imports;
-		public ViciousImportEdit(ArrayList imports) {
-			seq = (ArrayList) sequence.clone();
+		private ArrayList<Integer> seq;
+		private ArrayList<Object[]> imports;
+		public ViciousImportEdit(ArrayList<Object[]> imports) {
+			seq = (ArrayList<Integer>) sequence.clone();
 			this.imports = imports;
 		}
 		public String getUndoTitle() {
@@ -1036,13 +1033,13 @@ public class ResultSetTableModel extends AbstractTableModel
 			int first = last - imports.size() + 1;
 			for (int i = last; i >= first; i--)
 				cells.remove(i);
-			sequence = (ArrayList) seq.clone();
+			sequence = (ArrayList<Integer>) seq.clone();
 			safelyFireTableDataChanged();
 		}
 		public void redo() {
 			sequence.clear();
 			for (int i = 0; i < imports.size(); i++) {
-				sequence.add(new Integer(cells.size()));
+				sequence.add(cells.size());
 				cells.add(imports.get(i));
 			}
 			safelyFireTableDataChanged();
@@ -1050,21 +1047,21 @@ public class ResultSetTableModel extends AbstractTableModel
 	}
 	
 	private class AssertiveImportEdit implements Edit {
-		ArrayList updated = new ArrayList();
-		ArrayList updatedIndex = new ArrayList();
-		ArrayList updatedBak = new ArrayList();
-		ArrayList added = new ArrayList();
-		public AssertiveImportEdit(ArrayList imports, int[] pkIndex,
+		ArrayList<Object[]> updated = new ArrayList<Object[]>();
+		ArrayList<Integer> updatedIndex = new ArrayList<Integer>();
+		ArrayList<Object[]> updatedBak = new ArrayList<Object[]>();
+		ArrayList<Object[]> added = new ArrayList<Object[]>();
+		public AssertiveImportEdit(ArrayList<Object[]> imports, int[] pkIndex,
 															boolean rude) {
 			int seqSize = sequence.size();
 			int impSize = imports.size();
 			for (int i = 0; i < impSize; i++) {
-				Object[] impRow = (Object[]) imports.get(i);
+				Object[] impRow = imports.get(i);
 				int matchRow = -1;
 				if (pkIndex != null)
 					for (int j = 0; j < seqSize; j++) {
-						int cellIndex = ((Integer) sequence.get(j)).intValue();
-						Object[] seqRow = (Object[]) cells.get(cellIndex);
+						int cellIndex = sequence.get(j);
+						Object[] seqRow = cells.get(cellIndex);
 						if (rowEqual(impRow, seqRow, pkIndex)) {
 							matchRow = cellIndex;
 							break;
@@ -1076,13 +1073,13 @@ public class ResultSetTableModel extends AbstractTableModel
 							impRow[j] = null;
 					added.add(impRow);
 				} else {
-					Object[] prev = (Object[]) cells.get(matchRow);
+					Object[] prev = cells.get(matchRow);
 					updatedBak.add(prev);
 					for (int j = 0; j < columns; j++)
 						if (impRow[j] == UNSET)
 							impRow[j] = rude ? null : prev[j];
 					updated.add(impRow);
-					updatedIndex.add(new Integer(matchRow));
+					updatedIndex.add(matchRow);
 				}
 			}
 		}
@@ -1094,7 +1091,7 @@ public class ResultSetTableModel extends AbstractTableModel
 		}
 		public void undo() {
 			for (int src = 0; src < updated.size(); src++) {
-				int dst = ((Integer) updatedIndex.get(src)).intValue();
+				int dst = updatedIndex.get(src);
 				cells.set(dst, updatedBak.get(src));
 			}
 			int last = cells.size() - 1;
@@ -1108,31 +1105,30 @@ public class ResultSetTableModel extends AbstractTableModel
 		}
 		public void redo() {
 			for (int src = 0; src < updated.size(); src++) {
-				int dst = ((Integer) updatedIndex.get(src)).intValue();
+				int dst = updatedIndex.get(src);
 				cells.set(dst, updated.get(src));
 			}
 			int first = cells.size();
 			int last = first + added.size() - 1;
 			cells.addAll(added);
 			for (int i = first; i <= last; i++)
-				sequence.add(new Integer(i));
+				sequence.add(i);
 			Collections.sort(sequence, rowComparator);
 			safelyFireTableDataChanged();
 		}
 	}
 	
 	private class GentleImportEdit implements Edit {
-		ArrayList added = new ArrayList();
-		public GentleImportEdit(ArrayList imports, int[] pkIndex) {
+		ArrayList<Object[]> added = new ArrayList<Object[]>();
+		public GentleImportEdit(ArrayList<Object[]> imports, int[] pkIndex) {
 			int seqSize = sequence.size();
 			int impSize = imports.size();
 			for (int i = 0; i < impSize; i++) {
-				Object[] impRow = (Object[]) imports.get(i);
+				Object[] impRow = imports.get(i);
 				boolean matched = false;
 				if (pkIndex != null)
 					for (int j = 0; j < seqSize; j++) {
-						Object[] seqRow = (Object[]) cells.get(((Integer)
-										sequence.get(j)).intValue());
+						Object[] seqRow = cells.get(sequence.get(j));
 						if (rowEqual(impRow, seqRow, pkIndex)) {
 							matched = true;
 							break;
@@ -1163,7 +1159,7 @@ public class ResultSetTableModel extends AbstractTableModel
 			int last = first + added.size() - 1;
 			cells.addAll(added);
 			for (int i = first; i <= last; i++)
-				sequence.add(new Integer(i));
+				sequence.add(i);
 			Collections.sort(sequence, rowComparator);
 			safelyFireTableDataChanged();
 		}

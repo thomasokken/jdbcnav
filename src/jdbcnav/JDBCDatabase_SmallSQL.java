@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2008	Thomas Okken
+// Copyright (C) 2001-2009	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -101,25 +101,25 @@ public class JDBCDatabase_SmallSQL extends JDBCDatabase {
 				|| dbType.equals("NUMBER")
 				|| dbType.equals("VARNUM")) {
 			spec.type = TypeSpec.FIXED;
-			spec.size = size.intValue();
+			spec.size = size;
 			spec.size_in_bits = false;
-			spec.scale = scale.intValue();
+			spec.scale = scale;
 			spec.scale_in_bits = false;
 		} else if (dbType.equals("CHAR")
 				|| dbType.equals("CHARACTER")) {
 			spec.type = TypeSpec.CHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("NCHAR")) {
 			spec.type = TypeSpec.NCHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("VARCHAR")
 				|| dbType.equals("VARCHAR2")) {
 			spec.type = TypeSpec.VARCHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("NVARCHAR")
 				|| dbType.equals("NVARCHAR2")) {
 			spec.type = TypeSpec.VARNCHAR;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("LONGVARCHAR")
 				|| dbType.equals("TEXT")
 				|| dbType.equals("LONG")
@@ -133,11 +133,11 @@ public class JDBCDatabase_SmallSQL extends JDBCDatabase {
 		// but which do occur in the sample database...
 		} else if (dbType.equals("BINARY")) {
 			spec.type = TypeSpec.VARRAW;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("VARBINARY")
 				|| dbType.equals("RAW")) {
 			spec.type = TypeSpec.VARRAW;
-			spec.size = size.intValue();
+			spec.size = size;
 		} else if (dbType.equals("LONGVARBINARY")
 				|| dbType.equals("IMAGE")
 				|| dbType.equals("LONG RAW")
