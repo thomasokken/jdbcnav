@@ -1,9 +1,17 @@
-I think it is safe to say Java 1.4 is officially dead; time to generify JDBC
-Navigator.
-
 Copy/paste of binary values failing (with MySQL -- see account.uuid).
 
 Import CSV does not seem to distinguish between "" and null.
+Import CSV does not seem to handle empty strings correctly -- they turn into
+nulls. There may be a similar problem with empty strings being treated as nulls
+while committing a table.
+
+ResultSetTableModel.commit() and ResultSetTableModel.postCommit() are not
+efficient. While they do a good job of generating minimal DB traffic, they do
+so using code that is linear in the total number of cells in the table. It
+should not be too hard to make it linear in the number of actual edits. For
+small tables, this doesn't matter too much, but when you're working with
+tables with millions of cells, editing just a handful of cells and then having
+to wait several minutes for a Commit to complete is not acceptable.
 
 select * from utterance group by...
 not handled correctly; it's looking for a "where" or end-of-text, and 
@@ -38,11 +46,6 @@ Problems generating an Oracle SQL script from a MySQL database:
 6) BIT: translated to NUMBER(1), which is fine, but the values are printed
    as "true" and "false" (including the quotes); should print 1 and 0 instead.
 
-Importing FDA_NUTRIENT_DATA.csv and then committing it to Oracle is taking
-forever, even with jdbcnav running with -Xmx600m. I should profile this.
-Update: the FDA_NUTRIENT_DATA.DF column in the generated Oracle create script
-is a NUMBER(2, 0), but the actual table contains data that don't fit in there.
-
 Need to spend some time thinking about copying tables (or sets of tables) from
 one db to another without loading everything into memory first. Same for
 generating SQL update scripts, etc. There are too many ways to represent
@@ -52,18 +55,6 @@ tons of memory, and without making the user work their ass of with CSV files
 etc...
 
 When generating SQL, quote all identifiers.
-
-Import CSV does not seem to handle empty strings correctly -- they turn into
-nulls. There may be a similar problem with empty strings being treated as nulls
-while committing a table.
-
-ResultSetTableModel.commit() and ResultSetTableModel.postCommit() are not
-efficient. While they do a good job of generating minimal DB traffic, they do
-so using code that is linear in the total number of cells in the table. It
-should not be too hard to make it linear in the number of actual edits. For
-small tables, this doesn't matter too much, but when you're working with
-tables with millions of cells, editing just a handful of cells and then having
-to wait several minutes for a Commit to complete is not acceptable.
 
 Support Oracle SEQUENCE.
 
