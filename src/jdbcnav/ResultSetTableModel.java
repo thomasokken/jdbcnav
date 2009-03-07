@@ -647,28 +647,10 @@ public class ResultSetTableModel extends AbstractTableModel
 			Object[] aa = (Object[]) a;
 			Object[] bb = (Object[]) b;
 			for (int i = 0; i < sortPriority.length; i++) {
-				try {
-					int col = sortPriority[i];
-					boolean ascending = sortAscending[col];
-					Comparable ac = (Comparable) aa[col];
-					Comparable bc = (Comparable) bb[col];
-					if (ac == null)
-						if (bc != null)
-							return ascending ? 1 : -1;
-						else
-							continue;
-					else if (bc == null)
-						return ascending ? -1 : 1;
-					int res;
-					if ((ac instanceof String) && (bc instanceof String))
-						res = ((String) ac).compareToIgnoreCase((String) bc);
-					else
-						res = ac.compareTo(bc);
-					if (res != 0)
-						return ascending ? res : -res;
-				} catch (ClassCastException e) {
-					// Never mind; try next column
-				}
+				int col = sortPriority[i];
+				int res = MiscUtils.compareObjects(aa[col], bb[col], true);
+				if (res != 0)
+					return sortAscending[col] ? res : -res;
 			}
 			return 0;
 		}

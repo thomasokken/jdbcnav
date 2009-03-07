@@ -19,6 +19,7 @@
 package jdbcnav.util;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.sql.Types;
 import java.util.*;
 
@@ -49,6 +50,35 @@ public class MiscUtils {
 			return 1;
 		else
 			return a.compareToIgnoreCase(b);
+	}
+	
+	public static int compareObjects(Object a, Object b, boolean ignoreCase) {
+		if (a == null)
+			return b == null ? 0 : 1;
+		else if (b == null)
+			return -1;
+		if (a.getClass().isArray() && b.getClass().isArray()) {
+			int alen = Array.getLength(a);
+			int blen = Array.getLength(b);
+			for (int i = 0; i < alen && i < blen; i++) {
+				int res = compareObjects(Array.get(a, i), Array.get(b, i), ignoreCase);
+				if (res != 0)
+					return res;
+			}
+			return alen < blen ? 1 : alen > blen ? -1 : 0;
+		}
+		if ((a instanceof Byte) && (b instanceof Byte)) {
+			int ia = ((Byte) a).byteValue() & 255;
+			int ib = ((Byte) b).byteValue() & 255;
+			return ia < ib ? -1 : ia > ib ? 1 : 0;
+		}
+		if (ignoreCase && (a instanceof String) && (b instanceof String))
+			return ((String) a).compareToIgnoreCase((String) b);
+		try {
+			return ((Comparable) a).compareTo((Comparable) b);
+		} catch (ClassCastException e) {
+			return 0;
+		}
 	}
 
 	public static int arrayLinearSearch(Object[] array, Object value) {

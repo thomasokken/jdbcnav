@@ -324,22 +324,9 @@ public class MultiTableDiff {
 			Object[] b = (Object[]) B;
 			for (int i = 0; i < key.length; i++) {
 				int col = key[i];
-				try {
-					Comparable aa = (Comparable) a[col];
-					Comparable bb = (Comparable) b[col];
-					if (aa == null)
-						if (bb != null)
-							return 1;
-						else
-							continue;
-					else if (bb == null)
-						return -1;
-					int res = aa.compareTo(bb);
-					if (res != 0)
-						return res;
-				} catch (ClassCastException e) {
-					// Column not comparable
-				}
+				int res = MiscUtils.compareObjects(a[col], b[col], false);
+				if (res != 0)
+					return res;
 			}
 			return 0;
 		}
