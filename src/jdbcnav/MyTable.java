@@ -940,7 +940,7 @@ public class MyTable extends JTable {
 				if (x < 1)
 					x = 1;
 			}
-			g.drawString(v, x, fm.getAscent());
+			g.drawString(v, x, fm.getAscent() - 1);
 		}
 
 		private static Color mixColors(Color a, Color b) {
