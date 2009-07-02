@@ -1,4 +1,4 @@
-?? ??? ???: build ????
+2 July 2009: build 2696
 *) Sorting on byte[] columns works now.
 *) When moving columns, the column formatting would not move. Fixed.
 
