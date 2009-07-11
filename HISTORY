@@ -1,3 +1,6 @@
+10 July 2009: build 2697
+*) Changed the homepage URL to http://thomasokken.com/jdbcnav/.
+
 2 July 2009: build 2696
 *) Sorting on byte[] columns works now.
 *) When moving columns, the column formatting would not move. Fixed.
