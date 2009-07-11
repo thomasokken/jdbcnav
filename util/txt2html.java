@@ -25,8 +25,6 @@ public class txt2html {
 				"</pre>\n"
 				+ "<p>\n"
 				+ "Go <a href=\"index.html\">back</a>.\n"
-				+ "<p>\n"
-				+ "<a href=\"http://sourceforge.net/\"><img src=\"http://sflogo.sourceforge.net/sflogo.php?group_id=211715&type=5\" width=\"210\" height=\"62\" border=\"0\" alt=\"SourceForge.net Logo\"/></a>\n"
 				+ "</body>\n"
 				+ "</html>\n");
 	}

@@ -48,7 +48,7 @@ public class Main extends JFrame {
 	private static String copyright =
 				"(C) 2001-2009 Thomas Okken -- thomas_okken@yahoo.com";
 	private static String website =
-				"http://jdbcnav.sourceforge.net/";
+				"http://thomasokken.com/jdbcnav/";
 
 	private static void initArrowAndHourglassCursor() {
 		// Constructing the arrow-plus-hourglass cursor
