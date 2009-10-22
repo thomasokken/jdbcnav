@@ -3,6 +3,47 @@ Import CSV does not seem to handle empty strings correctly -- they turn into
 nulls. There may be a similar problem with empty strings being treated as nulls
 while committing a table.
 
+FileUtil.encodeEntities() chokes on characters > 255.
+This code does not:
+
+    public static String encodeEntities(String text) {
+	StringBuffer buf = new StringBuffer();
+	int len = text.length();
+	for (int i = 0; i < len; i++) {
+	    char c = text.charAt(i);
+	    if (c > entityTable.length) {
+		buf.append("&#");
+		buf.append((int) c);
+		buf.append(";");
+	    } else if (entityTable[c] != null) {
+		buf.append("&");
+		buf.append(entityTable[c]);
+		buf.append(";");
+	    } else
+		buf.append(c);
+	}
+	return buf.toString();
+    }
+
+In JavaScript, support printing to files. Printing to the editor is nice but
+can be deathly slow when generating a lot of output.
+
+Multi-screen problem (MS Windows): On startup, JDBC Navigator repositions its
+main window if it would otherwise be off-screen. This is good, but the test for
+off-screen-ness does not appear to take multiple monitor setups into account;
+it insists on repositioning the window if it is entirely on a secondary
+(non-taskbar) monitor. Doesn't Java offer an API to enumerate monitors? This
+should be fixed because it is annoying.  Also, when this happens, it looks like
+the part that was moved into the main screen does not get painted, at least
+initially. That would appear to be a Java bug, but maybe one that isn't hard to
+work around.
+
+Exporting a table to CSV should be scriptable. That would be extremely useful
+for making tailored snapshots.
+
+Indentation in generated SQL scripts is messed up (tab + 2 spaces, 2 tabs +
+3 spaces, 4 spaces... WTF?)
+
 ResultSetTableModel.commit() and ResultSetTableModel.postCommit() are not
 efficient. While they do a good job of generating minimal DB traffic, they do
 so using code that is linear in the total number of cells in the table. It
