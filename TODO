@@ -1,3 +1,8 @@
+I added string-to-object conversion to ResultSetTableModel,setValueAt(), but
+that seems wrong, or at least inconsistent; the conversion should be performed
+by the table cell editing window just before it calls setValueAt().
+See ResultSetTableModel.java, lines 274-281.
+
 Import CSV does not seem to distinguish between "" and null.
 Import CSV does not seem to handle empty strings correctly -- they turn into
 nulls. There may be a similar problem with empty strings being treated as nulls

@@ -272,6 +272,14 @@ public class ResultSetTableModel extends AbstractTableModel
 		Object[] currRow = cells.get(realRow);
 		Object prev = currRow[column];
 
+		if (value instanceof String) {
+			TypeSpec spec = specs[column];
+			if (!java.sql.Clob.class.isAssignableFrom(spec.jdbcJavaClass))
+				try {
+					value = spec.stringToObject((String) value);
+				} catch (IllegalArgumentException e) {}
+		}
+
 		if (value == null ? prev == null : value.equals(prev))
 			return;
 		currRow[column] = value;
