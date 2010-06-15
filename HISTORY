@@ -1,3 +1,9 @@
+14 June 2010: build 2700
+*) In JDBCDatabase.getJavaTypes(), added a "where 1 = 2" clause to the
+statement used to find a table's column types. This prevents stupid JDBC
+drivers (specifically, MySQL) from actually loading the whole table when all
+we want is the metadata.
+
 10 July 2009: build 2697
 *) Changed the homepage URL to http://thomasokken.com/jdbcnav/.
 

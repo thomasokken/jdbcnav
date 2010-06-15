@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2009	Thomas Okken
+// Copyright (C) 2001-2010	Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -2381,7 +2381,7 @@ public class JDBCDatabase extends BasicDatabase {
 													throws NavigatorException {
 		PreparedStatement stmt = null;
 		try {
-			stmt = con.prepareStatement("select * from " + qualifiedName);
+			stmt = con.prepareStatement("select * from " + qualifiedName + " where 1 = 2");
 			ResultSetMetaData rsmd = stmt.getMetaData();
 			int columns = rsmd.getColumnCount();
 			String[] javaTypes = new String[columns];
