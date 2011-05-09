@@ -1,3 +1,11 @@
+Creating or opening databases with Derby 10.7.1.1 fails with a "Database
+<databaseName> not found" error. This happens when starting jdbcnav with the
+jdbcnavboot.Boot class, but not when using the jdbcnav.Main class. Why does
+SneakyClassLoader make a difference?
+It should be possible to avoid using the custom classloader anyway, by using
+DriverManager's internal APIs for registering drivers directly. I think that
+that approach is not officially blessed, but the required methods are public.
+
 I added string-to-object conversion to ResultSetTableModel,setValueAt(), but
 that seems wrong, or at least inconsistent; the conversion should be performed
 by the table cell editing window just before it calls setValueAt().
