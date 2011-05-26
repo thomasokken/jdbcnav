@@ -7,7 +7,7 @@ public class txt2html {
 				+ "<head>\n"
 				+ "  <title>" + args[0] + "</title>\n"
 				+ "<head>\n"
-				+ "<body style=\"background: no-repeat fixed left top; background-image: url(title.png); padding-left: 62px;\">\n"
+				+ "<body>\n"
 				+ "<h3>" + args[0] + "</h3>\n"
 				+ "<pre>");
 		int c;
