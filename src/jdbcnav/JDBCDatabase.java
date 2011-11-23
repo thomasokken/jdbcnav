@@ -44,7 +44,7 @@ public class JDBCDatabase extends BasicDatabase {
 		LoginDialog.activate(opencb);
 	}
 
-	protected JDBCDatabase(String name, String driver, Connection con) {
+	public JDBCDatabase(String name, String driver, Connection con) {
 		this.name = name;
 		this.internalDriverName = driver;
 		this.con = con;

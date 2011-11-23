@@ -1,3 +1,7 @@
+23 November 2011: build 2702
+*) The JDBCDatabase constructor was protected, which caused opening
+unrecognized database types to fail. Changed it to public, fixing the problem.
+
 14 June 2010: build 2700
 *) In JDBCDatabase.getJavaTypes(), added a "where 1 = 2" clause to the
 statement used to find a table's column types. This prevents stupid JDBC
