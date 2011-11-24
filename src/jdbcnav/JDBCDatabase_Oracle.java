@@ -476,7 +476,7 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
 			}
 		}
 
-		TypeSpec spec = super.makeTypeSpec(dbType, size, scale, sqlType,
+		TypeSpec spec = makeDefaultTypeSpec(dbType, size, scale, sqlType,
 																javaType);
 
 		if (dbType.equals("CHAR")) {

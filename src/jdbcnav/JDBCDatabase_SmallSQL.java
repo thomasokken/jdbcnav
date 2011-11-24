@@ -33,7 +33,7 @@ public class JDBCDatabase_SmallSQL extends JDBCDatabase {
 
 	protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,
 									int sqlType, String javaType) {
-		TypeSpec spec = super.makeTypeSpec(dbType, size, scale, sqlType,
+		TypeSpec spec = makeDefaultTypeSpec(dbType, size, scale, sqlType,
 																javaType);
 		if (dbType.equals("BIT")
 				|| dbType.equals("BOOLEAN")) {

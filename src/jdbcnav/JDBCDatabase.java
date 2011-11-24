@@ -1004,8 +1004,88 @@ public class JDBCDatabase extends BasicDatabase {
 	/**
 	 * This method returns a TypeSpec object for a given column description.
 	 * Subclasses should override it to provide database-specific type details.
+	 * <br>
+	 * This default implementation supports a subset of ANSI SQL types:
+	 * CHAR, VARCHAR, INTEGER, FLOAT, DECIMAL, TIME, and DATE, and a few
+	 * variants and synonyms for these. This implementation is merely intended
+	 * as a fall-back to allow some quick editing on unsupported databases;
+	 * for proper support for all of a database's types, the JDBCDatabase and
+	 * ScriptGenerator classes should be subclassed, and the new subclasses
+	 * added to the InternalDriverMap.
 	 */
 	protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,
+									int sqlType, String javaType) {
+		TypeSpec spec = makeDefaultTypeSpec(dbType, size, scale, sqlType, javaType);
+		dbType = dbType.toLowerCase();
+		if (dbType.equals("char")
+				|| dbType.equals("character")) {
+			spec.type = TypeSpec.CHAR;
+			spec.size = size;
+		} else if (dbType.equals("nchar")
+				|| dbType.equals("national character")) {
+			spec.type = TypeSpec.NCHAR;
+			spec.size = size;
+		} else if (dbType.equals("varchar")
+				|| dbType.equals("character varying")) {
+			spec.type = TypeSpec.VARCHAR;
+			spec.size = size;
+		} else if (dbType.equals("nvarchar")
+				|| dbType.equals("national character varying")) {
+			spec.type = TypeSpec.VARNCHAR;
+			spec.size = size;
+		} else if (dbType.equals("numeric")
+				|| dbType.equals("decimal")) {
+			spec.type = TypeSpec.FIXED;
+			spec.size = size;
+			spec.size_in_bits = false;
+			spec.scale = scale;
+			spec.scale_in_bits = false;
+		} else if (dbType.equals("float") && size <= 24
+				|| dbType.equals("real")) {
+			spec.type = TypeSpec.FLOAT;
+			spec.size = 24;
+			spec.size_in_bits = true;
+			spec.min_exp = -127;
+			spec.max_exp = 127;
+			spec.exp_of_2 = true;
+		} else if (dbType.equals("float") && size > 24
+				|| dbType.equals("double")
+				|| dbType.equals("double precision")) {
+			spec.type = TypeSpec.FLOAT;
+			spec.size = 54;
+			spec.size_in_bits = true;
+			spec.min_exp = -1023;
+			spec.max_exp = 1023;
+			spec.exp_of_2 = true;
+		} else if (dbType.equals("smallint")) {
+			spec.type = TypeSpec.FIXED;
+			spec.size = 16;
+			spec.size_in_bits = true;
+			spec.scale = 0;
+			spec.scale_in_bits = true;
+		} else if (dbType.equals("integer")) {
+			spec.type = TypeSpec.FIXED;
+			spec.size = 32;
+			spec.size_in_bits = true;
+			spec.scale = 0;
+			spec.scale_in_bits = true;
+		} else if (dbType.equals("date")) {
+			spec.type = TypeSpec.DATE;
+		} else if (dbType.equals("time")) {
+			spec.type = TypeSpec.TIME;
+			spec.size = 0;
+		} else if (dbType.equals("timestamp")) {
+			spec.type = TypeSpec.TIMESTAMP;
+			spec.size = 3;
+		}
+		return spec;
+	}
+	
+	/**
+	 * This method returns a basic TypeSpec object for a given column description.
+	 * These should be fleshed out by makeTypeSpec().
+	 */
+	protected TypeSpec makeDefaultTypeSpec(String dbType, Integer size, Integer scale,
 									int sqlType, String javaType) {
 		TypeSpec spec = new TypeSpec(this);
 		spec.type = TypeSpec.UNKNOWN;
