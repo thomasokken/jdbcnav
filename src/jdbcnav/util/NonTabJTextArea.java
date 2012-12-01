@@ -25,12 +25,12 @@ import javax.swing.text.Document;
 
 
 public class NonTabJTextArea extends MyTextArea {
-	private static TreeSet<AWTKeyStroke> forwardSet;
-	private static TreeSet<AWTKeyStroke> backwardSet;
+	private static HashSet<AWTKeyStroke> forwardSet;
+	private static HashSet<AWTKeyStroke> backwardSet;
 	static {
-		forwardSet = new TreeSet<AWTKeyStroke>();
+		forwardSet = new HashSet<AWTKeyStroke>();
 		forwardSet.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, 0));
-		backwardSet = new TreeSet<AWTKeyStroke>();
+		backwardSet = new HashSet<AWTKeyStroke>();
 		backwardSet.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB,
 													InputEvent.SHIFT_MASK));
 	}
