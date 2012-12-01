@@ -1,3 +1,7 @@
+30 November 2012: build 2705
+*) With Java 1.7, the Preferences, MessageBox, and Binary Editor windows would
+throw a ClassCastException in their constructors. Fixed.
+
 23 November 2011: build 2703
 *) The JDBCDatabase constructor was protected, which caused opening
 unrecognized database types to fail. Changed it to public, fixing the problem.
