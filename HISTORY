@@ -1,3 +1,12 @@
+2 December 2012: build 2706
+*) Generating escaped HTML strings would choke on character codes greater than
+255. This could cause saving File databases and presenting table details
+windows to fail. Fixed.
+*) When importing CSV files into tables, empty strings would be treated as
+nulls. Fixed.
+*) Upgraded Rhino to 1.7R4, and added generics wherever the new Rhino and the
+latest Java APIs support them (e.g. JList).
+
 30 November 2012: build 2705
 *) With Java 1.7, the Preferences, MessageBox, and Binary Editor windows would
 throw a ClassCastException in their constructors. Fixed.
