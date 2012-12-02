@@ -65,6 +65,7 @@ public class CSVTokenizer {
 		}
 		StringBuffer buf = new StringBuffer();
 		int tokstate = UNQUOTED;
+		boolean quoted = false;
 		int rawLength = 0;
 		boolean escape = false;
 		while (pos < s.length()) {
@@ -83,11 +84,12 @@ public class CSVTokenizer {
 			} else if (ch == '\\') {
 				escape = true;
 			} else if (ch == '"') {
-				if (tokstate == UNQUOTED)
+				if (tokstate == UNQUOTED) {
 					tokstate = QUOTED;
-				else if (tokstate == QUOTED)
+					quoted = true;
+				} else if (tokstate == QUOTED) {
 					tokstate = QUOTED_PENDING;
-				else { // tokstate == QUOTED_PENDING
+				} else { // tokstate == QUOTED_PENDING
 					buf.append(ch);
 					tokstate = QUOTED;
 					rawLength++;
@@ -106,7 +108,7 @@ public class CSVTokenizer {
 				}
 			}
 		}
-		token = rawLength == 0 ? null : buf.toString();
+		token = !quoted && rawLength == 0 ? null : buf.toString();
 		state = HAVE_MORE;
 	}
 }

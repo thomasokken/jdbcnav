@@ -230,7 +230,11 @@ public class FileUtils {
 		int len = text.length();
 		for (int i = 0; i < len; i++) {
 			char c = text.charAt(i);
-			if (entityTable[c] != null) {
+			if (c > entityTable.length) {
+				buf.append("&#");
+				buf.append((int) c);
+				buf.append(";");
+			} else if (entityTable[c] != null) {
 				buf.append("&");
 				buf.append(entityTable[c]);
 				buf.append(";");
