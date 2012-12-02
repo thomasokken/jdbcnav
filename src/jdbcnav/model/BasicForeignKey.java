@@ -195,8 +195,7 @@ public class BasicForeignKey implements ForeignKey, Scriptable,
 	public String getClassName() {
 		return "ForeignKey";
 	}
-	@SuppressWarnings(value={"unchecked"})
-	public Object getDefaultValue(Class hint) {
+	public Object getDefaultValue(Class<?> hint) {
 		StringBuffer buf = new StringBuffer();
 		if (thisKeyName != null) {
 			buf.append(thisKeyName);

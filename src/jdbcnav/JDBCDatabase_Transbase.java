@@ -247,8 +247,6 @@ public class JDBCDatabase_Transbase extends JDBCDatabase {
 				return o;
 			}
 		}
-		if (o == null)
-			return null;
 		if (spec.jdbcJavaType.equals("transbase.tbx.types.TBDatetime")) {
 			try {
 				Method m = spec.jdbcJavaClass.getMethod("getTimestamp", (Class[]) null);

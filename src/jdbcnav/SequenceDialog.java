@@ -30,7 +30,7 @@ import jdbcnav.util.MyGridBagLayout;
 public class SequenceDialog extends MyFrame {
 	private String[] items;
 	private Listener listener;
-	private JList list;
+	private JList<String> list;
 	private Model model;
 	private JButton upB;
 	private JButton downB;
@@ -52,7 +52,7 @@ public class SequenceDialog extends MyFrame {
 		p1.add(new JLabel("Column order in input:"), gbc);
 
 		model = new Model();
-		list = new JList(model);
+		list = new JList<String>(model);
 		list.setVisibleRowCount(5);
 		list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		list.addListSelectionListener(new ListSelectionListener() {
@@ -132,11 +132,11 @@ public class SequenceDialog extends MyFrame {
 		pack();
 	}
 
-	private class Model extends AbstractListModel {
+	private class Model extends AbstractListModel<String> {
 		public int getSize() {
 			return items.length;
 		}
-		public Object getElementAt(int index) {
+		public String getElementAt(int index) {
 			return items[index];
 		}
 		public void up() {

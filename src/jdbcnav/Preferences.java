@@ -54,22 +54,30 @@ public class Preferences {
 						 + ".jdbcnavrc-new");
 
 	public static class ConnectionConfig {
+		public String name;
 		public String driver;
 		public String url;
 		public String username;
 		public String password;
-		public ConnectionConfig(String driver, String url,
+		public ConnectionConfig(String name) {
+			this.name = name;
+		}
+		public ConnectionConfig(String name, String driver, String url,
 								String username, String password) {
+			this.name = name;
 			this.driver = driver;
 			this.url = url;
 			this.username = username;
 			this.password = password;
 		}
+		public boolean equals(Object that) {
+			return (that instanceof ConnectionConfig) && name.equals(((ConnectionConfig) that).name);
+		}
 	}
 
-	// Contains config names at even-numbered indices,
-	// followed by the corresponding ConnectionConfig objects.
-	private ArrayList<Object> connectionConfigs = new ArrayList<Object>();
+	// Contains connection configurations, in most-recently-used to
+	// least-recently-used order
+	private ArrayList<ConnectionConfig> connectionConfigs = new ArrayList<ConnectionConfig>();
 
 	// Encrypted configs read from .jdbcnavrc, which we haven't yet been
 	// able to decrypt because the user hasn't deigned to tell us the
@@ -248,27 +256,23 @@ public class Preferences {
 	}
 
 
-	public Collection<Object> getConnectionConfigs() {
+	public Collection<ConnectionConfig> getConnectionConfigs() {
 		return Collections.unmodifiableCollection(connectionConfigs);
 	}
 
-	public void putConnectionConfig(String name, ConnectionConfig config) {
-		int index = connectionConfigs.indexOf(name);
+	public void putConnectionConfig(ConnectionConfig config) {
+		int index = connectionConfigs.indexOf(config);
 		if (index == 0) {
-			connectionConfigs.set(1, config);
+			connectionConfigs.set(0, config);
 		} else if (index != -1) {
 			connectionConfigs.remove(index);
-			connectionConfigs.remove(index);
-			connectionConfigs.add(0, name);
-			connectionConfigs.add(1, config);
+			connectionConfigs.add(0, config);
 		} else {
-			connectionConfigs.add(0, name);
-			connectionConfigs.add(1, config);
+			connectionConfigs.add(0, config);
 		}
 	}
 
-	private void addConnectionConfig(String name, ConnectionConfig config) {
-		connectionConfigs.add(name);
+	private void addConnectionConfig(ConnectionConfig config) {
 		connectionConfigs.add(config);
 	}
 
@@ -454,7 +458,6 @@ public class Preferences {
 
 		boolean inConnectionConfig;
 		ConnectionConfig connectionConfig;
-		String connectionConfigName;
 
 		boolean inSystemProp;
 		String systemPropName;
@@ -481,8 +484,7 @@ public class Preferences {
 							String name, Attributes atts) throws SAXException {
 			if (name.equals("connection-config")) {
 				inConnectionConfig = true;
-				connectionConfigName = null;
-				connectionConfig = new ConnectionConfig("", "", "", "");
+				connectionConfig = new ConnectionConfig(null, "", "", "", "");
 			} else if (name.equals("system-property")) {
 				inSystemProp = true;
 				systemPropName = null;
@@ -509,7 +511,7 @@ public class Preferences {
 
 			if (inConnectionConfig) {
 				if (name.equals("name"))
-					connectionConfigName = value;
+					connectionConfig.name = value;
 				else if (name.equals("driver"))
 					connectionConfig.driver = value;
 				else if (name.equals("url"))
@@ -519,10 +521,9 @@ public class Preferences {
 				else if (name.equals("password"))
 					connectionConfig.password = value;
 				else if (name.equals("connection-config")) {
-					if (connectionConfigName != null
-							&& !connectionConfigName.equals(""))
-						addConnectionConfig(connectionConfigName,
-											connectionConfig);
+					if (connectionConfig.name != null
+							&& !connectionConfig.name.equals(""))
+						addConnectionConfig(connectionConfig);
 					inConnectionConfig = false;
 				}
 			} else if (inSystemProp) {
@@ -705,7 +706,7 @@ public class Preferences {
 			else
 				password = line.substring(pipe4 + 1, pipe5);
 
-			addConnectionConfig(name, new ConnectionConfig(driver, url,
+			addConnectionConfig(new ConnectionConfig(name, driver, url,
 													   username, password));
 		}
 		try {
@@ -805,12 +806,9 @@ public class Preferences {
 				}
 
 				xml2.openTag("connection-configs");
-				for (Iterator<Object> iter = connectionConfigs.iterator();
-															iter.hasNext();){
-					String name = (String) iter.next();
-					ConnectionConfig config = (ConnectionConfig) iter.next();
+				for (ConnectionConfig config : connectionConfigs) {
 					xml2.openTag("connection-config");
-					xml2.wholeTag("name", name);
+					xml2.wholeTag("name", config.name);
 					xml2.wholeTag("driver", config.driver);
 					xml2.wholeTag("url", config.url);
 					xml2.wholeTag("username", config.username);

@@ -139,8 +139,7 @@ public class JavaScriptPreparedStatement implements Scriptable {
 		return "PreparedStatement";
 	}
 
-	@SuppressWarnings(value={"unchecked"})
-	public Object getDefaultValue(Class hint) {
+	public Object getDefaultValue(Class<?> hint) {
 		return "PreparedStatement";
 	}
 

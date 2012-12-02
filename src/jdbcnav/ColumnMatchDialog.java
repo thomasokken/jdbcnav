@@ -31,8 +31,8 @@ import jdbcnav.util.MyTextArea;
 public class ColumnMatchDialog extends MyFrame {
 	private String[] clipCols;
 	private String[] tableCols;
-	private JList clipList;
-	private JList tableList;
+	private JList<String> clipList;
+	private JList<String> tableList;
 	private boolean ignoreTableListSelectionChange;
 	private String[] mapping;
 	private JTextArea summaryArea;
@@ -60,7 +60,7 @@ public class ColumnMatchDialog extends MyFrame {
 		gbc.gridx++;
 		c.add(label, gbc);
 
-		clipList = new JList(clipCols);
+		clipList = new JList<String>(clipCols);
 		clipList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		clipList.addListSelectionListener(new ListSelectionListener() {
 						public void valueChanged(ListSelectionEvent e) {
@@ -71,7 +71,7 @@ public class ColumnMatchDialog extends MyFrame {
 		gbc.gridy++;
 		c.add(new JScrollPane(clipList), gbc);
 
-		tableList = new JList(tableCols);
+		tableList = new JList<String>(tableCols);
 		tableList.addListSelectionListener(new ListSelectionListener() {
 						public void valueChanged(ListSelectionEvent e) {
 							tableListSelectionChanged();

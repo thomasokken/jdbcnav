@@ -70,7 +70,7 @@ public class BasicData implements Data {
 		data.add(row);
 	}
 
-	@SuppressWarnings(value={"unchecked"})
+	@SuppressWarnings("unchecked")
 	public Object clone() {
 		BasicData that = new BasicData();
 		that.columnNames = columnNames.clone();

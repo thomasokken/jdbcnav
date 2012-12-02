@@ -244,8 +244,7 @@ public class JavaScriptCallableStatement implements Scriptable {
 		return "CallableStatement";
 	}
 
-	@SuppressWarnings(value={"unchecked"})
-	public Object getDefaultValue(Class hint) {
+	public Object getDefaultValue(Class<?> hint) {
 		return "CallableStatement";
 	}
 

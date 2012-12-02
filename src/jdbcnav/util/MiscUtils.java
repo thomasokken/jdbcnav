@@ -37,7 +37,7 @@ public class MiscUtils {
 			return a.compareToIgnoreCase(b);
 	}
 	
-	@SuppressWarnings(value={"unchecked"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static int compareObjects(Object a, Object b, boolean ignoreCase) {
 		if (a == null)
 			return b == null ? 0 : 1;

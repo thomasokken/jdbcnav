@@ -98,8 +98,7 @@ public class BasicPrimaryKey implements PrimaryKey, Scriptable,
 	public String getClassName() {
 		return "PrimaryKey";
 	}
-	@SuppressWarnings(value={"unchecked"})
-	public Object getDefaultValue(Class hint) {
+	public Object getDefaultValue(Class<?> hint) {
 		StringBuffer buf = new StringBuffer();
 		if (keyName != null) {
 			buf.append(keyName);

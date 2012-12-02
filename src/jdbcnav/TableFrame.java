@@ -562,7 +562,7 @@ public class TableFrame extends QueryResultFrame {
 		public void removeStateListener(StateListener listener) {
 			listeners.remove(listener);
 		}
-		@SuppressWarnings(value={"unchecked"})
+		@SuppressWarnings("unchecked")
 		public void stateChanged(int state, int row) {
 			ArrayList<StateListener> al = (ArrayList<StateListener>) listeners.clone();
 			for (int i = 0; i < al.size(); i++)

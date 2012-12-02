@@ -44,8 +44,7 @@ public class JavaScriptArray implements Scriptable {
 	public String getClassName() {
 		return "JavaScriptArray";
 	}
-	@SuppressWarnings(value={"unchecked"})
-	public Object getDefaultValue(Class hint) {
+	public Object getDefaultValue(Class<?> hint) {
 		StringBuffer buf = new StringBuffer();
 		buf.append("[ ");
 		for (int i = 0; i < array.length; i++) {

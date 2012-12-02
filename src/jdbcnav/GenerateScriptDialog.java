@@ -41,9 +41,9 @@ public class GenerateScriptDialog extends MyFrame {
 	private JRadioButton updateRB;
 	private JRadioButton fromRB;
 	private JRadioButton toRB;
-	private JComboBox otherCB;
+	private JComboBox<BrowserFrame> otherCB;
 	private JCheckBox fqtnCB;
-	private JComboBox metadriverCB;
+	private JComboBox<String> metadriverCB;
 
 	public GenerateScriptDialog(BrowserFrame bf, Callback cb, String sgname) {
 		super("Generate Script");
@@ -113,7 +113,7 @@ public class GenerateScriptDialog extends MyFrame {
 		gbc.gridy--;
 		gbc.gridheight = 2;
 		gbc.gridwidth = 3;
-		otherCB = new JComboBox(bf.getOtherInstances());
+		otherCB = new JComboBox<BrowserFrame>(bf.getOtherInstances());
 		c.add(otherCB, gbc);
 
 		if (otherCB.getSelectedItem() == null) {
@@ -136,7 +136,7 @@ public class GenerateScriptDialog extends MyFrame {
 		c.add(new JLabel("Generate SQL for: "), gbc);
 
 		gbc.gridx++;
-		metadriverCB = new JComboBox(InternalDriverMap.getScriptGeneratorNames());
+		metadriverCB = new JComboBox<String>(InternalDriverMap.getScriptGeneratorNames());
 		metadriverCB.setSelectedItem(sgname);
 		c.add(metadriverCB, gbc);
 

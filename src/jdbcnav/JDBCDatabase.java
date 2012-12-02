@@ -1709,7 +1709,7 @@ public class JDBCDatabase extends BasicDatabase {
 		private static LoginDialog instance;
 
 		private ConfigList configs;
-		private JComboBox configNameCB;
+		private JComboBox<String> configNameCB;
 		private JTextField driverTF;
 		private JTextField urlTF;
 		private JTextField usernameTF;
@@ -1741,7 +1741,7 @@ public class JDBCDatabase extends BasicDatabase {
 			gbc.gridy++;
 			p1.add(new JLabel("Password:"), gbc);
 			configs = new ConfigList();
-			configNameCB = new JComboBox(configs);
+			configNameCB = new JComboBox<String>(configs);
 			configNameCB.setEditable(true);
 			configNameCB.addActionListener(
 					new ActionListener() {
@@ -1859,8 +1859,7 @@ public class JDBCDatabase extends BasicDatabase {
 			String url = urlTF.getText();
 			String username = usernameTF.getText();
 			String password = new String(passwordPF.getPassword());
-			configs.put(configName,
-						new Preferences.ConnectionConfig(driver, url,
+			configs.put(new Preferences.ConnectionConfig(configName, driver, url,
 														 username, password));
 		}
 
@@ -2074,19 +2073,18 @@ public class JDBCDatabase extends BasicDatabase {
 			}
 		}
 
-		private static class ConfigList extends AbstractListModel
-										implements ComboBoxModel {
+		private static class ConfigList extends AbstractListModel<String>
+										implements ComboBoxModel<String> {
 			private Preferences prefs = Preferences.getPreferences();
-			private ArrayList<String> names = new ArrayList<String>();
 			private ArrayList<Preferences.ConnectionConfig> configs = new ArrayList<Preferences.ConnectionConfig>();
 			private String selectedName;
 
 			public ConfigList() {
 				load();
-				if (names.isEmpty())
+				if (configs.isEmpty())
 					selectedName = "";
 				else
-					selectedName = names.get(0);
+					selectedName = configs.get(0).name;
 			}
 			
 			public void reload() {
@@ -2101,23 +2099,17 @@ public class JDBCDatabase extends BasicDatabase {
 			}
 
 			private void load() {
-				Collection<Object> pconfigs = prefs.getConnectionConfigs();
-				for (Iterator<Object> iter = pconfigs.iterator(); iter.hasNext();) {
-					String name = (String) iter.next();
-					Preferences.ConnectionConfig config =
-								(Preferences.ConnectionConfig) iter.next();
-					names.add(name);
+				for (Preferences.ConnectionConfig config : prefs.getConnectionConfigs())
 					configs.add(config);
-				}
 			}
 
 			// ListModel methods
 			public int getSize() {
-				return names.size();
+				return configs.size();
 			}
 
-			public Object getElementAt(int index) {
-				return names.get(index);
+			public String getElementAt(int index) {
+				return configs.get(index).name;
 			}
 
 			// ComboBoxModel methods
@@ -2130,29 +2122,26 @@ public class JDBCDatabase extends BasicDatabase {
 			}
 
 			// My methods
-			public void put(String name, Preferences.ConnectionConfig config) {
-				int index = names.indexOf(name);
+			public void put(Preferences.ConnectionConfig config) {
+				int index = configs.indexOf(config);
 				if (index == 0) {
 					configs.set(0, config);
 					fireContentsChanged(this, 0, 0);
 				} else if (index != -1) {
-					names.remove(index);
 					configs.remove(index);
 					fireIntervalRemoved(this, index, index);
-					names.add(0, name);
 					configs.add(0, config);
 					fireIntervalAdded(this, 0, 0);
 				} else {
-					names.add(0, name);
 					configs.add(0, config);
 					fireIntervalAdded(this, 0, 0);
 				}
-				prefs.putConnectionConfig(name, config);
+				prefs.putConnectionConfig(config);
 				prefs.write();
 			}
 
 			public Preferences.ConnectionConfig get(String name) {
-				int index = names.indexOf(name);
+				int index = configs.indexOf(new Preferences.ConnectionConfig(name));
 				if (index == -1)
 					return null;
 				else
@@ -2160,9 +2149,8 @@ public class JDBCDatabase extends BasicDatabase {
 			}
 
 			public void remove(String name) {
-				int index = names.indexOf(name);
+				int index = configs.indexOf(new Preferences.ConnectionConfig(name));
 				if (index != -1) {
-					names.remove(index);
 					configs.remove(index);
 					fireIntervalRemoved(this, index, index);
 				}

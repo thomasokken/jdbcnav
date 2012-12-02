@@ -156,8 +156,7 @@ public class JavaScriptResultSet implements Scriptable {
 		return "ResultSet";
 	}
 
-	@SuppressWarnings(value={"unchecked"})
-	public Object getDefaultValue(Class hint) {
+	public Object getDefaultValue(Class<?> hint) {
 		StringBuffer buf = new StringBuffer();
 		buf.append("[ ");
 		for (int col = 1; col <= columnCount; col++) {

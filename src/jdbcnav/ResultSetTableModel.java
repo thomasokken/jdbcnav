@@ -563,7 +563,7 @@ public class ResultSetTableModel extends AbstractTableModel
 			safelyFireTableDataChanged();
 	}
 
-	@SuppressWarnings(value={"unchecked"})
+	@SuppressWarnings("unchecked")
 	public synchronized void pasteRow(Object[][] grid,
 										String[] mapping, boolean setNull) {
 		Object[] colIndex = new Object[grid[0].length];
@@ -1022,10 +1022,10 @@ public class ResultSetTableModel extends AbstractTableModel
 		}
 	}
 
-	@SuppressWarnings(value={"unchecked"})
 	private class ViciousImportEdit implements Edit {
 		private ArrayList<Integer> seq;
 		private ArrayList<Object[]> imports;
+		@SuppressWarnings("unchecked")
 		public ViciousImportEdit(ArrayList<Object[]> imports) {
 			seq = (ArrayList<Integer>) sequence.clone();
 			this.imports = imports;
@@ -1036,6 +1036,7 @@ public class ResultSetTableModel extends AbstractTableModel
 		public String getRedoTitle() {
 			return "Redo Import";
 		}
+		@SuppressWarnings("unchecked")
 		public void undo() {
 			int last = cells.size() - 1;
 			int first = last - imports.size() + 1;

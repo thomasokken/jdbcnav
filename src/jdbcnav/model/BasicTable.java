@@ -639,8 +639,7 @@ public abstract class BasicTable implements Table, Scriptable {
 		return getClass().getName();
 	}
 
-	@SuppressWarnings(value={"unchecked"})
-	public Object getDefaultValue(Class hint) {
+	public Object getDefaultValue(Class<?> hint) {
 		if (model == null)
 			return "(not loaded)";
 
@@ -845,8 +844,7 @@ public abstract class BasicTable implements Table, Scriptable {
 		public String getClassName() {
 			return "Row";
 		}
-		@SuppressWarnings(value={"unchecked"})
-		public Object getDefaultValue(Class hint) {
+		public Object getDefaultValue(Class<?> hint) {
 			if (model == null)
 				return "(not loaded)";
 			int ncols = model.getColumnCount();

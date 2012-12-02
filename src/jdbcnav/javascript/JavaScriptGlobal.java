@@ -20,23 +20,17 @@ package jdbcnav.javascript;
 
 import org.mozilla.javascript.*;
 
-import jdbcnav.MessageBox;
-
 
 public class JavaScriptGlobal extends ScriptableObject {
 	private Pipe pipe;
 
 	public JavaScriptGlobal() {
 		String[] names = { "print", "println" };
-		try {
-			defineFunctionProperties(names, JavaScriptGlobal.class,
-									 ScriptableObject.DONTENUM
-									 + ScriptableObject.PERMANENT);
-			defineProperty("clipboard", JavaScriptGlobal.class,
-						   ScriptableObject.PERMANENT);
-		} catch (PropertyException e) {
-			MessageBox.show("Problem constructing JavaScriptGlobal", e);
-		}
+		defineFunctionProperties(names, JavaScriptGlobal.class,
+								 ScriptableObject.DONTENUM
+								 + ScriptableObject.PERMANENT);
+		defineProperty("clipboard", JavaScriptGlobal.class,
+					   ScriptableObject.PERMANENT);
 	}
 
 	public String getClassName() {

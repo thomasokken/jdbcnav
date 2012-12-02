@@ -110,8 +110,7 @@ public class BasicIndex implements Index, Scriptable, JavaScriptArray.Element {
 	public String getClassName() {
 		return "Index";
 	}
-	@SuppressWarnings(value={"unchecked"})
-	public Object getDefaultValue(Class hint) {
+	public Object getDefaultValue(Class<?> hint) {
 		StringBuffer buf = new StringBuffer();
 		if (indexName != null) {
 			buf.append(indexName);

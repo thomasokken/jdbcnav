@@ -123,7 +123,7 @@ public class ArrayCollection<T> implements Collection<T> {
 		return ret;
 	}
 	
-	@SuppressWarnings(value={"unchecked"})
+	@SuppressWarnings("unchecked")
 	public <T2> T2[] toArray(T2[] a) {
 		int length = Array.getLength(array);
 		if (a.length < length) {

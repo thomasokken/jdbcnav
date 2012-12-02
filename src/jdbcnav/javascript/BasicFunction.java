@@ -49,8 +49,7 @@ public abstract class BasicFunction implements Function {
 	public String getClassName() {
 		return getClass().getName();
 	}
-	@SuppressWarnings(value={"unchecked"})
-	public Object getDefaultValue(Class hint) {
+	public Object getDefaultValue(Class<?> hint) {
 		return toString();
 	}
 	public Object[] getIds() {

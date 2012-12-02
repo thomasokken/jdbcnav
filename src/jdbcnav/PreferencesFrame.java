@@ -31,13 +31,13 @@ public class PreferencesFrame extends MyFrame {
 	private Preferences prefs = Preferences.getPreferences();
 	private UIManager.LookAndFeelInfo[] laf =
 								UIManager.getInstalledLookAndFeels();
-	private JComboBox lafNameCB;
+	private JComboBox<String> lafNameCB;
 	private JLabel pkHighColL;
 	private JLabel fkHighColL;
 	private JTextArea systemPropsTA;
 	private JCheckBox showSplashCB;
 	private JTextField logFileNameTF;
-	private JComboBox logLevelCB;
+	private JComboBox<String> logLevelCB;
 
 	JTable classPathTable;
 	ClassPathTableModel classPathModel;
@@ -80,7 +80,7 @@ public class PreferencesFrame extends MyFrame {
 		for (int i = 0; i < laf.length; i++)
 			lafName[i] = laf[i].getName();
 		Arrays.sort(lafName);
-		lafNameCB = new JComboBox(lafName);
+		lafNameCB = new JComboBox<String>(lafName);
 		lafNameCB.setSelectedItem(prefs.getLookAndFeelName());
 		p2.add(lafNameCB);
 		p.add(p2, gbc);
@@ -171,7 +171,7 @@ public class PreferencesFrame extends MyFrame {
 		
 		gbc2.gridy = 2;
 		gbc2.fill = MyGridBagConstraints.NONE;
-		logLevelCB = new JComboBox(new Object[] { "None", "Low", "Medium", "High" });
+		logLevelCB = new JComboBox<String>(new String[] { "None", "Low", "Medium", "High" });
 		logLevelCB.setSelectedIndex(prefs.getLogLevel());
 		p.add(logLevelCB, gbc2);
 
@@ -475,7 +475,7 @@ public class PreferencesFrame extends MyFrame {
 
 	private class ClassPathTableModel extends AbstractTableModel {
 		private ArrayList<String> items;
-		@SuppressWarnings(value={"unchecked"})
+		@SuppressWarnings("unchecked")
 		public ClassPathTableModel(ArrayList<String> items) {
 			this.items = (ArrayList<String>) items.clone();
 		}

@@ -240,7 +240,7 @@ public class BrowserFrame extends MyFrame {
 		return getTitle();
 	}
 
-	public ComboBoxModel getOtherInstances() {
+	public ComboBoxModel<BrowserFrame> getOtherInstances() {
 		MyCBM cbm = new MyCBM();
 		for (BrowserFrame bf : instances)
 			cbm.addElement(bf);
@@ -408,8 +408,8 @@ public class BrowserFrame extends MyFrame {
 		}
 	}
 
-	private class MyCBM extends DefaultComboBoxModel {
-		public void addElement(Object element) {
+	private class MyCBM extends DefaultComboBoxModel<BrowserFrame> {
+		public void addElement(BrowserFrame element) {
 			if (element != BrowserFrame.this)
 				super.addElement(element);
 		}
@@ -507,9 +507,9 @@ public class BrowserFrame extends MyFrame {
 		///// TreeNode /////
 		////////////////////
 
-		@SuppressWarnings(value={"unchecked"})
+		@SuppressWarnings("rawtypes")
 		public Enumeration children() {
-			return new IteratorEnumeration(kids().iterator());
+			return new IteratorEnumeration<TreeNode>(kids().iterator());
 		}
 		
 		public boolean getAllowsChildren() {
@@ -664,8 +664,7 @@ public class BrowserFrame extends MyFrame {
 		public String getClassName() {
 			return getClass().getName();
 		}
-		@SuppressWarnings(value={"unchecked"})
-		public Object getDefaultValue(Class hint) {
+		public Object getDefaultValue(Class<?> hint) {
 			if (isLeaf())
 				return toString();
 

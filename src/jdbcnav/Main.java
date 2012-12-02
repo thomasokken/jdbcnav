@@ -48,6 +48,8 @@ public class Main extends JFrame {
 	private static String copyright;
 	private static String website =
 				"http://thomasokken.com/jdbcnav/";
+	
+	public static ContextFactory contextFactory = new ContextFactory();
 
 	private static void initArrowAndHourglassCursor() {
 		// Constructing the arrow-plus-hourglass cursor
@@ -151,7 +153,6 @@ public class Main extends JFrame {
 					}
 				};
 
-	@SuppressWarnings(value={"unchecked"})
 	public static void main(String[] args) {
 		Preferences prefs = Preferences.getPreferences();
 		String lafName = prefs.getLookAndFeelName();
@@ -182,7 +183,7 @@ public class Main extends JFrame {
 		for (String item : prefs.getClassPath())
 			Main.log(1, "jdbcnav classpath item \"" + item + "\"");
 		Properties props = System.getProperties();
-		for (Map.Entry entry : props.entrySet())
+		for (Map.Entry<Object, Object> entry : props.entrySet())
 			Main.log(1, "system property " + entry.getKey() + " = \"" + entry.getValue() + "\"");
 
 		MyTable.setTypeColor(1, prefs.getPkHighlightColor());
@@ -875,8 +876,7 @@ public class Main extends JFrame {
 		public String getClassName() {
 			return "BrowserList";
 		}
-		@SuppressWarnings(value={"unchecked"})
-		public Object getDefaultValue(Class hint) {
+		public Object getDefaultValue(Class<?> hint) {
 			StringBuffer buf = new StringBuffer();
 			buf.append("BrowserList[");
 			buf.append(browsers.size());

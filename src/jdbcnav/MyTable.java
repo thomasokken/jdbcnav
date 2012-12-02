@@ -368,14 +368,14 @@ public class MyTable extends JTable {
 		userInteractionListeners.remove(listener);
 	}
 
-	@SuppressWarnings(value={"unchecked"})
+	@SuppressWarnings("unchecked")
 	private void eventInScrollBarHappened() {
 		ArrayList<UserInteractionListener> listeners = (ArrayList<UserInteractionListener>) userInteractionListeners.clone();
 		for (UserInteractionListener listener : listeners)
 			listener.eventInScrollBar();
 	}
 
-	@SuppressWarnings(value={"unchecked"})
+	@SuppressWarnings("unchecked")
 	private void eventInTableHappened() {
 		ArrayList<UserInteractionListener> listeners = (ArrayList<UserInteractionListener>) userInteractionListeners.clone();
 		for (UserInteractionListener listener : listeners)

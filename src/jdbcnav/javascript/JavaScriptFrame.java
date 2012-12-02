@@ -121,7 +121,7 @@ public class JavaScriptFrame extends TextEditorFrame {
 					}
 				}
 
-				Context ctx = Context.enter(new InterruptableContext());
+				Context ctx = Main.contextFactory.enterContext(new InterruptableContext());
 				JSPipe pipe = new JSPipe(pos);
 				try {
 					JavaScriptGlobal global = Main.getJSGlobal();
@@ -213,6 +213,7 @@ public class JavaScriptFrame extends TextEditorFrame {
 
 	private static class InterruptableContext extends Context {
 		public InterruptableContext() {
+			super(Main.contextFactory);
 			setOptimizationLevel(-1);
 			setInstructionObserverThreshold(1000);
 		}
