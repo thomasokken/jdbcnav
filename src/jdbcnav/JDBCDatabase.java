@@ -629,6 +629,9 @@ public class JDBCDatabase extends BasicDatabase {
 			while (rs.next()) {
 				String n = rs.getString("COLUMN_NAME");
 				short i = rs.getShort("KEY_SEQ");
+				if (i < 1)
+					// SQLite workaround
+					continue;
 				keyName = rs.getString("PK_NAME");
 				for (int j = colName.size(); j < i; j++)
 					colName.add(null);
