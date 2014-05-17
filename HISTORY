@@ -1,3 +1,7 @@
+17 May 2014: build 2708
+
+*) Fixed more connection config deletion breakage.
+
 17 May 2014: build 2707
 *) Bug workaround for SQLite: DatabaseMetaData.getPrimaryKeys() returns an
 element with KEY_SEQ = 0, which should never happen accoring to the JDBC API

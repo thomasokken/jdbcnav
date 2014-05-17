@@ -2091,14 +2091,14 @@ public class JDBCDatabase extends BasicDatabase {
 			}
 			
 			public void reload() {
-				int n = configs.size() / 2 - 1;
+				int sz = configs.size();
 				configs.clear();
-				if (n >= 0)
-					fireIntervalRemoved(this, 0, n);
+				if (sz > 0)
+					fireIntervalRemoved(this, 0, sz - 1);
 				load();
-				n = configs.size() / 2 - 1;
-				if (n >= 0)
-					fireIntervalAdded(this, 0, n);
+				sz = configs.size();
+				if (sz > 0)
+					fireIntervalAdded(this, 0, sz - 1);
 			}
 
 			private void load() {
