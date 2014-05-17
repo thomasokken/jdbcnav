@@ -1,3 +1,16 @@
+17 May 2014: build 2707
+*) Bug workaround for SQLite: DatabaseMetaData.getPrimaryKeys() returns an
+element with KEY_SEQ = 0, which should never happen accoring to the JDBC API
+documentation; KEY_SEQ is a 1-based index. Simply ignoring this element fixes
+the problem.
+Note, however, that the SQLite JDBC driver has other bugs in its metadata
+handling as well (as of May 17, 2014) -- specifically, it throws exceptions
+from DBMD.getIndexInfo() in many cases -- so use JDBC Navigator with SQLite at
+your own risk.
+*) Deleting a connection configuration was broken: it would be removed from the
+menu, but not from the stored configs, so it would reappear the next time the
+Open JDBC Connection dialog was presented.
+
 2 December 2012: build 2706
 *) Generating escaped HTML strings would choke on character codes greater than
 255. This could cause saving File databases and presenting table details

@@ -2152,12 +2152,13 @@ public class JDBCDatabase extends BasicDatabase {
 			}
 
 			public void remove(String name) {
-				int index = configs.indexOf(new Preferences.ConnectionConfig(name));
+				Preferences.ConnectionConfig tempConfig = new Preferences.ConnectionConfig(name);
+				int index = configs.indexOf(tempConfig);
 				if (index != -1) {
 					configs.remove(index);
 					fireIntervalRemoved(this, index, index);
 				}
-				prefs.removeConnectionConfig(name);
+				prefs.removeConnectionConfig(tempConfig);
 				prefs.write();
 			}
 		}

@@ -6,6 +6,11 @@ It should be possible to avoid using the custom classloader anyway, by using
 DriverManager's internal APIs for registering drivers directly. I think that
 that approach is not officially blessed, but the required methods are public.
 
+MultiTableDiff (and maybe other code?) needs to honor case sensitivity in
+foreign keys. For example, MySQL varchar with UTF-8 is case insensitive by
+default, so it is possible to have a pk 'foo' referenced by an fk 'FOO'.
+Currently, this kind of situation can cause script creation to fail.
+
 I added string-to-object conversion to ResultSetTableModel,setValueAt(), but
 that seems wrong, or at least inconsistent; the conversion should be performed
 by the table cell editing window just before it calls setValueAt().

@@ -276,8 +276,8 @@ public class Preferences {
 		connectionConfigs.add(config);
 	}
 
-	public void removeConnectionConfig(String name) {
-		int index = connectionConfigs.indexOf(name);
+	public void removeConnectionConfig(ConnectionConfig config) {
+		int index = connectionConfigs.indexOf(config);
 		if (index != -1) {
 			connectionConfigs.remove(index);
 			connectionConfigs.remove(index);
