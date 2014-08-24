@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2010	Thomas Okken
+// Copyright (C) 2001-2010  Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -19,15 +19,15 @@
 package jdbcnav.model;
 
 public interface ForeignKey {
-	String getThisKeyName();
-	String getThatKeyName();
-	int getColumnCount();
-	String getThatCatalog();
-	String getThatSchema();
-	String getThatName();
-	String getThatQualifiedName();
-	String getThisColumnName(int col);
-	String getThatColumnName(int col);
-	String getUpdateRule();
-	String getDeleteRule();
+    String getThisKeyName();
+    String getThatKeyName();
+    int getColumnCount();
+    String getThatCatalog();
+    String getThatSchema();
+    String getThatName();
+    String getThatQualifiedName();
+    String getThisColumnName(int col);
+    String getThatColumnName(int col);
+    String getUpdateRule();
+    String getDeleteRule();
 }

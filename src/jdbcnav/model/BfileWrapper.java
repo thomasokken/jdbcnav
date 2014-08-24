@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2010	Thomas Okken
+// Copyright (C) 2001-2010  Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -24,18 +24,18 @@ package jdbcnav.model;
  * Oracle BFILEs. It is used to hide the details of loading BFILEs.
  */
 public interface BfileWrapper {
-	/**
-	 * This method returns the representation to be displayed in a table view.
-	 */
-	String toString();
+    /**
+     * This method returns the representation to be displayed in a table view.
+     */
+    String toString();
 
-	/**
-	 * This method returns the SQL representation of the BFILE object.
-	 */
-	String sqlString();
+    /**
+     * This method returns the SQL representation of the BFILE object.
+     */
+    String sqlString();
 
-	/**
-	 * This method loads the actual BFILE data.
-	 */
-	byte[] load();
+    /**
+     * This method loads the actual BFILE data.
+     */
+    byte[] load();
 }

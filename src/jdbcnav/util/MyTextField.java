@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2010	Thomas Okken
+// Copyright (C) 2001-2010  Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -22,21 +22,21 @@ import javax.swing.*;
 
 
 public class MyTextField extends JTextField {
-	public MyTextField() {
-		super();
-	}
+    public MyTextField() {
+        super();
+    }
 
-	public MyTextField(int cols) {
-		super(cols);
-	}
+    public MyTextField(int cols) {
+        super(cols);
+    }
 
-	public void copy() {
-		super.copy();
-		jdbcnav.Main.getClipboard().refresh();
-	}
+    public void copy() {
+        super.copy();
+        jdbcnav.Main.getClipboard().refresh();
+    }
 
-	public void cut() {
-		super.cut();
-		jdbcnav.Main.getClipboard().refresh();
-	}
+    public void cut() {
+        super.cut();
+        jdbcnav.Main.getClipboard().refresh();
+    }
 }

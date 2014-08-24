@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2010	Thomas Okken
+// Copyright (C) 2001-2010  Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -25,40 +25,40 @@ import javax.swing.text.Document;
 
 
 public class NonTabJTextArea extends MyTextArea {
-	private static HashSet<AWTKeyStroke> forwardSet;
-	private static HashSet<AWTKeyStroke> backwardSet;
-	static {
-		forwardSet = new HashSet<AWTKeyStroke>();
-		forwardSet.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, 0));
-		backwardSet = new HashSet<AWTKeyStroke>();
-		backwardSet.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB,
-													InputEvent.SHIFT_MASK));
-	}
+    private static HashSet<AWTKeyStroke> forwardSet;
+    private static HashSet<AWTKeyStroke> backwardSet;
+    static {
+        forwardSet = new HashSet<AWTKeyStroke>();
+        forwardSet.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, 0));
+        backwardSet = new HashSet<AWTKeyStroke>();
+        backwardSet.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB,
+                                                    InputEvent.SHIFT_MASK));
+    }
 
-	public NonTabJTextArea() {
-		super();
-		init();
-	}
+    public NonTabJTextArea() {
+        super();
+        init();
+    }
 
-	public NonTabJTextArea(String s) {
-		super(s);
-		init();
-	}
+    public NonTabJTextArea(String s) {
+        super(s);
+        init();
+    }
 
-	public NonTabJTextArea(String s, int width, int height) {
-		super(s, width, height);
-		init();
-	}
+    public NonTabJTextArea(String s, int width, int height) {
+        super(s, width, height);
+        init();
+    }
 
-	public NonTabJTextArea(Document doc, String s, int width, int height) {
-		super(doc, s, width, height);
-		init();
-	}
+    public NonTabJTextArea(Document doc, String s, int width, int height) {
+        super(doc, s, width, height);
+        init();
+    }
 
-	private void init() {
-		setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-							  forwardSet);
-		setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
-							  backwardSet);
-	}
+    private void init() {
+        setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                              forwardSet);
+        setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+                              backwardSet);
+    }
 }

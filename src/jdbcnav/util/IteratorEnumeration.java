@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2010	Thomas Okken
+// Copyright (C) 2001-2010  Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -22,14 +22,14 @@ import java.util.*;
 
 
 public class IteratorEnumeration<T> implements Enumeration<T> {
-	private Iterator<T> iter;
-	public IteratorEnumeration(Iterator<T> iter) {
-		this.iter = iter;
-	}
-	public boolean hasMoreElements() {
-		return iter.hasNext();
-	}
-	public T nextElement() {
-		return iter.next();
-	}
+    private Iterator<T> iter;
+    public IteratorEnumeration(Iterator<T> iter) {
+        this.iter = iter;
+    }
+    public boolean hasMoreElements() {
+        return iter.hasNext();
+    }
+    public T nextElement() {
+        return iter.next();
+    }
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2010	Thomas Okken
+// Copyright (C) 2001-2010  Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -22,103 +22,103 @@ import java.util.*;
 
 
 public class BasicData implements Data {
-	private String[] columnNames;
-	private TypeSpec[] typeSpecs;
-	private ArrayList<Object[]> data;
+    private String[] columnNames;
+    private TypeSpec[] typeSpecs;
+    private ArrayList<Object[]> data;
 
-	public BasicData() {
-		//
-	}
+    public BasicData() {
+        //
+    }
 
-	public BasicData(Data src) {
-		int rows = src.getRowCount();
-		int cols = src.getColumnCount();
-		columnNames = new String[cols];
-		typeSpecs = new TypeSpec[cols];
-		for (int i = 0; i < cols; i++) {
-			columnNames[i] = src.getColumnName(i);
-			typeSpecs[i] = src.getTypeSpec(i);
-		}
-		data = new ArrayList<Object[]>();
-		for (int i = 0; i < rows; i++) {
-			Object[] row = new Object[cols];
-			for (int j = 0; j < cols; j++) {
-				Object o = src.getValueAt(i, j);
-				if (o instanceof BlobWrapper)
-					o = ((BlobWrapper) o).load();
-				else if (o instanceof ClobWrapper)
-					o = ((ClobWrapper) o).load();
-				row[j] = o;
-			}
-			data.add(row);
-		}
-	}
+    public BasicData(Data src) {
+        int rows = src.getRowCount();
+        int cols = src.getColumnCount();
+        columnNames = new String[cols];
+        typeSpecs = new TypeSpec[cols];
+        for (int i = 0; i < cols; i++) {
+            columnNames[i] = src.getColumnName(i);
+            typeSpecs[i] = src.getTypeSpec(i);
+        }
+        data = new ArrayList<Object[]>();
+        for (int i = 0; i < rows; i++) {
+            Object[] row = new Object[cols];
+            for (int j = 0; j < cols; j++) {
+                Object o = src.getValueAt(i, j);
+                if (o instanceof BlobWrapper)
+                    o = ((BlobWrapper) o).load();
+                else if (o instanceof ClobWrapper)
+                    o = ((ClobWrapper) o).load();
+                row[j] = o;
+            }
+            data.add(row);
+        }
+    }
 
-	public void setColumnNames(String[] columnNames) {
-		this.columnNames = columnNames;
-	}
+    public void setColumnNames(String[] columnNames) {
+        this.columnNames = columnNames;
+    }
 
-	public void setTypeSpecs(TypeSpec[] typeSpecs) {
-		this.typeSpecs = typeSpecs;
-	}
+    public void setTypeSpecs(TypeSpec[] typeSpecs) {
+        this.typeSpecs = typeSpecs;
+    }
 
-	public void setData(ArrayList<Object[]> data) {
-		this.data = data;
-	}
+    public void setData(ArrayList<Object[]> data) {
+        this.data = data;
+    }
 
-	public void addRow(Object[] row) {
-		data.add(row);
-	}
+    public void addRow(Object[] row) {
+        data.add(row);
+    }
 
-	@SuppressWarnings("unchecked")
-	public Object clone() {
-		BasicData that = new BasicData();
-		that.columnNames = columnNames.clone();
-		that.typeSpecs = typeSpecs.clone();
-		that.data = (ArrayList<Object[]>) data.clone();
-		return that;
-	}
+    @SuppressWarnings("unchecked")
+    public Object clone() {
+        BasicData that = new BasicData();
+        that.columnNames = columnNames.clone();
+        that.typeSpecs = typeSpecs.clone();
+        that.data = (ArrayList<Object[]>) data.clone();
+        return that;
+    }
 
-	////////////////
-	///// Data /////
-	////////////////
+    ////////////////
+    ///// Data /////
+    ////////////////
 
-	public int getRowCount() {
-		return data.size();
-	}
+    public int getRowCount() {
+        return data.size();
+    }
 
-	public int getColumnCount() {
-		return columnNames.length;
-	}
+    public int getColumnCount() {
+        return columnNames.length;
+    }
 
-	public String getColumnName(int col) {
-		return columnNames[col];
-	}
+    public String getColumnName(int col) {
+        return columnNames[col];
+    }
 
-	public TypeSpec getTypeSpec(int col) {
-		return typeSpecs[col];
-	}
+    public TypeSpec getTypeSpec(int col) {
+        return typeSpecs[col];
+    }
 
-	public Object getValueAt(int row, int col) {
-		return data.get(row)[col];
-	}
+    public Object getValueAt(int row, int col) {
+        return data.get(row)[col];
+    }
 
 
-	// Trivial implementation of asynchronicity support
+    // Trivial implementation of asynchronicity support
 
-	public void setState(int state) {
-		// Nothing to do
-	}
+    public void setState(int state) {
+        // Nothing to do
+    }
 
-	public int getState() {
-		return FINISHED;
-	}
+    public int getState() {
+        return FINISHED;
+    }
 
-	public void addStateListener(StateListener listener) {
-		listener.stateChanged(FINISHED, data.size());
-	}
+    public void addStateListener(StateListener listener) {
+        listener.stateChanged(FINISHED, data.size());
+    }
 
-	public void removeStateListener(StateListener listener) {
-		// Nothing to do
-	}
+    public void removeStateListener(StateListener listener) {
+        // Nothing to do
+    }
 }
