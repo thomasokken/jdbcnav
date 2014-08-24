@@ -1,5 +1,4 @@
 24 Aug 2014: build 2709
-
 *) Apparently, some obscure JDBC driver doesn't support DriverManager.
 getConnection(String url, Properties props). Modified the connection code so
 that it only uses that API when connecting to Oracle (that's the only case when
@@ -7,7 +6,6 @@ we specifically need it), and use getConnection(url, user, pass) for all
 others.
 
 17 May 2014: build 2708
-
 *) Fixed more connection config deletion breakage.
 
 17 May 2014: build 2707
