@@ -1951,14 +1951,18 @@ public class JDBCDatabase extends BasicDatabase {
             public void run() {
                 Connection con;
                 try {
-                    Properties props = new Properties();
-                    props.put("user", username);
-                    props.put("password", password);
-                    // This is to stop Oracle >= 9 drivers from returning
-                    // java.sql.Date objects for DATE columns, but stick with
-                    // java.sql.Timestamp like Oracle 8i.
-                    props.put("oracle.jdbc.V8Compatible", "true");
-                    con = DriverManager.getConnection(url, props);
+                    if (driver.startsWith("oracle.")) {
+                        Properties props = new Properties();
+                        props.put("user", username);
+                        props.put("password", password);
+                        // This is to stop Oracle >= 9 drivers from returning
+                        // java.sql.Date objects for DATE columns, but stick with
+                        // java.sql.Timestamp like Oracle 8i.
+                        props.put("oracle.jdbc.V8Compatible", "true");
+                        con = DriverManager.getConnection(url, props);
+                    } else {
+                        con = DriverManager.getConnection(url, username, password);
+                    }
                 } catch (SQLException e) {
                     synchronized (LoginDialog.this) {
                         // if this != connectThread, the operation was
