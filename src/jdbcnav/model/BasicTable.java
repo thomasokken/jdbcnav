@@ -36,6 +36,7 @@ public abstract class BasicTable implements Table, Scriptable {
     protected String[] columnNames;
     protected TypeSpec[] typeSpecs;
     protected String[] isNullable;
+    protected String[] defaults;
     protected PrimaryKey pk;
     protected ForeignKey[] fks;
     protected ForeignKey[] rks;
@@ -60,6 +61,7 @@ public abstract class BasicTable implements Table, Scriptable {
         columnNames = original.getColumnNames();
         typeSpecs = original.getTypeSpecs();
         isNullable = original.getIsNullable();
+        defaults = original.getDefaults();
         pk = original.getPrimaryKey();
         fks = original.getForeignKeys();
         rks = original.getReferencingKeys();
@@ -77,6 +79,7 @@ public abstract class BasicTable implements Table, Scriptable {
     public String[] getColumnNames() { return columnNames; }
     public TypeSpec[] getTypeSpecs() { return typeSpecs; }
     public String[] getIsNullable() { return isNullable; }
+    public String[] getDefaults() { return defaults; }
     public PrimaryKey getPrimaryKey() { return pk; }
     public ForeignKey[] getForeignKeys() { return fks; }
     public ForeignKey[] getReferencingKeys() { return rks; }

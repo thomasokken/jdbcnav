@@ -1,3 +1,6 @@
+9 April 2017: build 2711
+*) Added default values to Table Details.
+
 24 Aug 2014: build 2709
 *) Apparently, some obscure JDBC driver doesn't support DriverManager.
 getConnection(String url, Properties props). Modified the connection code so

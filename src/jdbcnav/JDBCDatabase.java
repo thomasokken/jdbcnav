@@ -1558,6 +1558,7 @@ public class JDBCDatabase extends BasicDatabase {
                 ArrayList<Integer> columnScalesList = new ArrayList<Integer>();
                 ArrayList<Integer> sqlTypesList = new ArrayList<Integer>();
                 ArrayList<String> isNullableList = new ArrayList<String>();
+                ArrayList<String> defaultsList = new ArrayList<String>();
 
                 ResultSet rs = null;
                 DatabaseMetaData dbmd = null;
@@ -1605,6 +1606,7 @@ public class JDBCDatabase extends BasicDatabase {
                             columnScalesList.add(scale);
                         sqlTypesList.add(rs.getInt("DATA_TYPE"));
                         isNullableList.add(rs.getString("IS_NULLABLE"));
+                        defaultsList.add(rs.getString("COLUMN_DEF"));
                         cols++;
                     }
                 } catch (SQLException e) {
@@ -1631,7 +1633,8 @@ public class JDBCDatabase extends BasicDatabase {
                 }
                 fixTypeSpecs(qualifiedName, typeSpecs);
 
-                isNullable= isNullableList.toArray(new String[cols]);
+                isNullable = isNullableList.toArray(new String[cols]);
+                defaults = defaultsList.toArray(new String[cols]);
 
                 pk = JDBCDatabase.this.getPrimaryKey(qualifiedName);
                 fks = JDBCDatabase.this.getFK(qualifiedName, true);
