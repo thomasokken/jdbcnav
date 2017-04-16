@@ -129,12 +129,12 @@ public class Main extends JFrame {
         String year;
         if (version == null) {
             version = "Could not read version information";
-            year = "2010";
+            year = "2017";
         } else {
             int sp = version.lastIndexOf(' ');
             year = version.substring(sp + 1);
         }
-        copyright = "(C) 2001-" + year + " Thomas Okken -- thomas_okken@yahoo.com";
+        copyright = "(C) 2001-" + year + " Thomas Okken -- thomasokken@gmail.com";
     }
 
     private int backgroundJobCount = 0;
