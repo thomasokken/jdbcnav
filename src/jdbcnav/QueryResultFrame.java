@@ -22,6 +22,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
+
 import javax.swing.*;
 import javax.swing.event.*;
 
@@ -47,14 +49,15 @@ public class QueryResultFrame extends MyFrame
     private JMenuItem rollbackMI;
     private JMenu editMenu;
     private JMenuItem cutMI;
+    private JMenuItem cutRowsMI;
     private JMenuItem copyMI;
+    private JMenuItem copyRowsMI;
     private JMenuItem setCellNullMI;
     private JMenuItem editCellMI;
     private JMenuItem undoMI;
     private JMenuItem redoMI;
     private JMenuItem deleteRowMI;
     private SequenceDialog sequenceDialog;
-    private RowOrCellDialog rowOrCellDialog;
     private ColumnMatchDialog columnMatchDialog;
 
     private QueryResultFrame(BrowserFrame browser, Table dbTable, String query,
@@ -111,7 +114,7 @@ public class QueryResultFrame extends MyFrame
                             });
         m.add(mi);
         mi = new JMenuItem("Re-Sort");
-        mi.setAccelerator(KeyStroke.getKeyStroke('S', Event.ALT_MASK));
+        mi.setAccelerator(KeyStroke.getKeyStroke('S', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mi.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent e) {
                                     model.sort();
@@ -141,7 +144,7 @@ public class QueryResultFrame extends MyFrame
                                     nuke();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('W', Event.CTRL_MASK));
+        mi.setAccelerator(KeyStroke.getKeyStroke('W', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         m.add(mi);
         menubar.add(m);
 
@@ -158,7 +161,7 @@ public class QueryResultFrame extends MyFrame
                 undoMI.setText(undo);
             else
                 undoMI.setEnabled(false);
-            undoMI.setAccelerator(KeyStroke.getKeyStroke('Z', Event.CTRL_MASK));
+            undoMI.setAccelerator(KeyStroke.getKeyStroke('Z', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
             editMenu.add(undoMI);
             redoMI = new JMenuItem("Redo");
             redoMI.addActionListener(new ActionListener() {
@@ -171,28 +174,46 @@ public class QueryResultFrame extends MyFrame
                 redoMI.setText(redo);
             else
                 redoMI.setEnabled(false);
-            redoMI.setAccelerator(KeyStroke.getKeyStroke('Y', Event.CTRL_MASK));
+            redoMI.setAccelerator(KeyStroke.getKeyStroke('Y', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
             editMenu.add(redoMI);
             editMenu.addSeparator();
             cutMI = new JMenuItem("Cut");
             cutMI.addActionListener(new ActionListener() {
                                     public void actionPerformed(ActionEvent e) {
-                                        cut();
+                                        cutCell();
                                     }
                                 });
             cutMI.setEnabled(false);
-            cutMI.setAccelerator(KeyStroke.getKeyStroke('X', Event.CTRL_MASK));
+            cutMI.setAccelerator(KeyStroke.getKeyStroke('X', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
             editMenu.add(cutMI);
+            cutRowsMI = new JMenuItem("Cut Rows");
+            cutRowsMI.addActionListener(new ActionListener() {
+                                    public void actionPerformed(ActionEvent e) {
+                                        cutRow();
+                                    }
+                                });
+            cutRowsMI.setEnabled(false);
+            cutRowsMI.setAccelerator(KeyStroke.getKeyStroke('X', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+            editMenu.add(cutRowsMI);
         }
         copyMI = new JMenuItem("Copy");
         copyMI.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent e) {
-                                    copy();
+                                    copyCell();
                                 }
                             });
         copyMI.setEnabled(false);
-        copyMI.setAccelerator(KeyStroke.getKeyStroke('C', Event.CTRL_MASK));
+        copyMI.setAccelerator(KeyStroke.getKeyStroke('C', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         editMenu.add(copyMI);
+        copyRowsMI = new JMenuItem("Copy Rows");
+        copyRowsMI.addActionListener(new ActionListener() {
+                                public void actionPerformed(ActionEvent e) {
+                                    copyRow();
+                                }
+                            });
+        copyRowsMI.setEnabled(false);
+        copyRowsMI.setAccelerator(KeyStroke.getKeyStroke('C', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        editMenu.add(copyRowsMI);
         if (editable) {
             mi = new JMenuItem("Paste");
             mi.addActionListener(new ActionListener() {
@@ -200,7 +221,15 @@ public class QueryResultFrame extends MyFrame
                                         paste();
                                     }
                                 });
-            mi.setAccelerator(KeyStroke.getKeyStroke('V', Event.CTRL_MASK));
+            mi.setAccelerator(KeyStroke.getKeyStroke('V', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+            editMenu.add(mi);
+            mi = new JMenuItem("Paste TSV");
+            mi.addActionListener(new ActionListener() {
+                                    public void actionPerformed(ActionEvent e) {
+                                        pasteTSV();
+                                    }
+                                });
+            mi.setAccelerator(KeyStroke.getKeyStroke('V', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
             editMenu.add(mi);
             editMenu.addSeparator();
             mi = new JMenuItem("Insert Row");
@@ -226,7 +255,7 @@ public class QueryResultFrame extends MyFrame
                                 });
             setCellNullMI.setEnabled(false);
             setCellNullMI.setAccelerator(
-                                KeyStroke.getKeyStroke('N', Event.CTRL_MASK));
+                                KeyStroke.getKeyStroke('N', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
             editMenu.add(setCellNullMI);
             editCellMI = new JMenuItem("Edit Cell");
             editCellMI.addActionListener(new ActionListener() {
@@ -236,7 +265,7 @@ public class QueryResultFrame extends MyFrame
                                 });
             editCellMI.setEnabled(false);
             editCellMI.setAccelerator(
-                                KeyStroke.getKeyStroke('E', Event.CTRL_MASK));
+                                KeyStroke.getKeyStroke('E', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
             editMenu.add(editCellMI);
         } else {
             editCellMI = new JMenuItem("View Cell");
@@ -247,7 +276,7 @@ public class QueryResultFrame extends MyFrame
                                 });
             editCellMI.setEnabled(false);
             editCellMI.setAccelerator(
-                                KeyStroke.getKeyStroke('E', Event.CTRL_MASK));
+                                KeyStroke.getKeyStroke('E', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
             editMenu.add(editCellMI);
         }
         editMenu.setEnabled(editable);
@@ -283,11 +312,17 @@ public class QueryResultFrame extends MyFrame
         c.setLayout(new GridLayout(1, 1));
         table = new MyTable(model);
         table.setEditHandler(new MyTable.EditHandler() {
-                    public void cut() {
-                        QueryResultFrame.this.cut();
+                    public void cutCell() {
+                        QueryResultFrame.this.cutCell();
                     }
-                    public void copy() {
-                        QueryResultFrame.this.copy();
+                    public void cutRow() {
+                        QueryResultFrame.this.cutRow();
+                    }
+                    public void copyCell() {
+                        QueryResultFrame.this.copyCell();
+                    }
+                    public void copyRow() {
+                        QueryResultFrame.this.copyRow();
                     }
                     public void paste() {
                         QueryResultFrame.this.paste();
@@ -668,27 +703,21 @@ public class QueryResultFrame extends MyFrame
         model.redo();
     }
 
-    private void cut() {
+    private void cutCell() {
         if (table.isEditing()) {
             ((JTextField) table.getEditorComponent()).cut();
             return;
         }
-        if (table.getSelectedRows().length == 1) {
-            if (rowOrCellDialog != null)
-                rowOrCellDialog.dispose();
-            rowOrCellDialog = new RowOrCellDialog("Cut row or cell?",
-                        new RowOrCellDialogListener() {
-                            public void row() {
-                                cutRow();
-                            }
-                            public void cell() {
-                                cutCell();
-                            }
-                        });
-            rowOrCellDialog.setParent(this);
-            rowOrCellDialog.showCentered();
-        } else
-            cutRow();
+        int row = table.getSelectionModel().getAnchorSelectionIndex();
+        int column = table.getColumnModel().getSelectionModel()
+                          .getAnchorSelectionIndex();
+        if (row == -1 || column == -1)
+            Toolkit.getDefaultToolkit().beep();
+        else {
+            table.stopEditing();
+            Main.getClipboard().put(model.getValueAt(row, column));
+            model.setValueAt(null, row, column, "Cut Cell");
+        }
     }
 
     private void cutRow() {
@@ -702,43 +731,37 @@ public class QueryResultFrame extends MyFrame
         }
     }
 
-    private void cutCell() {
-        int row = table.getSelectionModel().getAnchorSelectionIndex();
-        int column = table.getColumnModel().getSelectionModel()
-                          .getAnchorSelectionIndex();
-        if (row == -1 || column == -1)
-            Toolkit.getDefaultToolkit().beep();
-        else {
-            table.stopEditing();
-            Main.getClipboard().put(model.getValueAt(row, column));
-            model.setValueAt(null, row, column, "Cut Cell");
-        }
-    }
-
-    private void copy() {
+    private void copyCell() {
         if (table.isEditing()) {
             ((JTextField) table.getEditorComponent()).copy();
             return;
         }
-        if (table.getSelectedRows().length == 1) {
-            if (rowOrCellDialog != null)
-                rowOrCellDialog.dispose();
-            rowOrCellDialog = new RowOrCellDialog("Copy row or cell?",
-                        new RowOrCellDialogListener() {
-                            public void row() {
-                                copyRow();
-                            }
-                            public void cell() {
-                                copyCell();
-                            }
-                        });
-            rowOrCellDialog.setParent(this);
-            rowOrCellDialog.showCentered();
-        } else
-            copyRow();
+        int[] selRows = table.getSelectedRows();
+        int[] selColumns = table.getSelectedColumns();
+        if (selRows.length == 0 || selColumns.length == 0)
+            Toolkit.getDefaultToolkit().beep();
+        else {
+            table.stopEditing();
+            StringBuffer buf = new StringBuffer();
+            for (int r = 0; r < selRows.length; r++) {
+                int row = selRows[r];
+                for (int c = 0; c < selColumns.length; c++) {
+                    int column = selColumns[c];
+                    column = table.convertColumnIndexToModel(column);
+                    buf.append(model.getValueAt(row, column));
+                    if (c < selColumns.length - 1)
+                        buf.append('\t');
+                }
+                if (r < selRows.length - 1)
+                    buf.append('\n');
+            }
+            Main.getClipboard().put(buf.toString());
+        }
     }
 
     private void copyRow() {
+        if (table.isEditing())
+            table.stopEditing();
         int[] selRows = table.getSelectedRows();
         int nrows = selRows.length;
         if (nrows == 0)
@@ -756,19 +779,6 @@ public class QueryResultFrame extends MyFrame
                 for (int col = 0; col < ncols; col++)
                     array[row + 3][col] = model.getValueAt(selRows[row], col);
             Main.getClipboard().put(array);
-        }
-    }
-
-    private void copyCell() {
-        int row = table.getSelectionModel().getAnchorSelectionIndex();
-        int column = table.getColumnModel().getSelectionModel()
-                          .getAnchorSelectionIndex();
-        column = table.convertColumnIndexToModel(column);
-        if (row == -1 || column == -1)
-            Toolkit.getDefaultToolkit().beep();
-        else {
-            table.stopEditing();
-            Main.getClipboard().put(model.getValueAt(row, column));
         }
     }
 
@@ -811,7 +821,7 @@ public class QueryResultFrame extends MyFrame
             }
         }
     }
-
+    
     private void pasteRow(String[] mapping, boolean setNull) {
         Object clipdata = Main.getClipboard().get();
         if (!(clipdata instanceof Object[][])) {
@@ -819,6 +829,62 @@ public class QueryResultFrame extends MyFrame
             return;
         }
         model.pasteRow((Object[][]) clipdata, mapping, setNull);
+    }
+
+    private void pasteTSV() {
+        Object clipdata = Main.getClipboard().get();
+        if (!(clipdata instanceof String)) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        int targetRow = table.getSelectionModel().getAnchorSelectionIndex();
+        int targetColumn = table.getColumnModel().getSelectionModel()
+                        .getAnchorSelectionIndex();
+        if (targetRow == -1 || targetColumn == -1)
+            Toolkit.getDefaultToolkit().beep();
+        String text = (String) clipdata;
+        List<List<String>> list = new ArrayList<List<String>>();
+        List<String> row = new ArrayList<String>();
+        int columns = 0;
+        boolean prevWasSeparator = true;
+        for (StringTokenizer tok = new StringTokenizer(text, "\n\t", true); tok.hasMoreTokens();) {
+            String t = tok.nextToken();
+            if (t.equals("\n")) {
+                if (prevWasSeparator)
+                    row.add("");
+                list.add(row);
+                if (row.size() > columns)
+                    columns = row.size();
+                row = new ArrayList<String>();
+                prevWasSeparator = true;
+            } else if (t.equals("\t")) {
+                if (prevWasSeparator)
+                    row.add("");
+                prevWasSeparator = true;
+            } else {
+                row.add(t);
+                prevWasSeparator = false;
+            }
+        }
+        if (prevWasSeparator)
+            row.add("");
+        list.add(row);
+        if (row.size() > columns)
+            columns = row.size();
+        int rows = list.size();
+        String[][] array = new String[rows][columns];
+        int r = 0;
+        for (List<String> ar : list) {
+            int c = 0;
+            for (String e : ar)
+                array[r][c++] = e;
+            r++;
+        }
+        int[] targetColumns = new int[columns];
+        for (int c = 0; c < columns; c++)
+            targetColumns[c] = table.convertColumnIndexToModel(c);
+        table.cancelEditing();
+        model.setValuesAt(array, targetRow, targetColumns, "Paste TSV");
     }
 
     private void insertRow() {
@@ -924,8 +990,10 @@ public class QueryResultFrame extends MyFrame
             }
             setCellNullMI.setEnabled(haveSelection);
             cutMI.setEnabled(rows.length > 0);
+            cutRowsMI.setEnabled(rows.length > 0);
         }
         copyMI.setEnabled(rows.length > 0);
+        copyRowsMI.setEnabled(rows.length > 0);
         editCellMI.setEnabled(haveSelection);
         if (!editable)
             editMenu.setEnabled(haveSelection || rows.length > 0);
@@ -1044,72 +1112,9 @@ public class QueryResultFrame extends MyFrame
         mcd.showCentered();
     }
     
-    private class RowOrCellDialog extends MyFrame {
-        private RowOrCellDialogListener listener;
-        public RowOrCellDialog(String message, RowOrCellDialogListener listener_p) {
-            super("Row or Cell?");
-            listener = listener_p;
-
-            Container c = getContentPane();
-            c.setLayout(new GridLayout(1, 1));
-            JPanel p = new JPanel();
-            p.setLayout(new MyGridBagLayout());
-            c.add(p);
-
-            JLabel label = new JLabel(message);
-            MyGridBagConstraints gbc = new MyGridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.gridwidth = 3;
-            gbc.weightx = 1;
-            gbc.anchor = MyGridBagConstraints.WEST;
-            p.add(label, gbc);
-
-            JButton button = new JButton("Row");
-            button.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                dispose();
-                                listener.row();
-                            }
-                        });
-            gbc.gridy++;
-            gbc.gridwidth = 1;
-            gbc.weightx = 0;
-            p.add(button, gbc);
-
-            button = new JButton("Cell");
-            button.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                dispose();
-                                listener.cell();
-                            }
-                        });
-            gbc.gridx++;
-            p.add(button, gbc);
-
-            button = new JButton("Cancel");
-            button.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                dispose();
-                            }
-                        });
-            gbc.gridx++;
-            p.add(button, gbc);
-
-            pack();
-        }
-    }
-
-    private interface RowOrCellDialogListener {
-        void row();
-        void cell();
-    }
-
     public void childDisposed(MyFrame child) {
         if (child == sequenceDialog)
             sequenceDialog = null;
-        if (child == rowOrCellDialog)
-            rowOrCellDialog = null;
         if (child == columnMatchDialog)
             columnMatchDialog = null;
     }

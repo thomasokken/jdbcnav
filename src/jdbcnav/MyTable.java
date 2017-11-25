@@ -44,6 +44,7 @@ public class MyTable extends JTable {
         super();
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         setModel(dm);
+        setColumnSelectionAllowed(true);
 
         FastTableCellRenderer ljr = new FastTableCellRenderer();
         FastTableCellRenderer rjr = new FastTableCellRenderer(false);
@@ -196,36 +197,56 @@ public class MyTable extends JTable {
     }
 
     public interface EditHandler {
-        void cut();
-        void copy();
+        void cutCell();
+        void cutRow();
+        void copyCell();
+        void copyRow();
         void paste();
     }
 
     public void setEditHandler(EditHandler eh) {
         editHandler = eh;
-        KeyStroke ctrl_x = KeyStroke.getKeyStroke('X', InputEvent.CTRL_MASK);
-        KeyStroke ctrl_c = KeyStroke.getKeyStroke('C', InputEvent.CTRL_MASK);
-        KeyStroke ctrl_v = KeyStroke.getKeyStroke('V', InputEvent.CTRL_MASK);
+        KeyStroke ctrl_x = KeyStroke.getKeyStroke('X', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        KeyStroke ctrl_shift_x = KeyStroke.getKeyStroke('X', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        KeyStroke ctrl_c = KeyStroke.getKeyStroke('C', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        KeyStroke ctrl_shift_c = KeyStroke.getKeyStroke('C', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        KeyStroke ctrl_v = KeyStroke.getKeyStroke('V', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
         InputMap im = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        Object cut_id = im.get(ctrl_x);
-        Object copy_id = im.get(ctrl_c);
+        Object cut_cell_id = im.get(ctrl_x);
+        Object cut_row_id = im.get(ctrl_shift_x);
+        Object copy_cell_id = im.get(ctrl_c);
+        Object copy_row_id = im.get(ctrl_shift_c);
         Object paste_id = im.get(ctrl_v);
         ActionMap am = getActionMap();
         if (editHandler == null) {
-            am.remove(cut_id);
-            am.remove(copy_id);
+            am.remove(cut_cell_id);
+            am.remove(cut_row_id);
+            am.remove(copy_cell_id);
+            am.remove(copy_row_id);
             am.remove(paste_id);
         } else {
-            am.put(cut_id,
+            am.put(cut_cell_id,
                     new AbstractAction() {
                         public void actionPerformed(ActionEvent e) {
-                            editHandler.cut();
+                            editHandler.cutCell();
                         }
                     });
-            am.put(copy_id,
+            am.put(cut_row_id,
                     new AbstractAction() {
                         public void actionPerformed(ActionEvent e) {
-                            editHandler.copy();
+                            editHandler.cutRow();
+                        }
+                    });
+            am.put(copy_cell_id,
+                    new AbstractAction() {
+                        public void actionPerformed(ActionEvent e) {
+                            editHandler.copyCell();
+                        }
+                    });
+            am.put(copy_row_id,
+                    new AbstractAction() {
+                        public void actionPerformed(ActionEvent e) {
+                            editHandler.copyRow();
                         }
                     });
             am.put(paste_id,

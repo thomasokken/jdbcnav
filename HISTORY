@@ -1,20 +1,27 @@
-16 April 2017: build 2713
-Updated email address in About box.
+2017-11-25: build 2714
+*) Fixed the menu shortcuts so that on MacOS, they work with the Command key
+rather than Ctrl. Also, wherever alternative shortcuts are needed, standardized
+on Command-Shift / Ctrl-Shift instead of Alt or Alt-Shift.
+*) Implemented spreadsheet-compatible cell copying (tab-separated values) in
+QueryResultFrame.
 
-9 April 2017: build 2711
+2017-04-16: build 2713
+*) Updated email address in About box.
+
+2017-04-09: build 2711
 *) Added default values to Table Details.
 
-24 Aug 2014: build 2709
+2014-08-24: build 2709
 *) Apparently, some obscure JDBC driver doesn't support DriverManager.
 getConnection(String url, Properties props). Modified the connection code so
 that it only uses that API when connecting to Oracle (that's the only case when
 we specifically need it), and use getConnection(url, user, pass) for all
 others.
 
-17 May 2014: build 2708
+2014-05-17: build 2708
 *) Fixed more connection config deletion breakage.
 
-17 May 2014: build 2707
+2014-05-17: build 2707
 *) Bug workaround for SQLite: DatabaseMetaData.getPrimaryKeys() returns an
 element with KEY_SEQ = 0, which should never happen accoring to the JDBC API
 documentation; KEY_SEQ is a 1-based index. Simply ignoring this element fixes
@@ -27,7 +34,7 @@ your own risk.
 menu, but not from the stored configs, so it would reappear the next time the
 Open JDBC Connection dialog was presented.
 
-2 December 2012: build 2706
+2012-12-02: build 2706
 *) Generating escaped HTML strings would choke on character codes greater than
 255. This could cause saving File databases and presenting table details
 windows to fail. Fixed.
@@ -36,47 +43,47 @@ nulls. Fixed.
 *) Upgraded Rhino to 1.7R4, and added generics wherever the new Rhino and the
 latest Java APIs support them (e.g. JList).
 
-30 November 2012: build 2705
+2012-11-30: build 2705
 *) With Java 1.7, the Preferences, MessageBox, and Binary Editor windows would
 throw a ClassCastException in their constructors. Fixed.
 
-23 November 2011: build 2703
+2011-11-23: build 2703
 *) The JDBCDatabase constructor was protected, which caused opening
 unrecognized database types to fail. Changed it to public, fixing the problem.
 *) Improved JDBCDatabase.makeTypeSpec(): it now recognizes basic string,
 numeric, and date/time types, so that some basic table editing is now possible
 even with unsupported databases.
 
-14 June 2010: build 2700
+2010-06-14: build 2700
 *) In JDBCDatabase.getJavaTypes(), added a "where 1 = 2" clause to the
 statement used to find a table's column types. This prevents stupid JDBC
 drivers (specifically, MySQL) from actually loading the whole table when all
 we want is the metadata.
 
-10 July 2009: build 2697
+2009-07-10: build 2697
 *) Changed the homepage URL to http://thomasokken.com/jdbcnav/.
 
-2 July 2009: build 2696
+2009-07-02: build 2696
 *) Sorting on byte[] columns works now.
 *) When moving columns, the column formatting would not move. Fixed.
 
-16 February 2008: build 2688
+2008-02-16: build 2688
 *) Running a query that selects columns from only one table, including all of
 that table's PK columns, now returns an updatable query result *even* if the
 JDBC driver does not provide catalog/schema/table information in ResultSet.
 Formerly, with such drivers you would only get an updatable query result if you
 performed a "select *".
 
-16 December 2007: build 2684
+2007-12-16: build 2684
 *) The initial Database.getRootNode() call, which loads all the table metadata
 when a JDBC connection is opened, is now performed in the background, so it
 does not freeze the UI.
 
-4 December 2007: build 2681
+2007-12-04: build 2681
 *) The MySQL driver did not recognize varchar columns, making it impossible to
 edit them. Fixed.
 
-13 August 2007: build 2680
+2007-08-13: build 2680
 *) Saving the .jdbcnav file did not work unless one already existed. When JDBC
 Navigator exits, it actually writes a file called .jdbcnavrc-new, and once
 that is done, it deletes the old .jdbcnavrc file, and renames .jdbcnavrc-new to
@@ -85,7 +92,7 @@ it couldn't delete the old .jdbcnavrc. Note to self: getting an error while
 trying to delete a file is not *really* an error if that file did not exist in
 the first place!
 
-7 April 2007: build 2679
+2007-04-07: build 2679
 *) Now showing a "Please Wait" dialog while the tree in the BrowserFrame is
 initially populated upon opening a JDBC connection. It's a totally lame dialog
 so far; it does not yet have a progress indicator nor a Cancel button, but at
@@ -93,16 +100,16 @@ least now there is *some* feedback -- you can now tell the difference between
 waiting for the Connection to be established, and waiting for the table
 information to load.
 
-6 April 2007: build 2672
+2007-04-06: build 2672
 *) Now showing an hourglass cursor while opening a JDBC connection, opening a
 table editing window, opening a table details window, and while running a
 query.
 
-14 March 2007: build 2657
+2007-03-14: build 2657
 *) Now recognizes MySQL unsigned types, so they can be edited. They are still
 not handled correctly when generating scripts, though.
 
-4 March 2007: build 2654
+2007-03-04: build 2654
 *) The previous release still didn't fix all of the problems with loading large
 tables; it turned out that there were still a couple of places where background
 threads were making Swing calls. I fixed those, and so far, it looks like it's
@@ -111,7 +118,7 @@ problem, but that's a separate issue, and has much different symptoms. This
 type of problem can be identified by running jdbcnav from the command line and
 looking for OutOfMemoryError messages.)
 
-3 March 2007: build 2651
+2007-03-03: build 2651
 *) Added a new option for Import CSV, called "Replace conflicting rows". What
 it does is completely replace rows whose PK matches that of imported rows, as
 opposed to the "Overwrite conflicting rows" option, which only replaces those
@@ -140,12 +147,12 @@ I modified ResultSetTableModel so that it will now always check if it is on the
 AWT event thread before firing events; if it is not, it queues them up using
 SwingUtilities.invokeLater() instead.
 
-2 March 2007: build 2638
+2007-03-02: build 2638
 *) In the Preferences dialog, clicking OK just after editing the Class Path
 would cause the most recent edits to be lost (if one of the Class Path items
 still had a blinking cursor in it). Fixed.
 
-27 February 2007: build 2637
+2007-02-27: build 2637
 *) SELECT * queries from more than one table would fail, because jdbcnav would
 treat them like SELECT * from one table, and then choke when trying to match
 the columns from the ResultSet to the smaller number of columns from the first
@@ -153,23 +160,23 @@ table from the FROM clause. The end result was that no result window would
 appear, and the Exception would just kill the background table loading thread
 and never be reported to the user. Fixed now.
 
-26 February 2007: build 2636
+2007-02-26: build 2636
 *) Copy Cell could copy the wrong cell if the columns in the table view had
 been rearranged.
 
-10 February 2007: build 2635
+2007-02-10: build 2635
 *) Updatable query results (that is, windows resulting from a "select * from
 foo" type query) now support the same foreign-key chasing as regular table
 windows.
 
-25 December 2006: build 2628
+2006-12-25: build 2628
 *) With Oracle 10g (and possibly earlier versions), DBMD.getTables() can
 return a lot of useless junk along with the actual table/view/synonym info.
 This is confusing, annoying, and it slows things down.
 I changed the jdbcnav's Oracle driver so that it now queries SYS.ALL_TABLES,
 SYS.ALL_VIEWS, and SYS.ALL_SYNONYMS instead.
 
-11 November 2006: build 2626
+2006-11-11: build 2626
 *) In some situations, JDBC Navigator would get an "ORA-01866: the datetime
 class is invalid" while running the initial DBMD.getTables() right after
 opening a connection to an Oracle database. The problem appears to be caused by
@@ -180,19 +187,19 @@ jdbcnav now recognizes a System property named jdbcnav.tz which can be used to
 override the default time zone ID. The default, which is used if jdbcnav.tz is
 not set, is whatever is returned by java.util.TimeZone.getDefault().getID().
 
-19 September 2006: build 2625
+2006-09-19: build 2625
 *) Removed a couple of JDK 1.5 dependencies that I had inadvertently introduced
 in earlier builds. The offending code used the Boolean.parseBoolean(String)
 method and the IllegalArgumentException(Throwable) constructor.
 
-26 August 2006: build 2619
+2006-08-26: build 2619
 *) Added support for Oracle SYNONYMs.
 *) When pasting illegal values into a column, the table editing window now
 catches the exceptions thrown by the object-to-string conversion, and displays
 the word "illegal" instead. Before, it used to just let the exceptions fall
 through to the AWT repaint thread, killing it and messing up the UI! Oops.
 
-25 August 2006: build 2610
+2006-08-25: build 2610
 *) Using MyTextArea/MyTextField instead of JTextArea/JTextField again; these
 take care of automatically refreshing the Clipboard window when a cut or copy
 operation is performed. I had removed this functionality in the previous
@@ -204,7 +211,7 @@ meanwhile, whenever the clipboard is changed by a plain JTextArea/JTextField,
 or anything else outside of jdbcnav, the clipboard window will not refresh
 automatically.
 
-24 August 2006: build 2609
+2006-08-24: build 2609
 *) Copying rows in QueryResultFrame has been broken since build 2239; it didn't
 handle the TypeSpec column class introduced in that build. As a result, the
 copy operation itself would still succeed, but displaying the Clipboard would
@@ -216,17 +223,17 @@ and paste of table rows should work properly again.
 *) Copying n table rows would always copy the top n rows from the table,
 instead of the n rows that were actually selected. Oops! Fixed now.
 
-22 July 2006: build 2600
+2006-07-22: build 2600
 *) When using the 'Select FK Value' command on a column that allows nulls, the
 ForeignKeySelector window did not show the last of the available PK values.
 This was caused by an error in the code that adds 'null' to the list of options
 for this case. Fixed.
 
-16 July 2006: build 2596
+2006-07-16: build 2596
 *) The DateTime and Interval classes now implement the Comparable interface, so
 that DATE, TIMESTAMP, and INTERVAL columns can now be used for sorting.
 
-9 May 2006: build 2593
+2006-05-09: build 2593
 *) In addition to oracle.jdbc.driver.OracleDriver, JDBC Navigator now also
 recognizes oracle.jdbc.OracleDriver as being an Oracle driver class.
 Previously, if you opened a connection using the oracle.jdbc.OracleDriver class
@@ -237,7 +244,7 @@ TypeSpec class and its associated DatabaseObjectRenderer and DatabaseObject-
 Editor, so they were unaffected, but it did cause the wrong renderer to be
 picked for the "#", "Size", and "Scale" columns in Table Details windows.
 
-5 February 2006: build 2590
+2006-02-05: build 2590
 *) Fixed a serious bug that broke table cell editing (!).
 *) Added support for SmallSQL 0.10. Note, however, that creating a new database
 from JDBC Navigator does not work at the moment, since JDBC Navigator calls
@@ -246,7 +253,7 @@ throws a NullPointerException when this call is performed on an uninitialized
 database. If the DB is initialized outside jdbcnav, you *can* work with it.
 This problem is fixed in SmallSQL 0.11.
 
-2 February 2006: build 2586
+2006-02-02: build 2586
 *) Oracle BFILEs can now be viewed using the Edit Cell command.
 *) The PostgreSQL driver now looks at the 'scale' reported by DBMD and RSMD for
 time, timetz, timestamp, timestamptz, and interval types. Note that you need a
@@ -257,27 +264,27 @@ tables, a script containing ALTER TABLE commands would be generated, instead
 of the DROP and CREATE statements being ordered properly so as to avoid ALTER
 TABLE statements as much as possible. Fixed.
 
-1 February 2006: build 2576
+2006-02-01: build 2576
 *) Some code cleanup to get rid of warnings in Eclipse.
 
-17 January 2006: build 2567
+2006-01-17: build 2567
 *) Derby driver: fixed TypeSpec generation for NUMERIC columns.
 
-16 January 2006: build 2565
+2006-01-16: build 2565
 *) Added Derby support.
 
-16 January 2006: build 2561
+2006-01-16: build 2561
 *) Pushed LOB loading into JDBCDatabase class; added support for DBs where Blob
 and Clob objects become invalid when the ResultSet that produced them is
 closed. Currently, this support is only activated in the Derby driver. (Note:
 this does not mean that Derby is fully supported yet; that will happen in
 another release in the near future.)
 
-21 December 2005: build 2549
+2005-12-21: build 2549
 *) More logging: now logs all system properties on startup, and jdbcnav's
 version string. Also, now logs all messages displayed by MessageBox.show().
 
-20 December 2005: build 2545
+2005-12-20: build 2545
 *) Added option in Preferences to disable the "splash" screen that is usually
 displayed when the application starts up.
 *) Added logging support. Should usually be disabled because it can slow things
@@ -285,7 +292,7 @@ down quite a bit (particularly with Oracle), but can be useful in generating
 the kind of information Yours Truly needs when trying to debug problems he
 can't reproduce.
 
-12 December 2005: build 2531
+2005-12-12: build 2531
 *) QueryResultFrame: Cut, Copy, and Paste now use the usual accelerators
 (Ctrl-X, Ctrl-C, Ctrl-V) instread of Alt-X etc.; jdbcnav now attempts to keep
 its own clipboard and the system's clipboard in sync, and as far as the user is
@@ -306,10 +313,10 @@ source and destination DB types now generates the proper column type -- and not
 written to the XML file as a hex string, instead of being Base64 encoded, which
 would cause an exception when trying to read the file back in.
 
-7 December 2005: build 2450
+2005-12-07: build 2450
 *) Added DB2 support.
 
-6 December 2005: build 2428
+2005-12-06: build 2428
 *) Added Transbase support. Not complete yet: inserting/updating BITS and
 TIMESPAN does not work yet. I probably need to contact the Transbase developers
 since I can't find any documentation on the TBBits and TBTimespan classes;
@@ -319,7 +326,7 @@ freeze).
 *) MySQL: BINARY and VARBINARY now recognized correctly.
 *) Released the source code under the GNU General Public License.
 
-5 December 2005: build 2395
+2005-12-05: build 2395
 *) Added MySQL support.
 *) Improved the code for handling INTERVAL types in SQL script generation. If
 the target DB does not support INTERVAL, it now generates DECIMAL columns and
@@ -332,7 +339,7 @@ whenever the target DB is not PostgreSQL.
 primary key's columns were not the first columns in the table. Fixed.
 *) SQL script generation would quote number literals. Fixed.
 
-2 December 2005: build 2357
+2005-12-02: build 2357
 *) Oracle TIMESTAMP, TIMESTAMP WITH TIME ZONE, and TIMESTAMP WITH LOCAL TIME
 ZONE support completed.
 *) Completed DATE, TIME, and TIMESTAMP support in CSV import/export, snapshots,
@@ -344,7 +351,7 @@ inserting line feeds when needed but never inside a word, double-quoted word,
 or number literal.
 *) Fixed behavior of "select * from <table>" in SQL Window.
 
-13 November 2005: build 2254
+2005-11-13: build 2254
 *) SQL script generation: the code that checks if a column is part of a key or
 index is back, and this means that when the Script Generator generates CREATE
 TABLE statements for Oracle, it will not use BLOB or CLOB types for such
@@ -374,7 +381,7 @@ command to bring up a separate Binary/Text editor frame. This is to avoid the
 confusion over what happens when you start editing a string like
 "Clob (size = 10000)" or the hex representation of a byte array.
 
-12 November 2005: build 2239
+2005-11-12: build 2239
 *) Fixed a few bugs having to do with moving columns in table editing windows.
 *) Clob and Blob handling changed: table editing windows now load them lazily,
 and they are written back to the database when the table is committed, and no
@@ -387,7 +394,7 @@ rather than merely being displayed in table editing windows.
 *) Added 'clipboard' property to the global scope in JavaScript; this can be
 used to get and set the JDBC Navigator clipboard.
 
-10 November 2005: build 2203
+2005-11-10: build 2203
 *) Oracle DATE columns are once again treated as java.sql.Timestamp values; I
 added code to enable the Oracle 8i compatibility mode in the Oracle >= 9
 drivers.
@@ -395,7 +402,7 @@ drivers.
 because the custom column renderers did not get set until after the table was
 starting to be populated.
 
-9 November 2005: build 2193
+2005-11-09: build 2193
 *) The latest Oracle JDBC drivers apparently finally implement
 java.sql.Blob.setBytes(long, byte[]), but it does not work. So, I had to
 disable the code that uses this method, and keep using the old Oracle
@@ -403,20 +410,20 @@ work-around code, which fortunately is still OK.
 The whole thing is rather weird, because according to Oracle's own Javadocs,
 oracle.sql.BLOB does not implement setBytes(long, byte[]) at all.
 
-9 November 2005: build 2189
+2005-11-09: build 2189
 *) Fixed a few bugs (related to BLOB and RAW types, and Oracle 8 & 9) that I
 introduced with the code changes for the previous two releases. Sorry about
 that, folks -- I hope that kind of thing will become rarer in the future as I
 clean up the code further.
 
-9 November 2005: build 2187
+2005-11-09: build 2187
 *) Abstacted conversion of database datatypes to/from user-editable strings;
 this is now done through methods in the Database object. Note, however, that at
 the moment this new conversion code is only used in table editing windows and
 query result windows; it is not yet used for creating snapshots nor for
 generating scripts. This will be added in the near future.
 
-8 November 2005: build 2172
+2005-11-08: build 2172
 *) Fixed handling of Oracle NCHAR and NVARCHAR2 types.
 *) Added support for Oracle BINARY_FLOAT, BINARY_DOUBLE, TIMESTAMP, and
 INTERVAL types.
@@ -426,27 +433,27 @@ now generates CREATE TABLE statements with more accurate column types. The new
 code is also easier to maintain, so that adding support for additional products
 is now much easier than before.
 
-25 October 2005: build 2134
+2005-10-25: build 2134
 *) Added Transbase driver; this is needed because the Transbase JDBC driver
 does not support ResultSetMetaData.getCatalogName() etc. (no surprises there,
 I guess -- I have not seen *any* JDBC drivers yet that support this). The
 new driver fixes the situation that simple queries in the SQL window do not
 work.
 
-8 September 2005: build 2130
+2005-09-08: build 2130
 *) Fixed handling of NULL values in CLOB, BLOB, LONG, and LONG RAW columns.
 *) Fixed NullPointerException that occurred in CLOB columns when the Java type
 returned by ResultSetMetaData.getColumnClassName() was an interface rather than
 a class (affects DB2).
 
-13 June 2005: build 2108
+2005-06-13: build 2108
 *) Added custom layout manager to the Windows menu, so it stays usable even
 when very many windows are open.
 *) Added code to window placement code to ensure that new windows are placed
 entirely on-screen, if possible. This means that opening a large table returns
 a window that you don't have to manually reposition before you can use it.
 
-6 June 2005: build 2103
+2005-06-06: build 2103
 *) In the column-jumping menu, columns with "not null" constraints are now
 highlighted by showing their names in boldface.
 *) Executing "Reload Tree", after a table had been added to a node that had not
@@ -458,7 +465,7 @@ ConcurrentModificationException when the orphanage was first created; also,
 makeOrphan() generated names that findTableNode() couldn't resolve in some
 cases, having to do with quoting.
 
-4 June 2005: build 2075
+2005-06-04: build 2075
 *) MyFrame.dispose(): added work-around for JInternalFrame bug, where the
 behavior of doDefaultCloseAction() (the method invoked when the user clicks
 the close box) does extra work that dispose() does not; the upshot is that
@@ -467,7 +474,7 @@ window when the topmost window is disposed. This is bad, especially if the
 Windows L&F is used, because it relies on window activation to handle
 maximized internal frames properly.
 
-30 May 2005: build 2066
+2005-05-30: build 2066
 *) TableFrame now highlights PK and FK columns using special background colors.
 *) TableFrame now supports populating FK columns by selecting available values
 from the referenced table's corresponding PK columns.
@@ -477,16 +484,16 @@ from the referenced table's corresponding PK columns.
 insensitive comparisons, instead of case-sensitive.
 *) In BrowserFrame, added a multi-table rollback command.
 
-22 May 2005: build 1977
+2005-05-22: build 1977
 *) Added SmallSQL support (JDBCDatabase and ScriptGenerator subclasses).
 
-2 May 2005:
+2005-05-02:
 *) Changed the REMARKS getting code so that it first tries REMARKS, then
 TABLE_REMARKS. Simply picking TABLE_REMARKS whenever we're talking to Oracle
 does not work any more; apparently, Oracle have fixed this JDBC incompatibility
 in 9.x.
 
-8 Sep 2004:
+2004-09-08:
 *) Added showAbout() method to Main.AboutGlassPane. Showing the "about" box on
 setVisible(true) turned out not to be such a great idea, since some part of
 Swing (JDesktop, I suppose) shows the glass pane when you resize an internal
@@ -494,7 +501,7 @@ frame (but not when you drag one -- go figure). So, I had to add a state
 variable to AboutGlassPane to decide whether to paint the "about" box or not;
 setVisible(true) does not set this flag, and showAbout() does.
 
-5 Sep 2004:
+2004-09-05:
 *) Added classpath configuration area to preferences dialog. It only shows up
 if the jdbcnavboot.Boot class exists. In addition to directories and jar/zip
 files, you can use the word "CLASSPATH" in the dialog to indicate that the
@@ -529,7 +536,7 @@ Class.getResourceAsStream() takes care of the latter).
 This works like a charm on both Windows 98SE and Linux. Of course, I do wonder
 if this works on MacOS, too...
 
-4 Sep 2004:
+2004-09-04:
 *) I found a reasonably elegant way to create a runnable jar file after all
 (see yesterday's item 3). It uses a two-stage startup process, stage 1 being a
 new class named jdbcnavboot.Boot; this class creates a class loader that looks
@@ -560,7 +567,7 @@ under JDK 1.5 or later -- with this functionality, a user who already had his
 JDBC drivers listed on the CLASSPATH won't have to perform *any* configuration
 when using the stand-alone version.
 
-3 Sep 2004:
+2004-09-03:
 *) Added a splash screen. This is also displayed when the "About JDBC
 Navigator" command is selected, unless the splash.gif image is missing, in
 which case the old plain message box is used.
@@ -576,7 +583,7 @@ two-stage startup process that can't be done with a single jar file. Ergo,
 double-clickable jar files can't use JDBC drivers, so JDBC Navigator can't be
 a double-clickable jar file. :-(
 
-2 Sep 2004:
+2004-09-02:
 *) Added option to encrypt JDBC connection configuration settings when saving
 them to the .jdbcnavrc file. It is possible to run JDBC Navigator if you don't
 know the password for the encrypted .jdbcnavrc stuff; the non-encrypted parts
@@ -618,7 +625,7 @@ scrubbed after use, and (this is the really unpleasant part) by making the user
 re-enter the password whenever we need it, so we never have to keep it around.
 Yeah, I know, that doesn't appeal to me either.
 
-1 Sep 2004:
+2004-09-01:
 *) In QueryResultFrame.nuke(), handle updatable query results specially: don't
 tell the user that "No" is a safe option, as it is for plain Tables, but warn
 them that "No" means their edits will be lost. (This is still not really

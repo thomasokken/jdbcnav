@@ -287,6 +287,33 @@ public class ResultSetTableModel extends AbstractTableModel
         safelyFireTableCellUpdated(row, column);
     }
 
+    public synchronized void setValuesAt(String[][] values, int row, int[] columns,
+                                                                String why) {
+        if (!editable)
+            return;
+        Object[][] before = new Object[values.length][values[0].length];
+        Object[][] after = new Object[values.length][values[0].length];
+        int[] rows = new int[values.length];
+        for (int r = 0; r < values.length; r++) {
+            rows[r] = sequence.get(r + row);
+            Object[] currRow = cells.get(rows[r]);
+            for (int c = 0; c < values[0].length; c++) {
+                int col = columns[c];
+                before[r][c] = currRow[col];
+                TypeSpec spec = specs[col];
+                Object value = null;
+                if (!java.sql.Clob.class.isAssignableFrom(spec.jdbcJavaClass))
+                    try {
+                        value = spec.stringToObject(values[r][c]);
+                    } catch (IllegalArgumentException e) {}
+                after[r][c] = value;
+            }
+        }
+        Edit edit = new MultiCellEdit(rows, columns, before, after, why);
+        editHappened(edit);
+        edit.redo();
+    }
+
     public synchronized String[] getHeaders() {
         return headers.clone();
     }
@@ -923,6 +950,53 @@ public class ResultSetTableModel extends AbstractTableModel
         public void redo() {
             cells.get(row)[column] = after;
             safelyFireTableCellUpdated(sequence.indexOf(row), column);
+        }
+    }
+
+    private class MultiCellEdit implements Edit {
+        private int[] rows;
+        private int[] columns;
+        private Object[][] before;
+        private Object[][] after;
+        private String description;
+
+        public MultiCellEdit(int[] rows, int[] columns, Object[][] before, Object[][] after,
+                              String description) {
+            this.rows = rows.clone();
+            this.columns = columns;
+            this.before = before.clone();
+            this.after = after.clone();
+            this.description = description;
+        }
+
+        public String getUndoTitle() {
+            return "Undo " + description;
+        }
+
+        public String getRedoTitle() {
+            return "Redo " + description;
+        }
+
+        public void undo() {
+            for (int r = 0; r < rows.length; r++) {
+                int row = rows[r];
+                for (int c = 0; c < before[0].length; c++) {
+                    int col = columns[c];
+                    cells.get(row)[col] = before[r][c];
+                }
+            }
+            safelyFireTableDataChanged();
+        }
+
+        public void redo() {
+            for (int r = 0; r < rows.length; r++) {
+                int row = rows[r];
+                for (int c = 0; c < after[0].length; c++) {
+                    int col = columns[c];
+                    cells.get(row)[col] = after[r][c];
+                }
+            }
+            safelyFireTableDataChanged();
         }
     }
 

@@ -79,7 +79,7 @@ public class TableDetailsFrame extends MyFrame {
                                     dispose();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('W', Event.CTRL_MASK));
+        mi.setAccelerator(KeyStroke.getKeyStroke('W', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         m.add(mi);
         mb.add(m);
         setJMenuBar(mb);

@@ -322,7 +322,7 @@ public class Main extends JFrame {
                                     nuke();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('Q', Event.CTRL_MASK));
+        mi.setAccelerator(KeyStroke.getKeyStroke('Q', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         m.add(mi);
         mb.add(m);
 
@@ -378,7 +378,7 @@ public class Main extends JFrame {
                                 eat1mb();
                             }
                         });
-        mi.setAccelerator(KeyStroke.getKeyStroke('E', Event.ALT_MASK));
+        mi.setAccelerator(KeyStroke.getKeyStroke('E', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Release 1 Megabyte");
         mi.addActionListener(new ActionListener() {
@@ -386,7 +386,7 @@ public class Main extends JFrame {
                                 release1mb();
                             }
                         });
-        mi.setAccelerator(KeyStroke.getKeyStroke('R', Event.ALT_MASK));
+        mi.setAccelerator(KeyStroke.getKeyStroke('R', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Run GC");
         mi.addActionListener(new ActionListener() {
@@ -394,7 +394,7 @@ public class Main extends JFrame {
                                 System.gc();
                             }
                         });
-        mi.setAccelerator(KeyStroke.getKeyStroke('G', Event.ALT_MASK));
+        mi.setAccelerator(KeyStroke.getKeyStroke('G', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         m.add(mi);
         */
         mb.add(m);
@@ -407,7 +407,7 @@ public class Main extends JFrame {
                                     cycleWindows(true);
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('W', Event.ALT_MASK));
+        mi.setAccelerator(KeyStroke.getKeyStroke('W', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         windowsMenu.add(mi);
         mi = new JMenuItem("Cycle Down");
         mi.addActionListener(new ActionListener() {
@@ -415,8 +415,7 @@ public class Main extends JFrame {
                                     cycleWindows(false);
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('W',
-                                        Event.ALT_MASK | Event.SHIFT_MASK));
+        mi.setAccelerator(KeyStroke.getKeyStroke('W', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         windowsMenu.add(mi);
         windowsMenu.setEnabled(false);
         mb.add(windowsMenu);
