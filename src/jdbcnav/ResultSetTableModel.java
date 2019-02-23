@@ -695,7 +695,7 @@ public class ResultSetTableModel extends AbstractTableModel
                             "Overwrite existing " + file.getName() + "?",
                             "Confirm", JOptionPane.OK_CANCEL_OPTION,
                             JOptionPane.QUESTION_MESSAGE)
-                                    == JOptionPane.CANCEL_OPTION)
+                                    != JOptionPane.OK_OPTION)
                 return;
         }
         try {

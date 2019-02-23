@@ -306,7 +306,7 @@ public class BrowserFrame extends MyFrame {
                     + "are lost.\n"
                     + "Close the connection anyway?",
                     "Confirm", JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
+                    JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION)
                 return;
         }
         dispose();
@@ -389,7 +389,7 @@ public class BrowserFrame extends MyFrame {
                             "Overwrite existing " + newFile.getName() + "?",
                             "Confirm", JOptionPane.OK_CANCEL_OPTION,
                             JOptionPane.QUESTION_MESSAGE)
-                                    == JOptionPane.CANCEL_OPTION)
+                                    != JOptionPane.OK_OPTION)
                 return;
         }
         try {

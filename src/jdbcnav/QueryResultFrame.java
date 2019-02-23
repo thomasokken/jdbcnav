@@ -521,7 +521,7 @@ public class QueryResultFrame extends MyFrame
                         + "the changes you made in this window?\n"
                         + "This is not undoable!",
                         "Confirm", JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.NO_OPTION)
+                        JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION)
                 return;
             ArrayList<Table> list = new ArrayList<Table>();
             list.add(dbTable);
@@ -541,7 +541,7 @@ public class QueryResultFrame extends MyFrame
                         + "the changes you made to this table?\n"
                         + "This is not undoable!",
                         "Confirm", JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.NO_OPTION)
+                        JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION)
                 return;
             ArrayList<Table> list = new ArrayList<Table>();
             list.add(dbTable);
@@ -564,7 +564,7 @@ public class QueryResultFrame extends MyFrame
                     + "the changes you made to this table?\n"
                     + "This is not undoable!",
                     "Confirm", JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE) == JOptionPane.NO_OPTION)
+                    JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION)
             return;
         table.stopEditing();
         table.clearSelection();
@@ -580,7 +580,7 @@ public class QueryResultFrame extends MyFrame
                         + "the changes you made to this table?\n"
                         + "This is not undoable!",
                         "Confirm", JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.NO_OPTION)
+                        JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION)
                 return;
         }
         table.stopEditing();
@@ -1046,7 +1046,7 @@ public class QueryResultFrame extends MyFrame
                     + "now? (If you answer \"No\", your changes will be lost.)",
                     "Confirm", JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.QUESTION_MESSAGE);
-            if (result == JOptionPane.CANCEL_OPTION)
+            if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION)
                 return;
             if (result == JOptionPane.NO_OPTION) {
                 dispose();
@@ -1074,7 +1074,7 @@ public class QueryResultFrame extends MyFrame
                     + "when you quit JDBC Navigator.)",
                     "Confirm", JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.QUESTION_MESSAGE);
-        if (result == JOptionPane.CANCEL_OPTION)
+        if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION)
             return;
         if (result == JOptionPane.NO_OPTION) {
             dispose();

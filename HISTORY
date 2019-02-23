@@ -1,3 +1,10 @@
+2019-02-23: build 2716
+*) Changed the window cycling shortcut key from 'W' to 'R' to fix collision
+with Ctrl-W for Close.
+*) Fixed Yes/No, Yes/No/Cancel, and OK/Cancel dialogs, so that closing the
+dialogs by typing Esc performs the safe action (No or Cancel) instead of the
+unsafe one (Yes or OK).
+
 2017-11-25: build 2714
 *) Fixed the menu shortcuts so that on MacOS, they work with the Command key
 rather than Ctrl. Also, wherever alternative shortcuts are needed, standardized

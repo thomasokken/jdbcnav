@@ -370,33 +370,6 @@ public class Main extends JFrame {
                                 }
                             });
         m.add(mi);
-        /*
-        m.addSeparator();
-        mi = new JMenuItem("Eat 1 Megabyte");
-        mi.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                eat1mb();
-                            }
-                        });
-        mi.setAccelerator(KeyStroke.getKeyStroke('E', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        m.add(mi);
-        mi = new JMenuItem("Release 1 Megabyte");
-        mi.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                release1mb();
-                            }
-                        });
-        mi.setAccelerator(KeyStroke.getKeyStroke('R', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        m.add(mi);
-        mi = new JMenuItem("Run GC");
-        mi.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                System.gc();
-                            }
-                        });
-        mi.setAccelerator(KeyStroke.getKeyStroke('G', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        m.add(mi);
-        */
         mb.add(m);
         
         windowsMenu = new JMenu("Windows");
@@ -407,7 +380,7 @@ public class Main extends JFrame {
                                     cycleWindows(true);
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('W', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('R', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         windowsMenu.add(mi);
         mi = new JMenuItem("Cycle Down");
         mi.addActionListener(new ActionListener() {
@@ -415,7 +388,7 @@ public class Main extends JFrame {
                                     cycleWindows(false);
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('W', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('R', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         windowsMenu.add(mi);
         windowsMenu.setEnabled(false);
         mb.add(windowsMenu);
@@ -595,21 +568,6 @@ public class Main extends JFrame {
         }
     }
 
-    /*
-    ArrayList memoryWaster = null;
-
-    private void eat1mb() {
-        if (memoryWaster == null)
-            memoryWaster = new ArrayList();
-        memoryWaster.add(new byte[1048576]);
-    }
-
-    private void release1mb() {
-        if (memoryWaster != null && memoryWaster.size() > 0)
-            memoryWaster.remove(memoryWaster.size() - 1);
-    }
-    */
-
     private void setPassword() {
         Preferences prefs = Preferences.getPreferences();
         prefs.setPassword();
@@ -688,7 +646,7 @@ public class Main extends JFrame {
                     + "mean those changes are lost.\n"
                     + "Quit anyway?",
                     "Confirm", JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.QUESTION_MESSAGE) == JOptionPane.CANCEL_OPTION)
+                    JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION)
                 return;
         }
         Preferences prefs = Preferences.getPreferences();

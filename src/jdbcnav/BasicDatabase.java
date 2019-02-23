@@ -267,7 +267,7 @@ public abstract class BasicDatabase implements Database {
                             + "Would you like to save it to a file instead?",
                             "Confirm", JOptionPane.YES_NO_CANCEL_OPTION,
                             JOptionPane.QUESTION_MESSAGE);
-                if (res == JOptionPane.CANCEL_OPTION)
+                if (res == JOptionPane.CANCEL_OPTION || res == JOptionPane.CLOSED_OPTION)
                     return;
                 else if (res == JOptionPane.YES_OPTION) {
                     File file = null;
@@ -287,7 +287,7 @@ public abstract class BasicDatabase implements Database {
                                 "Overwrite existing " + file.getName() + "?",
                                 "Confirm", JOptionPane.YES_NO_CANCEL_OPTION,
                                 JOptionPane.QUESTION_MESSAGE);
-                            if (res2 == JOptionPane.CANCEL_OPTION)
+                            if (res2 == JOptionPane.CANCEL_OPTION || res2 == JOptionPane.CLOSED_OPTION)
                                 return;
                             else if (res2 == JOptionPane.NO_OPTION)
                                 continue;
@@ -363,7 +363,7 @@ public abstract class BasicDatabase implements Database {
                         reason + "Go ahead anyway?",
                         "Confirm", JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.QUESTION_MESSAGE);
-            if (res == JOptionPane.CANCEL_OPTION)
+            if (res == JOptionPane.CANCEL_OPTION || res == JOptionPane.CLOSED_OPTION)
                 return;
         }
         unloadModels(rootNode);

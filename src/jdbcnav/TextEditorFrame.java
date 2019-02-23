@@ -249,7 +249,7 @@ public class TextEditorFrame extends MyFrame {
                             "Apply changes to table cell?",
                             "Confirm", JOptionPane.YES_NO_CANCEL_OPTION,
                             JOptionPane.QUESTION_MESSAGE);
-                if (result == JOptionPane.CANCEL_OPTION)
+                if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION)
                     return;
                 if (result == JOptionPane.YES_OPTION)
                     model.setValueAt(textA.getText(), row, column);
@@ -264,7 +264,7 @@ public class TextEditorFrame extends MyFrame {
                                     : "Save changes to file before closing?"),
                             "Confirm", JOptionPane.YES_NO_CANCEL_OPTION,
                             JOptionPane.QUESTION_MESSAGE);
-            if (result == JOptionPane.CANCEL_OPTION)
+            if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION)
                 return;
             if (result == JOptionPane.YES_OPTION)
                 if (!save())
@@ -281,7 +281,7 @@ public class TextEditorFrame extends MyFrame {
                             "Save changes before discarding?",
                             "Confirm", JOptionPane.YES_NO_CANCEL_OPTION,
                             JOptionPane.QUESTION_MESSAGE);
-            if (result == JOptionPane.CANCEL_OPTION)
+            if (result == JOptionPane.CANCEL_OPTION || result == JOptionPane.CLOSED_OPTION)
                 return;
             if (result == JOptionPane.YES_OPTION)
                 if (!save())
@@ -366,7 +366,7 @@ public class TextEditorFrame extends MyFrame {
                             "Overwrite existing " + newFile.getName() + "?",
                             "Confirm", JOptionPane.OK_CANCEL_OPTION,
                             JOptionPane.QUESTION_MESSAGE)
-                                    == JOptionPane.CANCEL_OPTION)
+                                    != JOptionPane.OK_OPTION)
                 return false;
         }
 
