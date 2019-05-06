@@ -1,3 +1,10 @@
+2019-05-06: build 2717
+*) When getting table metadata, changed the order in which the column metadata
+is fetched to match the order in which the elements are listed in the JDBC
+spec. Apparently, fetching them in a different order can make certain JDBC
+drivers unhappy -- specifically, Oracle doesn't like fetching COLUMN_DEF after
+IS_NULLABLE, at least if COLUMN_DEF is not null.
+
 2019-02-23: build 2716
 *) Changed the window cycling shortcut key from 'W' to 'R' to fix collision
 with Ctrl-W for Close.

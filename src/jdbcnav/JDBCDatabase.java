@@ -1593,6 +1593,7 @@ public class JDBCDatabase extends BasicDatabase {
                     rs = dbmd.getColumns(catalog, schema, name, null);
                     while (rs.next()) {
                         columnNamesList.add(rs.getString("COLUMN_NAME"));
+                        sqlTypesList.add(rs.getInt("DATA_TYPE"));
                         dbTypesList.add(rs.getString("TYPE_NAME"));
                         int size = rs.getInt("COLUMN_SIZE");
                         if (rs.wasNull())
@@ -1604,9 +1605,8 @@ public class JDBCDatabase extends BasicDatabase {
                             columnScalesList.add(null);
                         else
                             columnScalesList.add(scale);
-                        sqlTypesList.add(rs.getInt("DATA_TYPE"));
-                        isNullableList.add(rs.getString("IS_NULLABLE"));
                         defaultsList.add(rs.getString("COLUMN_DEF"));
+                        isNullableList.add(rs.getString("IS_NULLABLE"));
                         cols++;
                     }
                 } catch (SQLException e) {
