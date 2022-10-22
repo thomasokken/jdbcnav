@@ -389,7 +389,7 @@ public class JDBCDatabase extends BasicDatabase {
                 for (int i = 0; i < columns; i++) {
                     if (i > 0)
                         buf.append(", ");
-                    buf.append(names[i]);
+                    buf.append(quote(names[i]));
                 }
                 buf.append(") values (");
                 for (int i = 0; i < columns; i++) {
@@ -430,7 +430,7 @@ public class JDBCDatabase extends BasicDatabase {
                 for (int i = 0; i < key.length; i++) {
                     if (i > 0)
                         buf.append(" and ");
-                    buf.append(names[keyIndexes[i]]);
+                    buf.append(quote(names[keyIndexes[i]]));
                     if (key[i] == null)
                         buf.append(" is null");
                     else
@@ -465,7 +465,7 @@ public class JDBCDatabase extends BasicDatabase {
                     for (int i = 0; i < key.length; i++) {
                         if (i > 0)
                             buf.append(" and ");
-                        buf.append(names[keyIndexes[i]]);
+                        buf.append(quote(names[keyIndexes[i]]));
                         buf.append(" = ?");
                     }
                     try {
@@ -505,7 +505,7 @@ public class JDBCDatabase extends BasicDatabase {
                         first = false;
                     else
                         buf.append(", ");
-                    buf.append(names[i]);
+                    buf.append(quote(names[i]));
                     buf.append(" = ?");
                 }
             }
@@ -513,7 +513,7 @@ public class JDBCDatabase extends BasicDatabase {
             for (int i = 0; i < keyIndexes.length; i++) {
                 if (i > 0)
                     buf.append(" and ");
-                buf.append(names[keyIndexes[i]]);
+                buf.append(quote(names[keyIndexes[i]]));
 
                 // I'm doing the hack to work around the Oracle bug in '= ?'
                 // with null values in where clauses here. Unlike in deleteRow,
@@ -2270,7 +2270,7 @@ public class JDBCDatabase extends BasicDatabase {
             // to decide whether to return the result in a Data or Table object.
             StringBuffer buf = new StringBuffer();
             buf.append("select ");
-            buf.append(columnNames[index]);
+            buf.append(quote(columnNames[index]));
             buf.append(" from ");
             buf.append(table.getQualifiedName());
             buf.append(" where ");
@@ -2312,7 +2312,7 @@ public class JDBCDatabase extends BasicDatabase {
                     first = false;
                 else
                     buf.append(" and ");
-                buf.append(name);
+                buf.append(quote(name));
                 Object obj = values[j];
                 if (obj == null && needsIsNull())
                     buf.append(" is null");

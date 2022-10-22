@@ -640,12 +640,23 @@ public abstract class BasicDatabase implements Database {
         return " ";
     }
 
+    private static Set<String> SQL_WORDS;
+
+    static {
+        SQL_WORDS = new HashSet<String>();
+        String[] w = new String[] { "ABORT", "DECIMAL", "INTERVAL", "PRESERVE", "ALL", "DECODE", "INTO", "PRIMARY", "ALLOCATE", "DEFAULT", "LEADING", "RESET", "ANALYSE", "DESC", "LEFT", "REUSE", "ANALYZE", "DISTINCT", "LIKE", "RIGHT", "AND", "DISTRIBUTE", "LIMIT", "ROWS", "ANY", "DO", "LOAD", "SELECT", "AS", "ELSE", "LOCAL", "SESSION_USER", "ASC", "END", "LOCK", "SETOF", "BETWEEN", "EXCEPT", "MINUS", "SHOW", "BINARY", "EXCLUDE", "MOVE", "SOME", "BIT", "EXISTS", "NATURAL", "TABLE", "BOTH", "EXPLAIN", "NCHAR", "THEN", "CASE", "EXPRESS", "NEW", "TIES", "CAST", "EXTEND", "NOT", "TIME", "CHAR", "EXTERNAL", "NOTNULL", "TIMESTAMP", "CHARACTER", "EXTRACT", "NULL", "TO", "CHECK", "FALSE", "NULLS", "TRAILING", "CLUSTER", "FIRST", "NUMERIC", "TRANSACTION", "COALESCE", "FLOAT", "NVL", "TRIGGER", "COLLATE", "FOLLOWING", "NVL2", "TRIM", "COLLATION", "FOR", "OFF", "TRUE", "COLUMN", "FOREIGN", "OFFSET", "UNBOUNDED", "CONSTRAINT", "FROM", "OLD", "UNION", "COPY", "FULL", "ON", "UNIQUE", "CROSS", "FUNCTION", "ONLINE", "USER", "CURRENT", "GENSTATS", "ONLY", "USING", "CURRENT_CATALOG", "GLOBAL", "OR", "VACUUM", "CURRENT_DATE", "GROUP", "ORDER", "VARCHAR", "CURRENT_DB", "HAVING", "OTHERS", "VERBOSE", "CURRENT_SCHEMA", "IDENTIFIER_CASE", "OUT", "VERSION", "CURRENT_SID", "ILIKE", "OUTER", "VIEW", "CURRENT_TIME", "IN", "OVER", "WHEN", "CURRENT_TIMESTAMP", "INDEX", "OVERLAPS", "WHERE", "CURRENT_USER", "INITIALLY", "PARTITION", "WITH", "CURRENT_USERID", "INNER", "POSITION", "WRITE", "CURRENT_USEROID", "INOUT", "PRECEDING", "RESET", "DEALLOCATE", "INTERSECT", "PRECISION", "REUSE", "DEC" };
+        for (String s : w)
+            SQL_WORDS.add(s);
+    }
+
     public String quote(String s) {
         if (s == null)
             return null;
         String q = getIdentifierQuoteString();
         if (q.equals(" "))
             return s;
+        else if (SQL_WORDS.contains(s.toUpperCase()))
+            return q + s + q;
         else {
             int sl = s.length();
             for (int i = 0; i < sl; i++) {

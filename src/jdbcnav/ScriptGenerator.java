@@ -495,7 +495,7 @@ public class ScriptGenerator {
             for (int i = 0; i < row.length; i++) {
                 if (i > 0)
                     buf.append(", ");
-                buf.append(table.getColumnNames()[i]);
+                buf.append(table.getDatabase().quote(table.getColumnNames()[i]));
             }
             buf.append(") values (");
             for (int i = 0; i < row.length; i++) {
@@ -525,7 +525,7 @@ public class ScriptGenerator {
                     buf.append(" and");
                 buf.append(" ");
                 int col = pkColumns[i];
-                buf.append(headers[col]);
+                buf.append(table.getDatabase().quote(headers[col]));
                 // null is possible if this is a surrogate primary key
                 String s = toSqlString(table.getTypeSpecs()[col], key[i]);
                 if (s.equals("null"))
@@ -560,7 +560,7 @@ public class ScriptGenerator {
                     else
                         comma = true;
                     buf.append(" ");
-                    buf.append(headers[i]);
+                    buf.append(table.getDatabase().quote(headers[i]));
                     buf.append(" = ");
                     buf.append(toSqlString(table.getTypeSpecs()[i], newRow[i]));
                 }
@@ -571,7 +571,7 @@ public class ScriptGenerator {
                     buf.append(" and");
                 int col = pkColumns[i];
                 buf.append(" ");
-                buf.append(headers[col]);
+                buf.append(table.getDatabase().quote(headers[col]));
                 // No need to deal with null since we never perform updates
                 // on tables with surrogate primary keys
                 buf.append(" = ");
