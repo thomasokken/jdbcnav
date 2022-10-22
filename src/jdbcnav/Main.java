@@ -227,17 +227,31 @@ public class Main extends JFrame {
         Preferences prefs = Preferences.getPreferences();
         initialLoc = prefs.getWindowLocation();
         Dimension dim = prefs.getWindowSize();
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+
+        GraphicsEnvironment g = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] devices = g.getScreenDevices();
+
+        Rectangle screenBounds = null;
+        for (int i = 0; i < devices.length; i++) {
+            Rectangle r = devices[i].getDefaultConfiguration().getBounds();
+            if (r.contains(initialLoc)) {
+                screenBounds = r;
+                break;
+            }
+        }
+        if (screenBounds == null)
+            screenBounds = new Rectangle(new Point(0, 0), Toolkit.getDefaultToolkit().getScreenSize());
+
         // Make sure the title bar is reachable, and that there's at least
         // a bit of us visible.
-        if (initialLoc.y < 0)
-            initialLoc.y = 0;
-        else if (initialLoc.y > screenSize.height * 4 / 5)
-            initialLoc.y = screenSize.height * 4 / 5;
-        if (initialLoc.x + dim.width < screenSize.width / 5)
-            initialLoc.x = screenSize.width / 5 - dim.width;
-        else if (initialLoc.x > screenSize.width * 4 / 5)
-            initialLoc.x = screenSize.width * 4 / 5;
+        if (initialLoc.y < screenBounds.y)
+            initialLoc.y = screenBounds.y;
+        else if (initialLoc.y > screenBounds.y + screenBounds.height * 4 / 5)
+            initialLoc.y = screenBounds.y + screenBounds.height * 4 / 5;
+        if (initialLoc.x + dim.width < screenBounds.x + screenBounds.width / 5)
+            initialLoc.x = screenBounds.x + screenBounds.width / 5 - dim.width;
+        else if (initialLoc.x > screenBounds.x + screenBounds.width * 4 / 5)
+            initialLoc.x = screenBounds.x + screenBounds.width * 4 / 5;
         setLocation(initialLoc);
         setSize(dim);
 
