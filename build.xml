@@ -30,8 +30,8 @@
   <target name="compile-boot">
     <mkdir dir="classes"/>
     <!-- Our boot loader, including our "sneaky" class loader -->
-    <javac source="1.8"
-           target="1.8"
+    <javac source="1.7"
+           target="1.7"
            srcdir="srcboot"
            destdir="classes"
            debug="on"
@@ -46,8 +46,8 @@
   <!-- "smalljar" target!) know to look...                        -->
   <target name="compile-main">
     <mkdir dir="classes/foo"/>
-    <javac source="1.8"
-           target="1.8"
+    <javac source="1.7"
+           target="1.7"
            classpath="${rhino}"
            srcdir="src"
            destdir="classes/foo"
@@ -78,7 +78,7 @@
   <target name="javadoc">
     <javadoc sourcepath="src:srcboot"
              packagenames="jdbcnav.*,jdbcnavboot.*"
-             source="1.8"
+             source="1.7"
              destdir="javadoc"
              windowtitle="JDBC Navigator">
       <link href="file:///opt/java/jdk1.5.0_10/docs/api"/>
@@ -116,8 +116,8 @@
   <!-- Make package for upload to web site -->
   <target name="package">
     <antcall target="tarball"/>
-    <javac source="1.8"
-           target="1.8"
+    <javac source="1.7"
+           target="1.7"
            srcdir="util"
            destdir="util"
            debug="on"
