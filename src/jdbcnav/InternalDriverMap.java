@@ -46,6 +46,8 @@ public class InternalDriverMap {
             return "Derby";
         } else if (driverClassName.equals("com.mysql.jdbc.Driver")) {
             return "MySQL";
+        } else if (driverClassName.equals("com.microsoft.sqlserver.jdbc.SQLServerDriver")) {
+            return "MS_SQL";
         } else if (driverClassName.equals("oracle.jdbc.driver.OracleDriver")
                 || driverClassName.equals("oracle.jdbc.OracleDriver")) {
             if (con == null)
@@ -93,6 +95,7 @@ public class InternalDriverMap {
         databaseMap.put("DB2", "jdbcnav.JDBCDatabase_DB2");
         databaseMap.put("Derby", "jdbcnav.JDBCDatabase_Derby");
         databaseMap.put("MySQL", "jdbcnav.JDBCDatabase_MySQL");
+        databaseMap.put("MS_SQL", "jdbcnav.JDBCDatabase_MS_SQL");
         databaseMap.put("Oracle 8", "jdbcnav.JDBCDatabase_Oracle");
         databaseMap.put("Oracle 9", "jdbcnav.JDBCDatabase_Oracle");
         databaseMap.put("Oracle 10", "jdbcnav.JDBCDatabase_Oracle");
@@ -112,6 +115,7 @@ public class InternalDriverMap {
         scriptGenMap.put("DB2", "jdbcnav.ScriptGenerator_DB2");
         scriptGenMap.put("Derby", "jdbcnav.ScriptGenerator_Derby");
         scriptGenMap.put("MySQL", "jdbcnav.ScriptGenerator_MySQL");
+        scriptGenMap.put("MS_SQL", "jdbcnav.ScriptGenerator_MS_SQL");
         scriptGenMap.put("Oracle 8", "jdbcnav.ScriptGenerator_Oracle8");
         scriptGenMap.put("Oracle 9", "jdbcnav.ScriptGenerator_Oracle9");
         scriptGenMap.put("Oracle 10", "jdbcnav.ScriptGenerator_Oracle");
