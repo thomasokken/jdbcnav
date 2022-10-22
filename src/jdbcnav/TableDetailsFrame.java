@@ -175,7 +175,7 @@ public class TableDetailsFrame extends MyFrame {
             data[i][3] = spec.jdbcSize;
             data[i][4] = spec.jdbcScale;
             data[i][5] = dbTable.getIsNullable()[i];
-            data[i][6] = dbTable.getDefaults()[i];
+            data[i][6] = dbTable.getDefaults() == null ? null : dbTable.getDefaults()[i];
             data[i][7] = MiscUtils.sqlTypeIntToString(spec.jdbcSqlType);
             data[i][8] = spec.jdbcJavaType;
         }
@@ -436,7 +436,9 @@ public class TableDetailsFrame extends MyFrame {
             String name = names[i];
             for (int j = 0; j < rows; j++)
                 if (tm.getValueAt(j, 1).equals(name))
-                    table.addRowSelectionInterval(j, j);
+                    for (int col = 0; col < tm.getColumnCount(); col++)
+                        table.changeSelection(j, col, true, false);
+                    //table.addRowSelectionInterval(j, j);
         }
     }
 

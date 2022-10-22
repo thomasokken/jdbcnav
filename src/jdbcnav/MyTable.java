@@ -499,8 +499,11 @@ public class MyTable extends JTable {
             model.selectionFromViewToModel(selection);
             ((SortedTableModel) getModel()).sortColumn(logicalColumn);
             model.selectionFromModelToView(selection);
+            clearSelection();
             for (int i = 0; i < selection.length; i++)
-                addRowSelectionInterval(selection[i], selection[i]);
+                for (int j = 0; j < this.getColumnCount(); j++)
+                    changeSelection(selection[i], j, true, false);
+                //addRowSelectionInterval(selection[i], selection[i]);
             if (logicalColumn != highlightIndex) {
                 TableColumnModel tcm = getColumnModel();
                 ((MyTableColumn) tcm.getColumn(convertColumnIndexToView(

@@ -894,7 +894,9 @@ public class QueryResultFrame extends MyFrame
         if (row == -1)
             row = model.getRowCount() - 1;
         table.clearSelection();
-        table.addRowSelectionInterval(row, row);
+        for (int col = 0; col < model.getColumnCount(); col++)
+            table.changeSelection(row,  col, true, false);
+        //table.addRowSelectionInterval(row, row);
     }
 
     private void deleteRow() {
