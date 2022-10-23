@@ -430,15 +430,14 @@ public class TableDetailsFrame extends MyFrame {
 
     private void selectRows(String[] names) {
         table.clearSelection();
+        table.addColumnSelectionInterval(0, table.getColumnCount() - 1);
         TableModel tm = table.getModel();
         int rows = tm.getRowCount();
         for (int i = 0; i < names.length; i++) {
             String name = names[i];
             for (int j = 0; j < rows; j++)
                 if (tm.getValueAt(j, 1).equals(name))
-                    for (int col = 0; col < tm.getColumnCount(); col++)
-                        table.changeSelection(j, col, true, false);
-                    //table.addRowSelectionInterval(j, j);
+                    table.addRowSelectionInterval(j, j);
         }
     }
 

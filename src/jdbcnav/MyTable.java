@@ -44,7 +44,7 @@ public class MyTable extends JTable {
         super();
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         setModel(dm);
-        setColumnSelectionAllowed(true);
+        setCellSelectionEnabled(true);
 
         FastTableCellRenderer ljr = new FastTableCellRenderer();
         FastTableCellRenderer rjr = new FastTableCellRenderer(false);
@@ -500,10 +500,9 @@ public class MyTable extends JTable {
             ((SortedTableModel) getModel()).sortColumn(logicalColumn);
             model.selectionFromModelToView(selection);
             clearSelection();
+            addColumnSelectionInterval(0, getColumnCount() - 1);
             for (int i = 0; i < selection.length; i++)
-                for (int j = 0; j < this.getColumnCount(); j++)
-                    changeSelection(selection[i], j, true, false);
-                //addRowSelectionInterval(selection[i], selection[i]);
+                addRowSelectionInterval(selection[i], selection[i]);
             if (logicalColumn != highlightIndex) {
                 TableColumnModel tcm = getColumnModel();
                 ((MyTableColumn) tcm.getColumn(convertColumnIndexToView(

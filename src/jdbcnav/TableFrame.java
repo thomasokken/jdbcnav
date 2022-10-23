@@ -457,10 +457,9 @@ public class TableFrame extends QueryResultFrame {
             if (rowsToSelect.size() == 0)
                 return;
             boolean needToScroll = false;
+            table.addColumnSelectionInterval(0, table.getColumnCount() - 1);
             for (int row : rowsToSelect) {
-                for (int col = 0; col < table.getColumnCount(); col++)
-                    table.changeSelection(row, col, true, false);
-                //table.addRowSelectionInterval(row, row);
+                table.addRowSelectionInterval(row, row);
                 if (allowAutoScroll) {
                     Rectangle r2 = table.getCellRect(row, -1, true);
                     selectRect = selectRect == null ? r2 : selectRect.union(r2);
