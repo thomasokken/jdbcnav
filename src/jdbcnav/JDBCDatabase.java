@@ -36,6 +36,10 @@ public class JDBCDatabase extends BasicDatabase {
 
     private String name;
     private String internalDriverName;
+    private String jdbcDriver;
+    private String url;
+    private String username;
+    private String password;
     protected Connection con;
     private ArrayList<Table> editedTables = new ArrayList<Table>();
 
@@ -50,8 +54,8 @@ public class JDBCDatabase extends BasicDatabase {
         this.con = con;
     }
 
-    private static JDBCDatabase create(String driver, String name,
-                                       Connection con) {
+    private static JDBCDatabase create(String driver, String url, String username,
+                                       String password, String name, Connection con) {
         String internalDriverName =
             InternalDriverMap.getDriverName(driver, con);
         String className =
@@ -61,8 +65,13 @@ public class JDBCDatabase extends BasicDatabase {
             Class<?> klass = Class.forName(className);
             Constructor<?> cnstr = klass.getConstructor(
                 new Class[] { String.class, String.class, Connection.class });
-            return (JDBCDatabase) cnstr.newInstance(
+            JDBCDatabase db = (JDBCDatabase) cnstr.newInstance(
                 new Object[] { name, internalDriverName, con });
+            db.jdbcDriver = driver;
+            db.url = url;
+            db.username = username;
+            db.password = password;
+            return db;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             // Should never happen; we're loading a class that is part
@@ -90,6 +99,17 @@ public class JDBCDatabase extends BasicDatabase {
 
         // *should* never get here
         return null;
+    }
+
+    public void reconnect() {
+        try {
+            try {
+                con.close();
+            } catch (SQLException e) {}
+            con = doConnect(jdbcDriver, url, username, password);
+        } catch (SQLException e) {
+            MessageBox.show("Could not reconnect to the database.", e);
+        }
     }
 
     public void close() {
@@ -1952,20 +1972,9 @@ public class JDBCDatabase extends BasicDatabase {
             }
 
             public void run() {
-                Connection con;
+                Connection con = null;
                 try {
-                    if (driver.startsWith("oracle.")) {
-                        Properties props = new Properties();
-                        props.put("user", username);
-                        props.put("password", password);
-                        // This is to stop Oracle >= 9 drivers from returning
-                        // java.sql.Date objects for DATE columns, but stick with
-                        // java.sql.Timestamp like Oracle 8i.
-                        props.put("oracle.jdbc.V8Compatible", "true");
-                        con = DriverManager.getConnection(url, props);
-                    } else {
-                        con = DriverManager.getConnection(url, username, password);
-                    }
+                    con = doConnect(driver, url, username, password);
                 } catch (SQLException e) {
                     synchronized (LoginDialog.this) {
                         // if this != connectThread, the operation was
@@ -2001,7 +2010,7 @@ public class JDBCDatabase extends BasicDatabase {
                 // repaint manager to get confused and throw an exception
                 // (which appears to be harmless, but still...).
                 SwingUtilities.invokeLater(
-                            new BrowserOpener1(name, con, driver));
+                            new BrowserOpener1(name, con, driver, url, username, password));
             }
         }
 
@@ -2009,19 +2018,25 @@ public class JDBCDatabase extends BasicDatabase {
             private String name;
             private Connection con;
             private String driver;
+            private String url;
+            private String username;
+            private String password;
 
-            public BrowserOpener1(String name, Connection con,
-                                  String driver) {
+            public BrowserOpener1(String name, Connection con, String driver,
+                                  String url, String username, String password) {
                 this.name = name;
                 this.con = con;
                 this.driver = driver;
+                this.url = url;
+                this.username = username;
+                this.password = password;
             }
 
             public void run() {
                 dispose();
                 MyFrame waitDlg = new WaitDialog();
                 waitDlg.showCentered();
-                Thread thr = new Thread(new BrowserOpener2(name, con, driver, waitDlg));
+                Thread thr = new Thread(new BrowserOpener2(name, con, driver, url, username, password, waitDlg));
                 thr.setPriority(Thread.MIN_PRIORITY);
                 thr.setDaemon(true);
                 thr.start();
@@ -2032,18 +2047,25 @@ public class JDBCDatabase extends BasicDatabase {
             private String name;
             private Connection con;
             private String driver;
+            private String url;
+            private String username;
+            private String password;
             private MyFrame waitDlg;
 
-            public BrowserOpener2(String name, Connection con,
-                                  String driver, MyFrame waitDlg) {
+            public BrowserOpener2(String name, Connection con, String driver,
+                                  String url, String username, String password,
+                                  MyFrame waitDlg) {
                 this.name = name;
                 this.con = con;
                 this.driver = driver;
+                this.url = url;
+                this.username = username;
+                this.password = password;
                 this.waitDlg = waitDlg;
             }
 
             public void run() {
-                JDBCDatabase db = JDBCDatabase.create(driver, name, con);
+                JDBCDatabase db = JDBCDatabase.create(driver, url, username, password, name, con);
                 // The BrowserFrame constructor is going to call
                 // Database.getRootNode(), which can be a very slow operation.
                 // Better to call it here first, in a background thread, so
@@ -2171,6 +2193,20 @@ public class JDBCDatabase extends BasicDatabase {
         }
     }
 
+    private static Connection doConnect(String driver, String url, String username, String password) throws SQLException {
+        if (driver.startsWith("oracle.")) {
+            Properties props = new Properties();
+            props.put("user", username);
+            props.put("password", password);
+            // This is to stop Oracle >= 9 drivers from returning
+            // java.sql.Date objects for DATE columns, but stick with
+            // java.sql.Timestamp like Oracle 8i.
+            props.put("oracle.jdbc.V8Compatible", "true");
+            return DriverManager.getConnection(url, props);
+        } else {
+            return DriverManager.getConnection(url, username, password);
+        }
+    }
 
     ///////////////////////
     ///// LOB support /////

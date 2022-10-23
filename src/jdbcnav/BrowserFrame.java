@@ -184,6 +184,15 @@ public class BrowserFrame extends MyFrame {
                                 }
                             });
         m.add(mi);
+        if (db instanceof JDBCDatabase) {
+            mi = new JMenuItem("Reconnect");
+            mi.addActionListener(new ActionListener() {
+                                    public void actionPerformed(ActionEvent e) {
+                                        ((JDBCDatabase) BrowserFrame.this.db).reconnect();
+                                    }
+                                });
+            m.add(mi);
+        }
         mi = new JMenuItem("Close");
         mi.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent e) {
