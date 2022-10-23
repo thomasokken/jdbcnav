@@ -1204,7 +1204,7 @@ public class JDBCDatabase extends BasicDatabase {
                     }
                     case 2:
                         // Looking for table names
-                        if (t.equals(",") || t.equalsIgnoreCase("where"))
+                        if (t.equals(",") || t.equalsIgnoreCase("where") || t.equalsIgnoreCase("join"))
                             break scanner;
                         name = t;
                         state = 3;
@@ -1216,9 +1216,9 @@ public class JDBCDatabase extends BasicDatabase {
                             // columns were unqualified, so the first word
                             // after "from" should be the table name, and the
                             // first word after the table name should be
-                            // "where"; else we have a construct we can't
-                            // handle.
-                            if (t.equalsIgnoreCase("where"))
+                            // "where" or "join"; else we have a construct we
+                            // can't handle.
+                            if (t.equalsIgnoreCase("where") || t.equalsIgnoreCase("join"))
                                 success = true;
                             state = 5;
                             break scanner;
@@ -1227,7 +1227,7 @@ public class JDBCDatabase extends BasicDatabase {
                             // word was a table name. If the current word
                             // matches "foo", we've found our table and are
                             // done; otherwise, we move on to look for a comma.
-                            if (t.equalsIgnoreCase("where"))
+                            if (t.equalsIgnoreCase("where") || t.equalsIgnoreCase("join"))
                                 break scanner;
                             if (t.equalsIgnoreCase(identifier)) {
                                 success = true;
