@@ -47,7 +47,7 @@ public class Main extends JFrame {
     private static String version;
     private static String copyright;
     private static String website =
-                "http://thomasokken.com/jdbcnav/";
+                "https://thomasokken.com/jdbcnav/";
     
     public static ContextFactory contextFactory = new ContextFactory();
 
