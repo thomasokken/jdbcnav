@@ -40,27 +40,36 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
             spec.type = TypeSpec.CHAR;
             spec.size = size;
         } else if (dbType.equals("varchar")) {
-            spec.type = TypeSpec.VARCHAR;
-            spec.size = size;
-            // TODO: varchar(max) => LONGVARCHAR
+            if (size == Integer.MAX_VALUE) {
+                spec.type = TypeSpec.LONGVARCHAR;
+            } else {
+                spec.type = TypeSpec.VARCHAR;
+                spec.size = size;
+            }
         } else if (dbType.equals("text")) {
             spec.type = TypeSpec.LONGVARCHAR;
         } else if (dbType.equals("nchar")) {
             spec.type = TypeSpec.NCHAR;
             spec.size = size;
         } else if (dbType.equals("nvarchar")) {
-            spec.type = TypeSpec.VARNCHAR;
-            spec.size = size;
-            // TODO: nvarchar(max) => LONGVARNCHAR
+            if (size == Integer.MAX_VALUE) {
+                spec.type = TypeSpec.LONGVARNCHAR;
+            } else {
+                spec.type = TypeSpec.VARNCHAR;
+                spec.size = size;
+            }
         } else if (dbType.equals("ntext")) {
             spec.type = TypeSpec.LONGVARCHAR;
         } else if (dbType.equals("binary")) {
             spec.type = TypeSpec.RAW;
             spec.size = size;
         } else if (dbType.equals("varbinary")) {
-            spec.type = TypeSpec.VARRAW;
-            spec.size = size;
-            // TODO: varbinary(max) => LONGVARRAW
+            if (size == Integer.MAX_VALUE) {
+                spec.type = TypeSpec.LONGVARRAW;
+            } else {
+                spec.type = TypeSpec.VARRAW;
+                spec.size = size;
+            }
         } else if (dbType.equals("image")) {
             spec.type = TypeSpec.LONGVARRAW;
         } else if (dbType.equals("bit")) {
@@ -73,6 +82,12 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
         } else if (dbType.equals("tinyint")) {
             spec.type = TypeSpec.FIXED;
             spec.size = 8;
+            spec.size_in_bits = true;
+            spec.scale = 0;
+            spec.scale_in_bits = true;
+        } else if (dbType.equals("smallint")) {
+            spec.type = TypeSpec.FIXED;
+            spec.size = 16;
             spec.size_in_bits = true;
             spec.scale = 0;
             spec.scale_in_bits = true;
@@ -128,24 +143,24 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
             spec.exp_of_2 = true;
         } else if (dbType.equals("datetime")) {
             spec.type = TypeSpec.TIMESTAMP;
-            spec.scale = 3;
+            spec.size = 3;
         } else if (dbType.equals("datetime2")) {
             spec.type = TypeSpec.TIMESTAMP;
-            spec.scale = 7;
+            spec.size = 7;
         } else if (dbType.equals("smalldatetime")) {
             spec.type = TypeSpec.TIMESTAMP;
-            spec.scale = 0;
+            spec.size = 0;
         } else if (dbType.equals("date")) {
             spec.type = TypeSpec.DATE;
         } else if (dbType.equals("time")) {
             spec.type = TypeSpec.TIME;
-            spec.scale = 7;
+            spec.size = 7;
         } else if (dbType.equals("datetimeoffset")) {
             spec.type = TypeSpec.TIMESTAMP_TZ;
-            spec.scale = 7;
+            spec.size = 7;
         } else if (dbType.equals("timestamp")) {
             spec.type = TypeSpec.TIMESTAMP;
-            spec.scale = 7;
+            spec.size = 7;
         } else if (dbType.equals("uniqueidentifier")) {
             spec.type = TypeSpec.VARCHAR;
             spec.size = 36;
@@ -161,7 +176,6 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
                 || dbType.equals("time")
                 || dbType.equals("datetimeoffset")
                 || dbType.equals("timestamp")) {
-            size = scale;
             scale = null;
         } else if (dbType.equals("char")
                 || dbType.equals("varchar")
@@ -171,13 +185,23 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
                 || dbType.equals("varbinary")
                 || dbType.equals("float")) {
             scale = null;
-            // TODO: varchar(max), nvarchar(max), varbinary(max)
         } else {
             size = null;
             scale = null;
         }
 
-        if (size == null)
+        if ((dbType.equals("varchar")
+                || dbType.equals("nvarchar")
+                || dbType.equals("varbinary"))
+                && size == Integer.MAX_VALUE)
+            spec.native_representation = dbType + "(max)";
+        else if (size == null
+                || dbType.equals("datetime")
+                || dbType.equals("datetime2")
+                || dbType.equals("smalldatetime")
+                || dbType.equals("time")
+                || dbType.equals("datetimeoffset")
+                || dbType.equals("timestamp"))
             spec.native_representation = dbType;
         else if (scale == null)
             spec.native_representation = dbType + "(" + size + ")";
