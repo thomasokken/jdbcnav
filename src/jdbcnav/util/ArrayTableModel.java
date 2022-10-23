@@ -129,15 +129,20 @@ public class ArrayTableModel extends AbstractTableModel
     }
 
     public void selectionFromViewToModel(int[] selection) {
-        // We don't really care about preserving selections when the table
-        // is re-sorted... Or at least, *I* don't care enough right now to
-        // go to the trouble to implement this method.
+        Integer[] seq = getSequence();
+        int[] revSeq = new int[seq.length];
+        for (int i = 0; i < seq.length; i++)
+            revSeq[seq[i]] = i;
+        for (int i = 0; i < selection.length; i++)
+            selection[i] = revSeq[selection[i]];
+        Arrays.sort(selection);
     }
 
     public void selectionFromModelToView(int[] selection) {
-        // We don't really care about preserving selections when the table
-        // is re-sorted... Or at least, *I* don't care enough right now to
-        // go to the trouble to implement this method.
+        Integer[] seq = getSequence();
+        for (int i = 0; i < selection.length; i++)
+            selection[i] = seq[selection[i]];
+        Arrays.sort(selection);
     }
 
     private RowComparator rowComparator = new RowComparator();
@@ -149,6 +154,25 @@ public class ArrayTableModel extends AbstractTableModel
                 int res = MiscUtils.compareObjects(a[col], b[col], true);
                 if (res != 0)
                     return sortAscending[col] ? res : -res;
+            }
+            return 0;
+        }
+    }
+
+    private Integer[] getSequence() {
+        Integer[] seq = new Integer[data.length];
+        for (int i = 0; i < seq.length; i++)
+            seq[i] = i;
+        Arrays.sort(seq, new SeqComparator());
+        return seq;
+    }
+
+    private class SeqComparator implements Comparator<Integer> {
+        public int compare(Integer a, Integer b) {
+            for (int i = 0; i < names.length; i++) {
+                int res = MiscUtils.compareObjects(data[a][i], data[b][i], true);
+                if (res != 0)
+                    return res;
             }
             return 0;
         }
