@@ -146,7 +146,7 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
             spec.size = 3;
         } else if (dbType.equals("datetime2")) {
             spec.type = TypeSpec.TIMESTAMP;
-            spec.size = 7;
+            spec.size = scale;
         } else if (dbType.equals("smalldatetime")) {
             spec.type = TypeSpec.TIMESTAMP;
             spec.size = 0;
@@ -154,10 +154,10 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
             spec.type = TypeSpec.DATE;
         } else if (dbType.equals("time")) {
             spec.type = TypeSpec.TIME;
-            spec.size = 7;
+            spec.size = scale;
         } else if (dbType.equals("datetimeoffset")) {
             spec.type = TypeSpec.TIMESTAMP_TZ;
-            spec.size = 7;
+            spec.size = scale;
         } else if (dbType.equals("timestamp")) {
             spec.type = TypeSpec.TIMESTAMP;
             spec.size = 7;
@@ -170,11 +170,13 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
                 || dbType.equals("decimal")) {
             if (scale == 0)
                 scale = null;
-        } else if (dbType.equals("datetime")
-                || dbType.equals("datetime2")
-                || dbType.equals("smalldatetime")
-                || dbType.equals("time")
+        } else if (dbType.equals("datetime2")
                 || dbType.equals("datetimeoffset")
+                || dbType.equals("time")) {
+            size = spec.size;
+            scale = null;
+        } else if (dbType.equals("datetime")
+                || dbType.equals("smalldatetime")
                 || dbType.equals("timestamp")) {
             scale = null;
         } else if (dbType.equals("char")
@@ -197,10 +199,7 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
             spec.native_representation = dbType + "(max)";
         else if (size == null
                 || dbType.equals("datetime")
-                || dbType.equals("datetime2")
                 || dbType.equals("smalldatetime")
-                || dbType.equals("time")
-                || dbType.equals("datetimeoffset")
                 || dbType.equals("timestamp"))
             spec.native_representation = dbType;
         else if (scale == null)
