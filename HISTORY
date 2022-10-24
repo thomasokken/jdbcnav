@@ -1,3 +1,12 @@
+2022-10-24: build 2724
+*) Added support for Microsoft SQL Server (MS SQL). This is very new; please
+report any issues you may run into. I'm using this at work so it is at least
+somewhat usable.
+*) Fixed some bugs in selection handling in table views, related to earlier
+changes to support copying rectangular selections of cells.
+*) Added Reconnect option, so you can continue working with a database browser
+window after the JDBC connection to the server has timed out.
+
 2019-05-06: build 2717
 *) When getting table metadata, changed the order in which the column metadata
 is fetched to match the order in which the elements are listed in the JDBC
