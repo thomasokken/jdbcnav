@@ -19,8 +19,22 @@
 package jdbcnav;
 
 import jdbcnav.model.*;
-import jdbcnav.util.*;
 
 
 public class ScriptGenerator_MS_SQL extends ScriptGenerator {
+    protected String toSqlString(TypeSpec spec, Object obj) {
+        if (obj == null)
+            return "null";
+        if (spec.type == TypeSpec.DATE) {
+            return "'" + spec.objectToString(obj) + "'";
+        } else if (spec.type == TypeSpec.TIME) {
+            return "'" + spec.objectToString(obj) + "'";
+        } else if (spec.type == TypeSpec.TIMESTAMP) {
+            return "'" + spec.objectToString(obj) + "'";
+        } else if (spec.type == TypeSpec.TIMESTAMP_TZ) {
+            return "'" + spec.objectToString(obj) + "'";
+        } else {
+            return super.toSqlString(spec, obj);
+        }
+    }
 }
