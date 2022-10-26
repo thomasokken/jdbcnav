@@ -89,20 +89,23 @@ public class DateTime implements Comparable<DateTime> {
         int year = 0;
         int month = 0, day = 0, hour = 0, minute = 0, second = 0;
         StringBuffer tzname = new StringBuffer();
+        boolean haveDate = false;
+        boolean haveTime = false;
         while (tok.hasMoreTokens()) {
             String p = tok.nextToken();
-            if (p.indexOf('-') != -1) {
+            if (!haveDate && p.indexOf('-') != -1) {
                 // Date
                 StringTokenizer t2 = new StringTokenizer(p, "-");
                 try {
                     year = Integer.parseInt(t2.nextToken());
                     month = Integer.parseInt(t2.nextToken());
                     day = Integer.parseInt(t2.nextToken());
+                    haveDate = true;
                 } catch (Exception e) {
                     throw new IllegalArgumentException(
                                             "Malformed date (" + p + ")");
                 }
-            } else if (p.indexOf('.') != -1 || p.indexOf(':') != -1) {
+            } else if (!haveTime && (p.indexOf('.') != -1 || p.indexOf(':') != -1)) {
                 // Time
                 StringTokenizer t2 = new StringTokenizer(p, ":.");
                 try {
@@ -114,6 +117,7 @@ public class DateTime implements Comparable<DateTime> {
                         n += "00000000".substring(n.length() - 1);
                         nanos = Integer.parseInt(n);
                     } catch (NoSuchElementException e) {}
+                    haveTime = true;
                 } catch (Exception e) {
                     throw new IllegalArgumentException(
                                             "Malformed time (" + p + ")");
@@ -124,8 +128,13 @@ public class DateTime implements Comparable<DateTime> {
                 tzname.append(p);
             }
         }
-        if (tzname.length() > 0)
-            tz = zoneMap.get(tzname.toString());
+        if (tzname.length() > 0) {
+            String n = tzname.toString();
+            if (n.startsWith("GMT+") || n.startsWith("GMT-"))
+                tz = TimeZone.getTimeZone(n);
+            else
+                tz = zoneMap.get(n);
+        }
         GregorianCalendar cal = new GregorianCalendar(
                                     tz == null ? TimeZone.getDefault() : tz);
         cal.set(year, month - 1, day, hour, minute, second);

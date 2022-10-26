@@ -18,6 +18,7 @@
 
 package jdbcnav;
 
+import java.lang.reflect.Method;
 import java.sql.*;
 import jdbcnav.model.*;
 
@@ -208,5 +209,82 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
             spec.native_representation = dbType + "(" + size + ", " + scale + ")";
 
         return spec;
+    }
+
+    protected Object db2nav(TypeSpec spec, Object o) {
+        if (o == null)
+            return null;
+        if (spec.jdbcJavaType.equals("microsoft.sql.DateTimeOffset")) {
+            String s = o.toString(); // YYYY-MM-DD HH:mm:ss[.fffffff] [+|-]HH:mm
+            int sp = s.lastIndexOf(' ');
+            s = s.substring(0, sp + 1) + "GMT" + s.substring(sp + 1);
+            return new DateTime(s);
+        }
+        return super.db2nav(spec, o);
+    }
+
+    protected Object nav2db(TypeSpec spec, Object o) {
+        if (o == null)
+            return null;
+        if (spec.jdbcJavaType.equals("microsoft.sql.DateTimeOffset")) {
+            try {
+                Class<?> c = Class.forName("microsoft.sql.DateTimeOffset");
+                Method m = c.getMethod("valueOf", new Class[] { java.sql.Timestamp.class, int.class });
+                DateTime dt = (DateTime) o;
+                java.sql.Timestamp ts = new java.sql.Timestamp(dt.time);
+                ts.setNanos(dt.nanos);
+                int off = dt.tz.getRawOffset() / 60000;
+                return m.invoke(null, new Object[] { ts, off });
+            } catch (Exception e) {
+                return o;
+            }
+        }
+        return super.nav2db(spec, o);
+    }
+
+    public String objectToString(TypeSpec spec, Object o) {
+        if (o == null)
+            return null;
+
+        if (spec.type == TypeSpec.TIMESTAMP_TZ) {
+            String s = super.objectToString(spec, o);
+            int g = s.lastIndexOf("GMT");
+            if (g != -1)
+                s = s.substring(0, g) + s.substring(g + 3);
+            return s;
+        }
+
+        return super.objectToString(spec, o);
+    }
+
+    public Object stringToObject(TypeSpec spec, String s) {
+        if (s == null)
+            return null;
+
+        if (spec.type == TypeSpec.TIMESTAMP_TZ) {
+            // If it appears to end with a time zone offset, insert "GMT"
+            int sp = s.lastIndexOf(' ');
+            if (sp != -1) {
+                String tz = s.substring(sp + 1);
+                if (tz.startsWith("+") || tz.startsWith("-")) {
+                    tz = tz.substring(1);
+                    int c = tz.indexOf(':');
+                    if (c != -1) {
+                        String h = tz.substring(0, c);
+                        String m = tz.substring(c + 1);
+                        if (h.length() >= 1 && h.length() <= 2 && m.length() >= 1 && m.length() <= 2) {
+                            try {
+                                int hh = Integer.parseInt(h);
+                                int mm = Integer.parseInt(m);
+                                if (hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59)
+                                    s = s.substring(0, sp + 1) + "GMT" + s.substring(sp + 1);
+                            } catch (Exception e) {}
+                        }
+                    }
+                }
+            }
+        }
+
+        return super.stringToObject(spec, s);
     }
 }
