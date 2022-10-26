@@ -1,3 +1,6 @@
+2022-10-26: build 2726
+*) Date & time handling fixes for MS SQL.
+
 2022-10-24: build 2724
 *) Added support for Microsoft SQL Server (MS SQL). This is very new; please
 report any issues you may run into. I'm using this at work so it is at least
