@@ -1534,7 +1534,7 @@ public class JDBCDatabase extends BasicDatabase {
             for (int i = 0; i < ncols; i++) {
                 if (i > 0)
                     buf.append(", ");
-                buf.append(pk.getColumnName(i));
+                buf.append(quote(pk.getColumnName(i)));
             }
             buf.append(" from ");
             buf.append(qualifiedName);
