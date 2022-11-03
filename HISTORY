@@ -675,7 +675,7 @@ properties (name/value pairs that are fed to System.setProperty() on startup;
 I needed this so I could set swing.metalTheme=steel (in case I never get used
 to that new "Ocean" theme in Metal)).
 
-31 Aug 2004:
+2004-08-31:
 *) CHANGELOG file created. What a concept, 3 1/2 years and at least 1790 builds
 after I started work on JDBC Navigator. :-)
 *) Fixed PartialTable so that reloading it (i.e., calling getData()) causes the
