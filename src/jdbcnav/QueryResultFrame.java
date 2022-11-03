@@ -593,14 +593,14 @@ public class QueryResultFrame extends MyFrame
                 Data data = (Data) db.runQuery(query, true, false);
                 model.load(data);
             }
-            progressMenu.setText("0 rows");
-            menubar.add(progressMenu);
-            menubar.validate();
-            menubar.repaint();
         } catch (NavigatorException e) {
             MessageBox.show("Reload failed!", e);
-            dispose();
+            return;
         }
+        progressMenu.setText("0 rows");
+        menubar.add(progressMenu);
+        menubar.validate();
+        menubar.repaint();
         sortAfterLoading = true;
         datastatelistener = new DataStateListener();
         model.addStateListener(datastatelistener);
