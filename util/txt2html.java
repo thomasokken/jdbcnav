@@ -6,7 +6,7 @@ public class txt2html {
                 "<html>\n"
                 + "<head>\n"
                 + "  <title>" + args[0] + "</title>\n"
-                + "<head>\n"
+                + "</head>\n"
                 + "<body>\n"
                 + "<h3>" + args[0] + "</h3>\n"
                 + "<pre>");
