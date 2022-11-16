@@ -289,17 +289,14 @@ public class PreferencesFrame extends MyFrame {
                     public void actionPerformed(ActionEvent e) {
                         JOptionPane.showInternalMessageDialog(
                             Main.getDesktop(),
-                            "Use the \"Class Path\" area to specify a list of\n"
-                            + "directories and jar (or zip) files where JDBC\n"
-                            + "Navigator should load JDBC drivers from.\n"
-                            + "If you're using JDK 1.5 or later, you may also\n"
-                            + "use the word \"CLASSPATH\" to indicate that\n"
-                            + "the value of the CLASSPATH environment\n"
+                            "Use the \"Class Path\" area to specify a list of directories\n"
+                            + "and jar (or zip) files where JDBC Navigator should load\n"
+                            + "JDBC drivers from. You may also use the word \"CLASSPATH\"\n"
+                            + "to indicate that the value of the CLASSPATH environment\n"
                             + "variable should be inserted at that point.\n"
-                            + "NOTE: adding items to the class path takes\n"
-                            + "effect immediately after you click \"OK\",\n"
-                            + "but removing or reordering items will not\n"
-                            + "take effect until you restart JDBC Navigator.");
+                            + "NOTE: adding items to the class path takes effect immediately\n"
+                            + "after you click \"OK\", but removing or reordering items will\n"
+                            + "not take effect until you restart JDBC Navigator.");
                     }
                 });
             p2.add(question);
