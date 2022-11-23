@@ -193,6 +193,7 @@ public class BrowserFrame extends MyFrame {
                                 });
             m.add(mi);
         }
+        mi.setAccelerator(KeyStroke.getKeyStroke('L', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mi = new JMenuItem("Close");
         mi.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent e) {
@@ -220,6 +221,8 @@ public class BrowserFrame extends MyFrame {
                     popupMenu.add(mi);
                     mi = new JMenuItem(cmdStr);
                     mi.addActionListener(listener);
+                    if (cmdStr.toLowerCase().contains("reload"))
+                        mi.setAccelerator(KeyStroke.getKeyStroke('R', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
                     m.add(mi);
                 }
             }

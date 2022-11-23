@@ -112,6 +112,7 @@ public class QueryResultFrame extends MyFrame
                                     reload();
                                 }
                             });
+        mi.setAccelerator(KeyStroke.getKeyStroke('R', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Re-Sort");
         mi.setAccelerator(KeyStroke.getKeyStroke('S', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
