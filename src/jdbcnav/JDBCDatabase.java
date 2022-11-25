@@ -1196,7 +1196,13 @@ public class JDBCDatabase extends BasicDatabase {
                             break scanner;
                         state = 1;
                         break;
-                    case 1: {
+                    case 1:
+                        // Looking for optional "distinct"
+                        state = 2;
+                        if (t.equalsIgnoreCase("distinct"))
+                            break;
+                        // fall through
+                    case 2: {
                         // Looking for column names or "*", optionally qualified
                         if (t.equals(","))
                             continue;
@@ -1204,7 +1210,7 @@ public class JDBCDatabase extends BasicDatabase {
                             if (firstCol)
                                 break scanner;
                             else {
-                                state = 2;
+                                state = 3;
                                 break;
                             }
                         int dot = t.indexOf('.');
@@ -1222,14 +1228,14 @@ public class JDBCDatabase extends BasicDatabase {
                             break scanner;
                         break;
                     }
-                    case 2:
+                    case 3:
                         // Looking for table names
                         if (t.equals(",") || t.equalsIgnoreCase("where") || t.equalsIgnoreCase("join"))
                             break scanner;
                         name = t;
-                        state = 3;
+                        state = 4;
                         break;
-                    case 3:
+                    case 4:
                         // After table name
                         if (identifier.equals("")) {
                             // We have a "select <columns> from", where all the
@@ -1240,7 +1246,7 @@ public class JDBCDatabase extends BasicDatabase {
                             // can't handle.
                             if (t.equalsIgnoreCase("where") || t.equalsIgnoreCase("join"))
                                 success = true;
-                            state = 5;
+                            state = 6;
                             break scanner;
                         } else {
                             // We have a "select foo.* from", and the previous
@@ -1253,19 +1259,19 @@ public class JDBCDatabase extends BasicDatabase {
                                 success = true;
                                 break scanner;
                             } else {
-                                state = 4;
+                                state = 5;
                                 break;
                             }
                         }
-                    case 4:
+                    case 5:
                         // Waiting for comma
                         if (!t.equals(","))
                             break scanner;
-                        state = 2;
+                        state = 3;
                         break;
                 }
             }
-            if (state == 3 && identifier.equals(""))
+            if (state == 4 && identifier.equals(""))
                 // We ran out of tokens just after having found a table name
                 // in a "select * from <tablename>" query.
                 success = true;
