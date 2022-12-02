@@ -28,6 +28,7 @@ import javax.swing.text.*;
 import javax.swing.undo.*;
 
 import jdbcnav.util.FileUtils;
+import jdbcnav.util.MiscUtils;
 import jdbcnav.util.MyTextArea;
 
 
@@ -86,7 +87,7 @@ public class TextEditorFrame extends MyFrame {
             InputMap im = textA.getInputMap();
             KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
             KeyStroke shift_enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,
-                                                InputEvent.SHIFT_MASK);
+                                                MiscUtils.SHIFT_MASK);
             Object enterAction = im.get(enter);
             im.put(shift_enter, enterAction);
             im.put(enter, "jdbcnav_handle_return");
@@ -113,7 +114,7 @@ public class TextEditorFrame extends MyFrame {
                                     open();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('O', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('O', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Merge...");
         mi.addActionListener(new ActionListener() {
@@ -128,7 +129,7 @@ public class TextEditorFrame extends MyFrame {
                                     save();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('S', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Save As...");
         mi.addActionListener(new ActionListener() {
@@ -152,7 +153,7 @@ public class TextEditorFrame extends MyFrame {
                                     nuke();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('W', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('W', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mb.add(m);
 
@@ -163,7 +164,7 @@ public class TextEditorFrame extends MyFrame {
                                     undo();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('Z', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('Z', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Redo");
         mi.addActionListener(new ActionListener() {
@@ -171,7 +172,7 @@ public class TextEditorFrame extends MyFrame {
                                     redo();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('Y', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('Y', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         m.addSeparator();
         mi = new JMenuItem("Cut");
@@ -180,7 +181,7 @@ public class TextEditorFrame extends MyFrame {
                                     cut();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('X', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('X', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Copy");
         mi.addActionListener(new ActionListener() {
@@ -188,7 +189,7 @@ public class TextEditorFrame extends MyFrame {
                                     copy();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('C', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('C', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Paste");
         mi.addActionListener(new ActionListener() {
@@ -196,7 +197,7 @@ public class TextEditorFrame extends MyFrame {
                                     paste();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('V', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('V', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Clear");
         mi.addActionListener(new ActionListener() {
@@ -211,7 +212,7 @@ public class TextEditorFrame extends MyFrame {
                                     selectAll();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('A', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('A', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mb.add(m);
 
@@ -231,7 +232,7 @@ public class TextEditorFrame extends MyFrame {
                                     find();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('F', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('F', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mb.add(m);
 

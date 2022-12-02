@@ -116,7 +116,7 @@ public class BrowserFrame extends MyFrame {
         tree.addMouseListener(
                 new MouseAdapter() {
                     public void mousePressed(MouseEvent e) {
-                        if ((e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
+                        if (e.getButton() == MouseEvent.BUTTON3) {
                             if (popupMenu != null)
                                 popupMenu.show(e.getComponent(),
                                                e.getX(), e.getY());
@@ -168,7 +168,7 @@ public class BrowserFrame extends MyFrame {
                                     save();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('S', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Commit...");
         mi.addActionListener(new ActionListener() {
@@ -193,14 +193,14 @@ public class BrowserFrame extends MyFrame {
                                 });
             m.add(mi);
         }
-        mi.setAccelerator(KeyStroke.getKeyStroke('R', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('R', MiscUtils.SHIFT_MASK | MiscUtils.getMenuShortcutKeyMask()));
         mi = new JMenuItem("Close");
         mi.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent e) {
                                     nuke();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('W', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('W', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mb.add(m);
 
@@ -222,7 +222,7 @@ public class BrowserFrame extends MyFrame {
                     mi = new JMenuItem(cmdStr);
                     mi.addActionListener(listener);
                     if (cmdStr.toLowerCase().contains("reload"))
-                        mi.setAccelerator(KeyStroke.getKeyStroke('L', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                        mi.setAccelerator(KeyStroke.getKeyStroke('L', MiscUtils.getMenuShortcutKeyMask()));
                     m.add(mi);
                 }
             }
@@ -485,7 +485,7 @@ public class BrowserFrame extends MyFrame {
             } catch (NavigatorException e) {
                 throw new WrappedException(e);
             }
-            return new Integer(args.length);
+            return (int) args.length;
         }
     }
 
@@ -519,7 +519,7 @@ public class BrowserFrame extends MyFrame {
         ///// TreeNode /////
         ////////////////////
 
-        @SuppressWarnings("rawtypes")
+        @SuppressWarnings({ "rawtypes", "unchecked" })
         public Enumeration children() {
             return new IteratorEnumeration<TreeNode>(kids().iterator());
         }
@@ -645,7 +645,7 @@ public class BrowserFrame extends MyFrame {
         }
         public Object get(String name, Scriptable start) {
             if (name.equals("length"))
-                return new Integer(kids().size());
+                return (int) kids().size();
             else if (name.equals("name"))
                 return toString();
             else if (name.equals("createStatement"))

@@ -38,7 +38,7 @@ public class JavaScriptArray implements Scriptable {
     }
     public Object get(String name, Scriptable start) {
         if (name.equals("length"))
-            return new Integer(array.length);
+            return (int) array.length;
         return NOT_FOUND;
     }
     public String getClassName() {

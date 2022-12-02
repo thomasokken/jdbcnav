@@ -29,6 +29,7 @@ import javax.swing.text.*;
 import javax.swing.undo.*;
 
 import jdbcnav.util.FileUtils;
+import jdbcnav.util.MiscUtils;
 import jdbcnav.util.MyGridBagConstraints;
 import jdbcnav.util.MyGridBagLayout;
 import jdbcnav.util.NonTabJTextArea;
@@ -134,7 +135,7 @@ public class BinaryEditorFrame extends MyFrame {
                                     open();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('O', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('O', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Merge...");
         mi.addActionListener(new ActionListener() {
@@ -149,7 +150,7 @@ public class BinaryEditorFrame extends MyFrame {
                                     save();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('S', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('S', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Save As...");
         mi.addActionListener(new ActionListener() {
@@ -173,7 +174,7 @@ public class BinaryEditorFrame extends MyFrame {
                                     nuke();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('W', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('W', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mb.add(m);
 
@@ -184,7 +185,7 @@ public class BinaryEditorFrame extends MyFrame {
                                     undo();
                                 }
                             });
-        undoMI.setAccelerator(KeyStroke.getKeyStroke('Z', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        undoMI.setAccelerator(KeyStroke.getKeyStroke('Z', MiscUtils.getMenuShortcutKeyMask()));
         m.add(undoMI);
         redoMI = new JMenuItem("Redo");
         redoMI.addActionListener(new ActionListener() {
@@ -192,7 +193,7 @@ public class BinaryEditorFrame extends MyFrame {
                                     redo();
                                 }
                             });
-        redoMI.setAccelerator(KeyStroke.getKeyStroke('Y', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        redoMI.setAccelerator(KeyStroke.getKeyStroke('Y', MiscUtils.getMenuShortcutKeyMask()));
         m.add(redoMI);
         m.addSeparator();
         mi = new JMenuItem("Cut");
@@ -201,7 +202,7 @@ public class BinaryEditorFrame extends MyFrame {
                                     cut();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('X', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('X', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Copy");
         mi.addActionListener(new ActionListener() {
@@ -209,7 +210,7 @@ public class BinaryEditorFrame extends MyFrame {
                                     copy();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('C', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('C', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Paste");
         mi.addActionListener(new ActionListener() {
@@ -217,7 +218,7 @@ public class BinaryEditorFrame extends MyFrame {
                                     paste();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('V', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('V', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Clear");
         mi.addActionListener(new ActionListener() {
@@ -232,7 +233,7 @@ public class BinaryEditorFrame extends MyFrame {
                                     selectAll();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('A', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('A', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mb.add(m);
 

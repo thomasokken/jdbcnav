@@ -35,6 +35,7 @@ import jdbcnav.javascript.JavaScriptGlobal;
 import jdbcnav.model.Database;
 import jdbcnav.util.FileUtils;
 import jdbcnav.util.MenuLayout;
+import jdbcnav.util.MiscUtils;
 
 
 public class Main extends JFrame {
@@ -336,7 +337,7 @@ public class Main extends JFrame {
                                     nuke();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('Q', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('Q', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mb.add(m);
 
@@ -394,7 +395,7 @@ public class Main extends JFrame {
                                     cycleWindows(true);
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('R', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('R', MiscUtils.getMenuShortcutKeyMask()));
         windowsMenu.add(mi);
         mi = new JMenuItem("Cycle Down");
         mi.addActionListener(new ActionListener() {
@@ -402,7 +403,7 @@ public class Main extends JFrame {
                                     cycleWindows(false);
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('R', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('R', MiscUtils.SHIFT_MASK | MiscUtils.getMenuShortcutKeyMask()));
         windowsMenu.add(mi);
         windowsMenu.setEnabled(false);
         mb.add(windowsMenu);

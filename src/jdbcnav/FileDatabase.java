@@ -695,14 +695,14 @@ public class FileDatabase extends BasicDatabase {
                 spec.jdbcDbType = data;
             } else if (name.equals("jdbc_size")) {
                 try {
-                    spec.jdbcSize = new Integer(data);
+                    spec.jdbcSize = Integer.parseInt(data);
                 } catch (NumberFormatException e) {
                     throw new SAXException("jdbc_size value \"" + data
                                            + "\" is not an integer.");
                 }
             } else if (name.equals("jdbc_scale")) {
                 try {
-                    spec.jdbcScale = new Integer(data);
+                    spec.jdbcScale = Integer.parseInt(data);
                 } catch (NumberFormatException e) {
                     throw new SAXException("jdbc_scale value \"" + data
                                            + "\" is not an integer.");

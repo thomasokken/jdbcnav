@@ -270,7 +270,7 @@ public class JDBCDatabase_MySQL extends JDBCDatabase {
                 s = y4format.format((java.util.Date) o);
             else
                 s = y2format.format((java.util.Date) o);
-            return new Integer(s);
+            return Integer.parseInt(s);
         }
         return super.db2nav(spec, o);
     }

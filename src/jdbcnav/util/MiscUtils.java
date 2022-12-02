@@ -18,6 +18,7 @@
 
 package jdbcnav.util;
 
+import java.awt.Toolkit;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.sql.Types;
@@ -211,4 +212,18 @@ public class MiscUtils {
             default: return Integer.toString(type);
         }
     }
+
+    @SuppressWarnings("deprecation")
+    public static int getMenuShortcutKeyMask() {
+        return Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+    }
+
+    @SuppressWarnings("deprecation")
+    public static int SHIFT_MASK = java.awt.Event.SHIFT_MASK;
+
+    @SuppressWarnings("deprecation")
+    public static int BUTTON3_MASK = java.awt.event.InputEvent.BUTTON3_MASK;
+
+    @SuppressWarnings("deprecation")
+    public static int CTRL_MASK = java.awt.event.InputEvent.CTRL_MASK;
 }

@@ -1181,7 +1181,7 @@ public class ResultSetTableModel extends AbstractTableModel
             int first = last - added.size() + 1;
             for (int i = last; i >= first; i--) {
                 cells.remove(i);
-                sequence.remove(new Integer(i));
+                sequence.remove((Integer) i);
             }
             Collections.sort(sequence, rowComparator);
             safelyFireTableDataChanged();
@@ -1232,7 +1232,7 @@ public class ResultSetTableModel extends AbstractTableModel
             int first = last - added.size() + 1;
             for (int i = last; i >= first; i--) {
                 cells.remove(i);
-                sequence.remove(new Integer(i));
+                sequence.remove((Integer) i);
             }
             Collections.sort(sequence, rowComparator);
             safelyFireTableDataChanged();

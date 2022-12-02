@@ -112,10 +112,10 @@ public class QueryResultFrame extends MyFrame
                                     reload();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('L', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('L', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mi = new JMenuItem("Re-Sort");
-        mi.setAccelerator(KeyStroke.getKeyStroke('S', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('S', MiscUtils.SHIFT_MASK | MiscUtils.getMenuShortcutKeyMask()));
         mi.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent e) {
                                     model.sort();
@@ -145,7 +145,7 @@ public class QueryResultFrame extends MyFrame
                                     nuke();
                                 }
                             });
-        mi.setAccelerator(KeyStroke.getKeyStroke('W', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke('W', MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         menubar.add(m);
 
@@ -162,7 +162,7 @@ public class QueryResultFrame extends MyFrame
                 undoMI.setText(undo);
             else
                 undoMI.setEnabled(false);
-            undoMI.setAccelerator(KeyStroke.getKeyStroke('Z', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+            undoMI.setAccelerator(KeyStroke.getKeyStroke('Z', MiscUtils.getMenuShortcutKeyMask()));
             editMenu.add(undoMI);
             redoMI = new JMenuItem("Redo");
             redoMI.addActionListener(new ActionListener() {
@@ -175,7 +175,7 @@ public class QueryResultFrame extends MyFrame
                 redoMI.setText(redo);
             else
                 redoMI.setEnabled(false);
-            redoMI.setAccelerator(KeyStroke.getKeyStroke('Y', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+            redoMI.setAccelerator(KeyStroke.getKeyStroke('Y', MiscUtils.getMenuShortcutKeyMask()));
             editMenu.add(redoMI);
             editMenu.addSeparator();
             cutMI = new JMenuItem("Cut");
@@ -185,7 +185,7 @@ public class QueryResultFrame extends MyFrame
                                     }
                                 });
             cutMI.setEnabled(false);
-            cutMI.setAccelerator(KeyStroke.getKeyStroke('X', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+            cutMI.setAccelerator(KeyStroke.getKeyStroke('X', MiscUtils.getMenuShortcutKeyMask()));
             editMenu.add(cutMI);
             cutRowsMI = new JMenuItem("Cut Rows");
             cutRowsMI.addActionListener(new ActionListener() {
@@ -194,7 +194,7 @@ public class QueryResultFrame extends MyFrame
                                     }
                                 });
             cutRowsMI.setEnabled(false);
-            cutRowsMI.setAccelerator(KeyStroke.getKeyStroke('X', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+            cutRowsMI.setAccelerator(KeyStroke.getKeyStroke('X', MiscUtils.SHIFT_MASK | MiscUtils.getMenuShortcutKeyMask()));
             editMenu.add(cutRowsMI);
         }
         copyMI = new JMenuItem("Copy");
@@ -204,7 +204,7 @@ public class QueryResultFrame extends MyFrame
                                 }
                             });
         copyMI.setEnabled(false);
-        copyMI.setAccelerator(KeyStroke.getKeyStroke('C', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        copyMI.setAccelerator(KeyStroke.getKeyStroke('C', MiscUtils.getMenuShortcutKeyMask()));
         editMenu.add(copyMI);
         copyRowsMI = new JMenuItem("Copy Rows");
         copyRowsMI.addActionListener(new ActionListener() {
@@ -213,7 +213,7 @@ public class QueryResultFrame extends MyFrame
                                 }
                             });
         copyRowsMI.setEnabled(false);
-        copyRowsMI.setAccelerator(KeyStroke.getKeyStroke('C', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        copyRowsMI.setAccelerator(KeyStroke.getKeyStroke('C', MiscUtils.SHIFT_MASK | MiscUtils.getMenuShortcutKeyMask()));
         editMenu.add(copyRowsMI);
         if (editable) {
             mi = new JMenuItem("Paste");
@@ -222,7 +222,7 @@ public class QueryResultFrame extends MyFrame
                                         paste();
                                     }
                                 });
-            mi.setAccelerator(KeyStroke.getKeyStroke('V', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+            mi.setAccelerator(KeyStroke.getKeyStroke('V', MiscUtils.getMenuShortcutKeyMask()));
             editMenu.add(mi);
             mi = new JMenuItem("Paste TSV");
             mi.addActionListener(new ActionListener() {
@@ -230,7 +230,7 @@ public class QueryResultFrame extends MyFrame
                                         pasteTSV();
                                     }
                                 });
-            mi.setAccelerator(KeyStroke.getKeyStroke('V', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+            mi.setAccelerator(KeyStroke.getKeyStroke('V', MiscUtils.SHIFT_MASK | MiscUtils.getMenuShortcutKeyMask()));
             editMenu.add(mi);
             editMenu.addSeparator();
             mi = new JMenuItem("Insert Row");
@@ -256,7 +256,7 @@ public class QueryResultFrame extends MyFrame
                                 });
             setCellNullMI.setEnabled(false);
             setCellNullMI.setAccelerator(
-                                KeyStroke.getKeyStroke('N', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                                KeyStroke.getKeyStroke('N', MiscUtils.getMenuShortcutKeyMask()));
             editMenu.add(setCellNullMI);
             editCellMI = new JMenuItem("Edit Cell");
             editCellMI.addActionListener(new ActionListener() {
@@ -266,7 +266,7 @@ public class QueryResultFrame extends MyFrame
                                 });
             editCellMI.setEnabled(false);
             editCellMI.setAccelerator(
-                                KeyStroke.getKeyStroke('E', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                                KeyStroke.getKeyStroke('E', MiscUtils.getMenuShortcutKeyMask()));
             editMenu.add(editCellMI);
         } else {
             editCellMI = new JMenuItem("View Cell");
@@ -277,7 +277,7 @@ public class QueryResultFrame extends MyFrame
                                 });
             editCellMI.setEnabled(false);
             editCellMI.setAccelerator(
-                                KeyStroke.getKeyStroke('E', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                                KeyStroke.getKeyStroke('E', MiscUtils.getMenuShortcutKeyMask()));
             editMenu.add(editCellMI);
         }
         editMenu.setEnabled(editable);

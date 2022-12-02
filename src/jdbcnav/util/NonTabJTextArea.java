@@ -32,7 +32,7 @@ public class NonTabJTextArea extends MyTextArea {
         forwardSet.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB, 0));
         backwardSet = new HashSet<AWTKeyStroke>();
         backwardSet.add(AWTKeyStroke.getAWTKeyStroke(KeyEvent.VK_TAB,
-                                                    InputEvent.SHIFT_MASK));
+                                                    MiscUtils.SHIFT_MASK));
     }
 
     public NonTabJTextArea() {

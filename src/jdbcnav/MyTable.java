@@ -206,11 +206,11 @@ public class MyTable extends JTable {
 
     public void setEditHandler(EditHandler eh) {
         editHandler = eh;
-        KeyStroke ctrl_x = KeyStroke.getKeyStroke('X', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-        KeyStroke ctrl_shift_x = KeyStroke.getKeyStroke('X', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-        KeyStroke ctrl_c = KeyStroke.getKeyStroke('C', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-        KeyStroke ctrl_shift_c = KeyStroke.getKeyStroke('C', Event.SHIFT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
-        KeyStroke ctrl_v = KeyStroke.getKeyStroke('V', Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+        KeyStroke ctrl_x = KeyStroke.getKeyStroke('X', MiscUtils.getMenuShortcutKeyMask());
+        KeyStroke ctrl_shift_x = KeyStroke.getKeyStroke('X', MiscUtils.SHIFT_MASK | MiscUtils.getMenuShortcutKeyMask());
+        KeyStroke ctrl_c = KeyStroke.getKeyStroke('C', MiscUtils.getMenuShortcutKeyMask());
+        KeyStroke ctrl_shift_c = KeyStroke.getKeyStroke('C', MiscUtils.SHIFT_MASK | MiscUtils.getMenuShortcutKeyMask());
+        KeyStroke ctrl_v = KeyStroke.getKeyStroke('V', MiscUtils.getMenuShortcutKeyMask());
         InputMap im = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         Object cut_cell_id = im.get(ctrl_x);
         Object cut_row_id = im.get(ctrl_shift_x);
@@ -461,7 +461,7 @@ public class MyTable extends JTable {
             return;
         int logicalColumn = convertColumnIndexToModel(physicalColumn);
 
-        if ((e.getModifiers() & InputEvent.BUTTON3_MASK) != 0) {
+        if (e.getButton() == MouseEvent.BUTTON3) {
             // Right-click: present a menu of column names allowing
             // the user to jump to a column
             JPopupMenu menu = new JPopupMenu();

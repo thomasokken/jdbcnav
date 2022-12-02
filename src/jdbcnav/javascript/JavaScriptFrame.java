@@ -35,7 +35,7 @@ public class JavaScriptFrame extends TextEditorFrame {
     public JavaScriptFrame() {
         super("JavaScript", "", false, false);
         InputMap im = textA.getInputMap();
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, InputEvent.CTRL_MASK),
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, MiscUtils.CTRL_MASK),
                "javascript_interrupt");
         ActionMap am = textA.getActionMap();
         am.put("javascript_interrupt",

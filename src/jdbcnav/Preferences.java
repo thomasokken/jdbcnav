@@ -567,7 +567,7 @@ public class Preferences {
                     ArrayList<Integer> list = new ArrayList<Integer>();
                     while (tok.hasMoreTokens())
                         try {
-                            list.add(new Integer(tok.nextToken()));
+                            list.add(Integer.parseInt(tok.nextToken()));
                         } catch (NumberFormatException e) {}
                     int n = list.size();
                     int[] ia = new int[n];

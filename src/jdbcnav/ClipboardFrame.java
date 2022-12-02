@@ -59,7 +59,7 @@ public class ClipboardFrame extends MyFrame implements Clipboard.Listener {
                             dispose();
                         }
                     });
-        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, MiscUtils.getMenuShortcutKeyMask()));
         m.add(mi);
         mb.add(m);
         setJMenuBar(mb);

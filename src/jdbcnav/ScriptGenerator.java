@@ -983,7 +983,7 @@ public class ScriptGenerator {
         String className = null;
         try {
             className = InternalDriverMap.getScriptGeneratorClassName(name);
-            instance = (ScriptGenerator) Class.forName(className).newInstance();
+            instance = (ScriptGenerator) Class.forName(className).getDeclaredConstructor().newInstance();
             instance.name = name;
             instances.put(name, instance);
             return instance;

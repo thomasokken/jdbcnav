@@ -55,8 +55,7 @@ public class TableFrame extends QueryResultFrame {
 
         table.addMouseListener(new MouseAdapter() {
                                     public void mousePressed(MouseEvent e) {
-                                        if ((e.getModifiers() &
-                                                InputEvent.BUTTON3_MASK) != 0)
+                                        if (e.getButton() == MouseEvent.BUTTON3)
                                             showPopup(e);
                                     }
                                 });
