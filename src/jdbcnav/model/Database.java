@@ -77,6 +77,7 @@ public interface Database {
     // Specify allowTable = false if you specifically want a Data object.
     Object runQuery(String query, boolean asynchronous, boolean allowTable)
                                                     throws NavigatorException;
+    Object runQuery(String query, Object[] values) throws NavigatorException;
 
     int runUpdate(String query) throws NavigatorException;
     Scriptable createStatement() throws NavigatorException;

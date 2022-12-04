@@ -168,6 +168,11 @@ public class FileDatabase extends BasicDatabase {
                     + "capable of executing queries.");
     }
 
+    public Object runQuery(String query, Object[] values) throws NavigatorException {
+        throw new NavigatorException("File Data Source is not "
+                    + "capable of executing queries.");
+    }
+
     public int runUpdate(String query) throws NavigatorException {
         throw new NavigatorException("File Data Source is not "
                     + "capable of executing updates.");

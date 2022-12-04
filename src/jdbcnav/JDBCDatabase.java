@@ -1147,7 +1147,7 @@ public class JDBCDatabase extends BasicDatabase {
         // No-op
     }
 
-    public Object runQuery(String query, boolean asynchronous,
+    private Object runQuery(String query, Object[] values, boolean asynchronous,
                            boolean allowTable) throws NavigatorException {
 
         Main.log(3, "JDBCDatabase.runQuery(\"" + query + "\", "
@@ -1297,8 +1297,18 @@ public class JDBCDatabase extends BasicDatabase {
         ResultSet rs = null;
         try {
             Main.log(3, "executing query...");
-            s = con.createStatement();
-            rs = s.executeQuery(query);
+            if (values == null) {
+                s = con.createStatement();
+                rs = s.executeQuery(query);
+            } else {
+                PreparedStatement ps = con.prepareStatement(query);
+                for (int i = 0; i < values.length; i++) {
+                    Object v = values[i];
+                    ps.setObject(i + 1, v);
+                }
+                s = ps;
+                rs = ps.executeQuery();
+            }
 
             Main.log(3, "reading metadata...");
             ResultSetMetaData rsmd = rs.getMetaData();
@@ -1450,6 +1460,15 @@ public class JDBCDatabase extends BasicDatabase {
                     s.close();
                 } catch (SQLException e) {}
         }
+    }
+
+    public Object runQuery(String query, boolean asynchronous,
+            boolean allowTable) throws NavigatorException {
+        return runQuery(query, null, asynchronous, allowTable);
+    }
+
+    public Object runQuery(String query, Object[] values) throws NavigatorException {
+        return runQuery(query, values, false, true);
     }
 
     public int runUpdate(String query) throws NavigatorException {

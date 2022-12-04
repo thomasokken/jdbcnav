@@ -112,64 +112,71 @@ public class TableFrame extends QueryResultFrame {
                         new ActionListener() {
                             public void actionPerformed(ActionEvent e) {
                                 MyMenuItem mi = (MyMenuItem) e.getSource();
-                                handlePopup(mi.foreign, mi.index);
+                                handlePopup(mi.foreign, mi.index, mi.partial);
                             }
                         };
 
-            if (haveFks) {
-                if (dbTable.isEditable()) {
-                    JMenuItem jmi = new JMenuItem("Select FK Value...");
-                    jmi.addActionListener(new ActionListener() {
-                                public void actionPerformed(ActionEvent e) {
-                                    selectFkValue();
-                                }
-                            });
-                    popupMenu.add(jmi);
-                }
-                JMenu m = new JMenu("References");
-                for (int i = 0; i < fks.length; i++) {
-                    ForeignKey fk = fks[i];
-                    String name;
-                    if (fk.getThatCatalog() != null)
-                        if (fk.getThatSchema() != null)
-                            name = fk.getThatCatalog()
-                                    + "." + fk.getThatSchema()
-                                    + "." + fk.getThatName();
-                        else
-                            name = fk.getThatCatalog()
-                                    + "." + fk.getThatName();
-                    else if (fk.getThatSchema() != null)
-                        name = fk.getThatSchema() + "." + fk.getThatName();
-                    else
-                        name = fk.getThatName();
-                    MyMenuItem mi = new MyMenuItem(name, true, i);
-                    mi.addActionListener(listener);
-                    m.add(mi);
-                }
-                popupMenu.add(m);
+            if (haveFks && dbTable.isEditable()) {
+                JMenuItem jmi = new JMenuItem("Select FK Value...");
+                jmi.addActionListener(new ActionListener() {
+                            public void actionPerformed(ActionEvent e) {
+                                selectFkValue();
+                            }
+                        });
+                popupMenu.add(jmi);
             }
-            if (haveRks) {
-                JMenu m = new JMenu("Referenced By");
-                for (int i = 0; i < rks.length; i++) {
-                    ForeignKey rk = rks[i];
-                    String name;
-                    if (rk.getThatCatalog() != null)
-                        if (rk.getThatSchema() != null)
-                            name = rk.getThatCatalog()
-                                    + "." + rk.getThatSchema()
-                                    + "." + rk.getThatName();
+
+            for (int p = 1; p >= 0; p--) {
+                JMenuItem tmi = new JMenuItem(p == 1 ? "Partial Table" : "Whole Table");
+                tmi.setEnabled(false);
+                popupMenu.add(tmi);
+
+                if (haveFks) {
+                    JMenu m = new JMenu("References");
+                    for (int i = 0; i < fks.length; i++) {
+                        ForeignKey fk = fks[i];
+                        String name;
+                        if (fk.getThatCatalog() != null)
+                            if (fk.getThatSchema() != null)
+                                name = fk.getThatCatalog()
+                                        + "." + fk.getThatSchema()
+                                        + "." + fk.getThatName();
+                            else
+                                name = fk.getThatCatalog()
+                                        + "." + fk.getThatName();
+                        else if (fk.getThatSchema() != null)
+                            name = fk.getThatSchema() + "." + fk.getThatName();
                         else
-                            name = rk.getThatCatalog()
-                                    + "." + rk.getThatName();
-                    else if (rk.getThatSchema() != null)
-                        name = rk.getThatSchema() + "." + rk.getThatName();
-                    else
-                        name = rk.getThatName();
-                    MyMenuItem mi = new MyMenuItem(name, false, i);
-                    mi.addActionListener(listener);
-                    m.add(mi);
+                            name = fk.getThatName();
+                        MyMenuItem mi = new MyMenuItem(name, true, i, p == 1);
+                        mi.addActionListener(listener);
+                        m.add(mi);
+                    }
+                    popupMenu.add(m);
                 }
-                popupMenu.add(m);
+                if (haveRks) {
+                    JMenu m = new JMenu("Referenced By");
+                    for (int i = 0; i < rks.length; i++) {
+                        ForeignKey rk = rks[i];
+                        String name;
+                        if (rk.getThatCatalog() != null)
+                            if (rk.getThatSchema() != null)
+                                name = rk.getThatCatalog()
+                                        + "." + rk.getThatSchema()
+                                        + "." + rk.getThatName();
+                            else
+                                name = rk.getThatCatalog()
+                                        + "." + rk.getThatName();
+                        else if (rk.getThatSchema() != null)
+                            name = rk.getThatSchema() + "." + rk.getThatName();
+                        else
+                            name = rk.getThatName();
+                        MyMenuItem mi = new MyMenuItem(name, false, i, p == 1);
+                        mi.addActionListener(listener);
+                        m.add(mi);
+                    }
+                    popupMenu.add(m);
+                }
             }
         }
 
@@ -180,54 +187,63 @@ public class TableFrame extends QueryResultFrame {
         popupColumn = table.convertColumnIndexToModel(table.columnAtPoint(p));
         String columnName = model.getColumnName(popupColumn);
 
-        if (haveFks) {
-            int id = dbTable.isEditable() ? 1 : 0;
-            Component[] items = ((JMenu) popupMenu.getComponent(id))
-                                                  .getMenuComponents();
-            fkIndex = -1;
-            for (int i = 0; i < items.length; i++) {
-                ForeignKey fk = fks[i];
-                boolean matches = false;
-                for (int j = 0; j < fk.getColumnCount(); j++)
-                    if (fk.getThisColumnName(j).equals(columnName)) {
-                        matches = true;
-                        break;
-                    }
-                Component c = items[i];
-                Font f = c.getFont();
-                f = f.deriveFont(matches ? Font.BOLD : Font.PLAIN);
-                if (matches) {
-                    fkIndex = i;
-                    fkRow = popupRow;
-                }
-                c.setFont(f);
+        int id = dbTable.isEditable() ? 1 : 0;
+        for (int m = 0; m < 6; m++) {
+            if (m == 0 || m == 3) {
+                // "Partial Table" / "Whole Table" titles; skip
+                id++;
+                continue;
             }
-            JMenuItem jmi = (JMenuItem) popupMenu.getComponent(0);
-            jmi.setEnabled(fkIndex != -1);
-        }
-        if (haveRks) {
-            int id = haveFks ? dbTable.isEditable() ? 2 : 1 : 0;
-            Component[] items = ((JMenu) popupMenu.getComponent(id))
-                                                  .getMenuComponents();
-            for (int i = 0; i < items.length; i++) {
-                ForeignKey rk = rks[i];
-                boolean matches = false;
-                for (int j = 0; j < rk.getColumnCount(); j++)
-                    if (rk.getThisColumnName(j).equals(columnName)) {
-                        matches = true;
-                        break;
+            if (m == 1 || m == 4) {
+                if (haveFks) {
+                    Component[] items = ((JMenu) popupMenu.getComponent(id++))
+                            .getMenuComponents();
+                    fkIndex = -1;
+                    for (int i = 0; i < items.length; i++) {
+                        ForeignKey fk = fks[i];
+                        boolean matches = false;
+                        for (int j = 0; j < fk.getColumnCount(); j++)
+                            if (fk.getThisColumnName(j).equals(columnName)) {
+                                matches = true;
+                                break;
+                            }
+                        Component c = items[i];
+                        Font f = c.getFont();
+                        f = f.deriveFont(matches ? Font.BOLD : Font.PLAIN);
+                        if (matches) {
+                            fkIndex = i;
+                            fkRow = popupRow;
+                        }
+                        c.setFont(f);
                     }
-                Component c = items[i];
-                Font f = c.getFont();
-                f = f.deriveFont(matches ? Font.BOLD : Font.PLAIN);
-                c.setFont(f);
+                    JMenuItem jmi = (JMenuItem) popupMenu.getComponent(0);
+                    jmi.setEnabled(fkIndex != -1);
+                }
+            } else {
+                if (haveRks) {
+                    Component[] items = ((JMenu) popupMenu.getComponent(id++))
+                            .getMenuComponents();
+                    for (int i = 0; i < items.length; i++) {
+                        ForeignKey rk = rks[i];
+                        boolean matches = false;
+                        for (int j = 0; j < rk.getColumnCount(); j++)
+                            if (rk.getThisColumnName(j).equals(columnName)) {
+                                matches = true;
+                                break;
+                            }
+                        Component c = items[i];
+                        Font f = c.getFont();
+                        f = f.deriveFont(matches ? Font.BOLD : Font.PLAIN);
+                        c.setFont(f);
+                    }
+                }
             }
         }
                 
         popupMenu.show(e.getComponent(), x, y);
     }
 
-    private void handlePopup(boolean foreign, int index) {
+    private void handlePopup(boolean foreign, int index, boolean partial) {
         ForeignKey k =
                         (foreign ? dbTable.getForeignKeys()
                                  : dbTable.getReferencingKeys())[index];
@@ -256,9 +272,29 @@ public class TableFrame extends QueryResultFrame {
         }
             
         Database db = dbTable.getDatabase();
-        TableFrame editFrame = db.showTableFrame(k.getThatQualifiedName());
-        if (editFrame != null)
-            editFrame.selectRows(thatColumns, val);
+        if (partial) {
+            StringBuffer qbuf = new StringBuffer();
+            qbuf.append("select * from " + k.getThatQualifiedName());
+            for (int i = 0; i < n; i++) {
+                qbuf.append(i == 0 ? " where " : " and ");
+                qbuf.append(db.quote(thatColumns[i]));
+                qbuf.append(" = ?");
+            }
+            Table table;
+            try {
+                table = (Table) db.runQuery(qbuf.toString(), val);
+                TableFrame tf = new TableFrame(table, browser);
+                tf.setParent(browser);
+                tf.showStaggered();
+            } catch (Exception e) {
+                MessageBox.show(e);
+                return;
+            }
+        } else {
+            TableFrame editFrame = db.showTableFrame(k.getThatQualifiedName());
+            if (editFrame != null)
+                editFrame.selectRows(thatColumns, val);
+        }
     }
 
     private void details() {
@@ -493,10 +529,12 @@ public class TableFrame extends QueryResultFrame {
     private class MyMenuItem extends JMenuItem {
         public boolean foreign;
         public int index;
-        public MyMenuItem(String title, boolean foreign, int index) {
+        public boolean partial;
+        public MyMenuItem(String title, boolean foreign, int index, boolean partial) {
             super(title);
             this.foreign = foreign;
             this.index = index;
+            this.partial = partial;
         }
     }
 
