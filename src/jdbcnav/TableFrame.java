@@ -187,7 +187,7 @@ public class TableFrame extends QueryResultFrame {
         popupColumn = table.convertColumnIndexToModel(table.columnAtPoint(p));
         String columnName = model.getColumnName(popupColumn);
 
-        int id = dbTable.isEditable() ? 1 : 0;
+        int id = haveFks && dbTable.isEditable() ? 1 : 0;
         for (int m = 0; m < 6; m++) {
             if (m == 0 || m == 3) {
                 // "Partial Table" / "Whole Table" titles; skip
