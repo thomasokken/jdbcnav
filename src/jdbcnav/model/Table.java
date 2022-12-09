@@ -35,6 +35,7 @@ public interface Table extends Comparable<Table> {
     TypeSpec[] getTypeSpecs();
     String[] getIsNullable();
     String[] getDefaults();
+    boolean[] getIsGenerated();
     PrimaryKey getPrimaryKey();
     ForeignKey[] getForeignKeys();
     ForeignKey[] getReferencingKeys();
