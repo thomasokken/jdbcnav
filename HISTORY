@@ -1,3 +1,15 @@
+2022-12-10: build 2730
+*) Added shortcuts: Ctrl-L for Reload and Ctrl-Shift-R for Reconnect.
+*) Foreign key following: now offers choice between showing the full referenced
+table with the referenced rows highlighted (the already existing behavior) and
+showing a partial table with only the referenced rows loaded. The new option
+helps when the referenced table is very large.
+*) Support for generated columns: editing them is now prevented, and on insert
+and update, they are now skipped.
+*) When editing cells with rearranged columns, the cell editor would be
+initialized with the column type corresponding to the un-rearranged column,
+leading to editing and commit failures. Fixed.
+
 2022-11-03: build 2727
 *) FK option selector would not populate if the PK column names contained
 reserved words. Fixed.
