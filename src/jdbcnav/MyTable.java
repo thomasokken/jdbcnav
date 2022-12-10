@@ -694,6 +694,7 @@ public class MyTable extends JTable {
                                                      boolean isSelected,
                                                      int row, int column) {
             TypeSpecTableModel m = (TypeSpecTableModel) table.getModel();
+            column = table.convertColumnIndexToModel(column);
             spec = m.getTypeSpec(column);
             try {
                 this.value = spec.objectToString(value);
