@@ -312,6 +312,7 @@ public class JDBCDatabase extends BasicDatabase {
             columnNames = new String[columns];
             typeSpecs = new TypeSpec[columns];
             isNullable = new String[columns];
+            isGenerated = new String[columns];
 
             for (int i = 0; i < columns; i++) {
                 String colname = data.getColumnName(i);
@@ -323,6 +324,7 @@ public class JDBCDatabase extends BasicDatabase {
                         columnNames[i] = t.getColumnNames()[j];
                         typeSpecs[i] = t.getTypeSpecs()[j];
                         isNullable[i] = t.getIsNullable()[j];
+                        isGenerated[i] = t.getIsGenerated()[j];
                     }
                 }
             }
