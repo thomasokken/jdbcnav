@@ -400,7 +400,7 @@ public class JDBCDatabase extends BasicDatabase {
                                                     throws NavigatorException {
             PreparedStatement insertStatement = insertStatements.get(table);
             String[] names = table.getColumnNames();
-            boolean[] isGenerated = table.getIsGenerated();
+            String[] isGenerated = table.getIsGenerated();
             int columns = names.length;
             if (insertStatement == null) {
                 StringBuffer buf = new StringBuffer();
@@ -408,7 +408,7 @@ public class JDBCDatabase extends BasicDatabase {
                 buf.append(table.getQualifiedName());
                 buf.append("(");
                 for (int i = 0; i < columns; i++) {
-                    if (isGenerated[i])
+                    if ("YES".equals(isGenerated[i]))
                         continue;
                     if (i > 0)
                         buf.append(", ");
@@ -416,7 +416,7 @@ public class JDBCDatabase extends BasicDatabase {
                 }
                 buf.append(") values (");
                 for (int i = 0; i < columns; i++) {
-                    if (isGenerated[i])
+                    if ("YES".equals(isGenerated[i]))
                         continue;
                     if (i == 0)
                         buf.append("?");
@@ -435,7 +435,7 @@ public class JDBCDatabase extends BasicDatabase {
                 TypeSpec[] specs = table.getTypeSpecs();
                 int n = 1;
                 for (int i = 0; i < columns; i++) {
-                    if (isGenerated[i])
+                    if ("YES".equals(isGenerated[i]))
                         continue;
                     Object o = nav2db(specs[i], row[i]);
                     setObject(insertStatement, n++, i, o, table);
@@ -519,7 +519,7 @@ public class JDBCDatabase extends BasicDatabase {
         public void updateRow(Table table, Object[] oldRow, Object[] newRow)
                                                     throws NavigatorException {
             String[] names = table.getColumnNames();
-            boolean[] isGenerated = table.getIsGenerated();
+            String[] isGenerated = table.getIsGenerated();
             int[] keyIndexes = table.getPKColumns();
             int columns = names.length;
             StringBuffer buf = new StringBuffer();
@@ -528,7 +528,7 @@ public class JDBCDatabase extends BasicDatabase {
             buf.append(" set ");
             boolean first = true;
             for (int i = 0; i < columns; i++) {
-                if (isGenerated[i])
+                if ("YES".equals(isGenerated[i]))
                     continue;
                 if (oldRow[i] == null ? newRow[i] != null
                                     : !oldRow[i].equals(newRow[i])) {
@@ -569,7 +569,7 @@ public class JDBCDatabase extends BasicDatabase {
                 TypeSpec[] specs = table.getTypeSpecs();
                 int p = 1;
                 for (int i = 0; i < columns; i++) {
-                    if (isGenerated[i])
+                    if ("YES".equals(isGenerated[i]))
                         continue;
                     if (oldRow[i] == null ? newRow[i] != null
                                         : !oldRow[i].equals(newRow[i])) {
@@ -1599,7 +1599,7 @@ public class JDBCDatabase extends BasicDatabase {
             TypeSpec[] oldTypeSpecs = typeSpecs;
             String[] oldIsNullable = isNullable;
             String[] oldDefaults = defaults;
-            boolean[] oldIsGenerated = isGenerated;
+            String[] oldIsGenerated = isGenerated;
             PrimaryKey oldPk = pk;
             ForeignKey[] oldFks = fks;
             ForeignKey[] oldRks = rks;
@@ -1620,7 +1620,7 @@ public class JDBCDatabase extends BasicDatabase {
                 ArrayList<Integer> sqlTypesList = new ArrayList<Integer>();
                 ArrayList<String> isNullableList = new ArrayList<String>();
                 ArrayList<String> defaultsList = new ArrayList<String>();
-                ArrayList<Boolean> isGeneratedList = new ArrayList<Boolean>();
+                ArrayList<String> isGeneratedList = new ArrayList<String>();
 
                 ResultSet rs = null;
                 DatabaseMetaData dbmd = null;
@@ -1669,7 +1669,7 @@ public class JDBCDatabase extends BasicDatabase {
                             columnScalesList.add(scale);
                         defaultsList.add(rs.getString("COLUMN_DEF"));
                         isNullableList.add(rs.getString("IS_NULLABLE"));
-                        isGeneratedList.add("YES".equals(rs.getString("IS_GENERATEDCOLUMN")));
+                        isGeneratedList.add(rs.getString("IS_GENERATEDCOLUMN"));
                         cols++;
                     }
                 } catch (SQLException e) {
@@ -1698,9 +1698,7 @@ public class JDBCDatabase extends BasicDatabase {
 
                 isNullable = isNullableList.toArray(new String[cols]);
                 defaults = defaultsList.toArray(new String[cols]);
-                isGenerated = new boolean[cols];
-                for (int i = 0; i < cols; i++)
-                    isGenerated[i] = isGeneratedList.get(i);
+                isGenerated = isGeneratedList.toArray(new String[cols]);
 
                 pk = JDBCDatabase.this.getPrimaryKey(qualifiedName);
                 fks = JDBCDatabase.this.getFK(qualifiedName, true);

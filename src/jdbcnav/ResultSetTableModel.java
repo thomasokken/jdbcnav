@@ -249,7 +249,7 @@ public class ResultSetTableModel extends AbstractTableModel
     }
 
     public synchronized boolean isCellEditable(int row, int column) {
-        if (!editable)
+        if (!editable || "YES".equals(dbTable.getIsGenerated()[column]))
             return false;
         int type = specs[column].type;
         return type != TypeSpec.LONGVARCHAR

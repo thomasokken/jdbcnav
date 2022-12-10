@@ -37,7 +37,7 @@ public abstract class BasicTable implements Table, Scriptable {
     protected TypeSpec[] typeSpecs;
     protected String[] isNullable;
     protected String[] defaults;
-    protected boolean[] isGenerated;
+    protected String[] isGenerated;
     protected PrimaryKey pk;
     protected ForeignKey[] fks;
     protected ForeignKey[] rks;
@@ -82,7 +82,7 @@ public abstract class BasicTable implements Table, Scriptable {
     public TypeSpec[] getTypeSpecs() { return typeSpecs; }
     public String[] getIsNullable() { return isNullable; }
     public String[] getDefaults() { return defaults; }
-    public boolean[] getIsGenerated() { return isGenerated; }
+    public String[] getIsGenerated() { return isGenerated; }
     public PrimaryKey getPrimaryKey() { return pk; }
     public ForeignKey[] getForeignKeys() { return fks; }
     public ForeignKey[] getReferencingKeys() { return rks; }

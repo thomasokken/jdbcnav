@@ -159,14 +159,14 @@ public class TableDetailsFrame extends MyFrame {
 
     private TableModel buildTableModel() {
         String[] names = new String[] { "#", "Name", "Type", "Size",
-                                "Scale", "Nulls", "Default", "SQL Type",
+                                "Scale", "Nulls", "Default", "Gen", "SQL Type",
                                 "Java Type" };
         Class<?>[] classes = new Class[] { Integer.class, String.class,
                                 String.class, Integer.class, Integer.class,
                                 String.class, String.class, String.class,
-                                String.class };
+                                String.class, String.class };
         int columns = dbTable.getColumnCount();
-        Object[][] data = new Object[columns][9];
+        Object[][] data = new Object[columns][10];
         for (int i = 0; i < columns; i++) {
             TypeSpec spec = dbTable.getTypeSpecs()[i];
             data[i][0] = i + 1;
@@ -176,8 +176,9 @@ public class TableDetailsFrame extends MyFrame {
             data[i][4] = spec.jdbcScale;
             data[i][5] = dbTable.getIsNullable()[i];
             data[i][6] = dbTable.getDefaults() == null ? null : dbTable.getDefaults()[i];
-            data[i][7] = MiscUtils.sqlTypeIntToString(spec.jdbcSqlType);
-            data[i][8] = spec.jdbcJavaType;
+            data[i][7] = dbTable.getIsGenerated()[i];
+            data[i][8] = MiscUtils.sqlTypeIntToString(spec.jdbcSqlType);
+            data[i][9] = spec.jdbcJavaType;
         }
         return new ArrayTableModel(names, classes, null, data);
     }
