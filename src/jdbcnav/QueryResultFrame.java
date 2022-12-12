@@ -47,7 +47,7 @@ public class QueryResultFrame extends MyFrame
     private JMenu progressMenu;
     private JMenuItem commitMI;
     private JMenuItem rollbackMI;
-    private JMenu editMenu;
+    //private JMenu editMenu;
     private JMenuItem cutMI;
     private JMenuItem cutRowsMI;
     private JMenuItem copyMI;
@@ -149,7 +149,7 @@ public class QueryResultFrame extends MyFrame
         m.add(mi);
         menubar.add(m);
 
-        editMenu = new JMenu("Edit");
+        JMenu editMenu = new JMenu("Edit");
         if (editable) {
             undoMI = new JMenuItem("Undo");
             undoMI.addActionListener(new ActionListener() {
@@ -232,6 +232,14 @@ public class QueryResultFrame extends MyFrame
                                 });
             mi.setAccelerator(KeyStroke.getKeyStroke('V', MiscUtils.SHIFT_MASK | MiscUtils.getMenuShortcutKeyMask()));
             editMenu.add(mi);
+            mi = new JMenuItem("Select All");
+            mi.addActionListener(new ActionListener() {
+                                    public void actionPerformed(ActionEvent e) {
+                                        selectAll();
+                                    }
+                                });
+            mi.setAccelerator(KeyStroke.getKeyStroke('A', MiscUtils.getMenuShortcutKeyMask()));
+            editMenu.add(mi);
             editMenu.addSeparator();
             mi = new JMenuItem("Insert Row");
             mi.addActionListener(new ActionListener() {
@@ -269,6 +277,14 @@ public class QueryResultFrame extends MyFrame
                                 KeyStroke.getKeyStroke('E', MiscUtils.getMenuShortcutKeyMask()));
             editMenu.add(editCellMI);
         } else {
+            mi = new JMenuItem("Select All");
+            mi.addActionListener(new ActionListener() {
+                                    public void actionPerformed(ActionEvent e) {
+                                        selectAll();
+                                    }
+                                });
+            mi.setAccelerator(KeyStroke.getKeyStroke('A', MiscUtils.getMenuShortcutKeyMask()));
+            editMenu.add(mi);
             editCellMI = new JMenuItem("View Cell");
             editCellMI.addActionListener(new ActionListener() {
                                     public void actionPerformed(ActionEvent e) {
@@ -280,7 +296,7 @@ public class QueryResultFrame extends MyFrame
                                 KeyStroke.getKeyStroke('E', MiscUtils.getMenuShortcutKeyMask()));
             editMenu.add(editCellMI);
         }
-        editMenu.setEnabled(editable);
+        //editMenu.setEnabled(editable);
         menubar.add(editMenu);
 
         progressMenu = new JMenu("0 rows");
@@ -918,6 +934,12 @@ public class QueryResultFrame extends MyFrame
         }
     }
 
+    private void selectAll() {
+        table.clearSelection();
+        table.addColumnSelectionInterval(0, table.getColumnCount() - 1);
+        table.addRowSelectionInterval(0, model.getRowCount() - 1);
+    }
+
     private void editCell() {
         int row = table.getSelectionModel().getAnchorSelectionIndex();
         int column = table.getColumnModel().getSelectionModel()
@@ -997,8 +1019,10 @@ public class QueryResultFrame extends MyFrame
         copyMI.setEnabled(rows.length > 0);
         copyRowsMI.setEnabled(rows.length > 0);
         editCellMI.setEnabled(haveSelection);
+        /*
         if (!editable)
             editMenu.setEnabled(haveSelection || rows.length > 0);
+        */
     }
 
     public void updateTitle() {
