@@ -1237,6 +1237,9 @@ public class JDBCDatabase extends BasicDatabase {
                             id = t.substring(0, dot);
                             t = t.substring(dot + 1);
                         }
+                        if (t.contains("("))
+                            // Don't allow functions
+                            break scanner;
                         if (firstCol) {
                             identifier = id;
                             firstCol = false;
