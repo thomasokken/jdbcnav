@@ -1163,6 +1163,15 @@ public class JDBCDatabase extends BasicDatabase {
         // No-op
     }
 
+    /**
+     * This method is defined so that subclasses can do db-specific magic to
+     * identify generated columns, for cases where they aren't identified by
+     * IS_GENERATEDCOLUMN.
+     */
+    protected void fixIsGenerated(TypeSpec[] specs, String[] isGenerated) {
+        // No-op
+    }
+
     private Object runQuery(String query, Object[] values, boolean asynchronous,
                            boolean allowTable) throws NavigatorException {
 
@@ -1704,6 +1713,7 @@ public class JDBCDatabase extends BasicDatabase {
                 isNullable = isNullableList.toArray(new String[cols]);
                 defaults = defaultsList.toArray(new String[cols]);
                 isGenerated = isGeneratedList.toArray(new String[cols]);
+                fixIsGenerated(typeSpecs, isGenerated);
 
                 pk = JDBCDatabase.this.getPrimaryKey(qualifiedName);
                 fks = JDBCDatabase.this.getFK(qualifiedName, true);

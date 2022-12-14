@@ -34,6 +34,15 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
 
     protected TypeSpec makeTypeSpec(String dbType, Integer size, Integer scale,
                                     int sqlType, String javaType) {
+
+        boolean isIdentity = false;
+        if (dbType.endsWith(" identity")) {
+            dbType = dbType.substring(0, dbType.length() - 9);
+            if (dbType.endsWith("()"))
+                dbType = dbType.substring(0, dbType.length() - 2);
+            isIdentity = true;
+        }
+
         TypeSpec spec = makeDefaultTypeSpec(dbType, size, scale, sqlType,
                                                                 javaType);
 
@@ -207,8 +216,16 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
             spec.native_representation = dbType + "(" + size + ")";
         else
             spec.native_representation = dbType + "(" + size + ", " + scale + ")";
+        if (isIdentity)
+            spec.native_representation += " identity";
 
         return spec;
+    }
+
+    protected void fixIsGenerated(TypeSpec[] typeSpecs, String[] isGenerated) {
+        for (int i = 0; i < typeSpecs.length; i++)
+            if (typeSpecs[i].native_representation.endsWith(" identity"))
+                isGenerated[i] = "YES";
     }
 
     protected Object db2nav(TypeSpec spec, Object o) {
