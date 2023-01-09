@@ -271,6 +271,9 @@ public class Main extends JFrame {
         addWindowListener(
                 new WindowAdapter() {
                     public void windowClosing(WindowEvent e) {
+                        AboutGlassPane about = (AboutGlassPane) getGlassPane();
+                        if (about != null)
+                            about.setVisible(false);
                         nuke();
                     }
                     public void windowOpened(WindowEvent e) {
