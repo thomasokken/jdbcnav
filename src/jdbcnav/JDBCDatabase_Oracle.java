@@ -324,9 +324,9 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
     private class OraclePartialTable extends PartialTable
                                                 implements HasStreamingInfo {
         private boolean[] needsStreaming;
-        public OraclePartialTable(String q, Table t, Data d)
+        public OraclePartialTable(String q, Object[] v, Table t, Data d)
                                                 throws NavigatorException {
-            super(q, t, d);
+            super(q, v, t, d);
             needsStreaming = makeNeedsStreaming(getCatalog(), getSchema(),
                                                 getName(), getColumnNames());
         }
@@ -340,9 +340,9 @@ public class JDBCDatabase_Oracle extends JDBCDatabase {
         return new OracleTable(qualifiedName);
     }
 
-    protected PartialTable newPartialTable(String q, Table t, Data d)
+    protected PartialTable newPartialTable(String q, Object[] v, Table t, Data d)
                                                 throws NavigatorException {
-        return new OraclePartialTable(q, t, d);
+        return new OraclePartialTable(q, v, t, d);
     }
 
     protected void setObject(PreparedStatement stmt, int index,

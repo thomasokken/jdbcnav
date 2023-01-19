@@ -287,9 +287,10 @@ public class JDBCDatabase extends BasicDatabase {
 
     protected class PartialTable extends BasicTable {
         private String query;
+        private Object[] values;
         private Data data;
 
-        public PartialTable(String query, Table t, Data data) {
+        public PartialTable(String query, Object[] values, Table t, Data data) {
             // We leave some fields unpopulated -- they should never be
             // needed because all we're going to be used for is to be
             // displayed in TableFrame, and Database.commitTables().
@@ -362,6 +363,7 @@ public class JDBCDatabase extends BasicDatabase {
 
             this.data = data;
             this.query = query;
+            this.values = values;
         }
 
         public boolean isEditable() {
@@ -384,8 +386,10 @@ public class JDBCDatabase extends BasicDatabase {
                 Data ret = data;
                 data = null;
                 return ret;
-            } else
+            } else if (values == null)
                 return (Data) runQuery(query, async, false);
+            else
+                return (Data) runQuery(query, values, async, false);
         }
     }
 
@@ -1035,9 +1039,9 @@ public class JDBCDatabase extends BasicDatabase {
      * PartialTable can provide their own factory, which will be used by
      * JDBCDatabase also.
      */
-    protected PartialTable newPartialTable(String q, Table t, Data d)
+    protected PartialTable newPartialTable(String q, Object[] v, Table t, Data d)
                                                     throws NavigatorException {
-        return new PartialTable(q, t, d);
+        return new PartialTable(q, v, t, d);
     }
 
     /**
@@ -1446,7 +1450,7 @@ public class JDBCDatabase extends BasicDatabase {
                 s = null;
                 rs = null;
                 if (allowTable && table != null)
-                    return newPartialTable(query, table, bld);
+                    return newPartialTable(query, values, table, bld);
                 else
                     return bld;
             }
@@ -1473,7 +1477,7 @@ public class JDBCDatabase extends BasicDatabase {
             bd.setData(data);
 
             if (allowTable && table != null)
-                return newPartialTable(query, table, bd);
+                return newPartialTable(query, values, table, bd);
             else
                 return bd;
         } catch (SQLException e) {
