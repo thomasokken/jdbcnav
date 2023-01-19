@@ -1,3 +1,12 @@
+2023-01-19: build 2731
+*) Fixed Reload for PartialTables created by FK chasing.
+*) Prevent PartialTable in query with functions.
+*) Added Select All option to QueryResultFrame.
+*) Added logic to identify 'identity' columns for MS SQL
+*) Fixed conflict between exit confirmation dialog and About box, that would
+cause the app to get stuck if the former appeared while the latter happened to
+be visible.
+
 2022-12-10: build 2730
 *) Added shortcuts: Ctrl-L for Reload and Ctrl-Shift-R for Reconnect.
 *) Foreign key following: now offers choice between showing the full referenced
