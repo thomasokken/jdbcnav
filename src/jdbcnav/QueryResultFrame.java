@@ -765,7 +765,19 @@ public class QueryResultFrame extends MyFrame
                 for (int c = 0; c < selColumns.length; c++) {
                     int column = selColumns[c];
                     column = table.convertColumnIndexToModel(column);
-                    buf.append(model.getValueAt(row, column));
+                    Object cell = model.getValueAt(row, column);
+                    if (cell == null) {
+                        buf.append("null");
+                    } else {
+                        String text = String.valueOf(cell);
+                        if (text.contains("\"") || text.contains("\r") || text.contains("\n") || text.contains("\t")) {
+                            buf.append('"');
+                            buf.append(text.replace("\"", "\"\""));
+                            buf.append('"');
+                        } else {
+                            buf.append(text);
+                        }
+                    }
                     if (c < selColumns.length - 1)
                         buf.append('\t');
                 }
@@ -863,6 +875,10 @@ public class QueryResultFrame extends MyFrame
         List<List<String>> list = new ArrayList<List<String>>();
         List<String> row = new ArrayList<String>();
         int columns = 0;
+        // TODO: If the hack in copyCell() -- to enclose a cell value in double quotes if it contains
+        // double quotes, tabs, carriage returns, or line feeds -- turns out to work as intended with
+        // Excel (only tested with LibreOffice so far), then the reverse transformation should be
+        // applied here.
         boolean prevWasSeparator = true;
         for (StringTokenizer tok = new StringTokenizer(text, "\n\t", true); tok.hasMoreTokens();) {
             String t = tok.nextToken();
