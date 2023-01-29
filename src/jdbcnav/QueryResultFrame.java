@@ -866,44 +866,105 @@ public class QueryResultFrame extends MyFrame
             Toolkit.getDefaultToolkit().beep();
             return;
         }
+        String text = (String) clipdata;
+        if (text.length() == 0) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
         int targetRow = table.getSelectionModel().getAnchorSelectionIndex();
         int targetColumn = table.getColumnModel().getSelectionModel()
                         .getAnchorSelectionIndex();
-        if (targetRow == -1 || targetColumn == -1)
+        if (targetRow == -1 || targetColumn == -1) {
             Toolkit.getDefaultToolkit().beep();
-        String text = (String) clipdata;
+            return;
+        }
+        
         List<List<String>> list = new ArrayList<List<String>>();
         List<String> row = new ArrayList<String>();
-        int columns = 0;
-        // TODO: If the hack in copyCell() -- to enclose a cell value in double quotes if it contains
-        // double quotes, tabs, carriage returns, or line feeds -- turns out to work as intended with
-        // Excel (only tested with LibreOffice so far), then the reverse transformation should be
-        // applied here.
-        boolean prevWasSeparator = true;
-        for (StringTokenizer tok = new StringTokenizer(text, "\n\t", true); tok.hasMoreTokens();) {
-            String t = tok.nextToken();
-            if (t.equals("\n")) {
-                if (prevWasSeparator)
-                    row.add("");
-                list.add(row);
-                if (row.size() > columns)
-                    columns = row.size();
-                row = new ArrayList<String>();
-                prevWasSeparator = true;
-            } else if (t.equals("\t")) {
-                if (prevWasSeparator)
-                    row.add("");
-                prevWasSeparator = true;
+        int pos = 0, len = text.length();
+        boolean eof = false;
+        
+        while (!eof) {
+            if (text.charAt(pos) != '"') {
+                // unquoted cell
+                // get characters until the next TAB, CR, LF, or EOF
+                int start = pos;
+                while (true) {
+                    if (pos == len) {
+                        eof = true;
+                        break;
+                    }
+                    char c = text.charAt(pos);
+                    if (c == '\t' || c == '\r' || c == '\n')
+                        break;
+                    pos++;
+                }
+                row.add(text.substring(start, pos));
             } else {
-                row.add(t);
-                prevWasSeparator = false;
+                // quoted cell
+                // get characters until the first non-duplicated " character or EOF
+                StringBuffer buf = new StringBuffer();
+                pos++;
+                while (true) {
+                    if (pos == len) {
+                        eof = true;
+                        break;
+                    }
+                    char c = text.charAt(pos++);
+                    if (c == '"') {
+                        if (pos == len) {
+                            eof = true;
+                            break;
+                        } else if (text.charAt(pos) == '"')
+                            pos++;
+                        else
+                            break;
+                    }
+                    buf.append(c);
+                }
+                row.add(buf.toString());
+                // Note that there shouldn't be anything here, immediately following the
+                // closing quote of a quoted cell, other than TAB, CR, LF, or EOF, but we
+                // don't enforce this, so if there is anything else, it'll end up being
+                // treated like the next cell.
+            }
+            if (eof)
+                break;
+            while (true) {
+                if (pos == len) {
+                    eof = true;
+                    break;
+                }
+                char c = text.charAt(pos);
+                if (c == '\r') {
+                    c = '\n';
+                    if (pos + 1 < len && text.charAt(pos + 1) == '\n')
+                        pos++;
+                }
+                if (c == '\n') {
+                    pos++;
+                    list.add(row);
+                    row = new ArrayList<String>();
+                } else if (c == '\t') {
+                    pos++;
+                    if (pos < len && (c = text.charAt(pos)) != '\r' && c != '\n' && c != '\t')
+                        break;
+                    row.add("");
+                } else
+                    break;
             }
         }
-        if (prevWasSeparator)
-            row.add("");
-        list.add(row);
-        if (row.size() > columns)
-            columns = row.size();
+
+        if (row.size() > 0)
+            list.add(row);
+        int columns = 0;
+        for (List<String> row2 : list) {
+            int width = row2.size();
+            if (width > columns)
+                columns = width;
+        }
+        
         int rows = list.size();
         String[][] array = new String[rows][columns];
         int r = 0;
@@ -915,7 +976,7 @@ public class QueryResultFrame extends MyFrame
         }
         int[] targetColumns = new int[columns];
         for (int c = 0; c < columns; c++)
-            targetColumns[c] = table.convertColumnIndexToModel(c);
+            targetColumns[c] = table.convertColumnIndexToModel(c + targetColumn);
         table.cancelEditing();
         model.setValuesAt(array, targetRow, targetColumns, "Paste TSV");
     }
