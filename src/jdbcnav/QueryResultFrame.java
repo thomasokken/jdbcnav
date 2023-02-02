@@ -958,14 +958,22 @@ public class QueryResultFrame extends MyFrame
 
         if (row.size() > 0)
             list.add(row);
+
+        int rows = list.size();
+        int availRows = model.getRowCount() - targetRow;
+        while (rows > availRows)
+            list.remove(--rows);
+
         int columns = 0;
+        int availColumns = model.getColumnCount() - targetColumn;
         for (List<String> row2 : list) {
             int width = row2.size();
+            while (width > availColumns)
+                row2.remove(--width);
             if (width > columns)
                 columns = width;
         }
         
-        int rows = list.size();
         String[][] array = new String[rows][columns];
         int r = 0;
         for (List<String> ar : list) {
