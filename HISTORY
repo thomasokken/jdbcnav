@@ -1,3 +1,9 @@
+2023-02-04: build 2732
+*) Handle line breaks and tabs in cells when copying and pasting TSV. Cells
+containing any of \r \n \t " are enclosed in double quotes, and any double
+quotes are doubled. This way of escaping is compatible with Microsoft Office
+and LibreOffice, and hopefully with other spreadsheets as well.
+
 2023-01-19: build 2731
 *) Fixed Reload for PartialTables created by FK chasing.
 *) Prevent PartialTable in query with functions.
