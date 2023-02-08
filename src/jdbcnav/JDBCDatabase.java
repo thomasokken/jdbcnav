@@ -24,6 +24,8 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.sql.*;
 import java.util.*;
+import java.util.List;
+
 import javax.swing.*;
 import org.mozilla.javascript.*;
 
@@ -1193,6 +1195,19 @@ public class JDBCDatabase extends BasicDatabase {
      */
     protected void fixIsGenerated(TypeSpec[] specs, String[] isGenerated) {
         // No-op
+    }
+
+    public void searchTables(List<String> qualifiedNames, String searchText) throws NavigatorException {
+        SearchResultsFrame srf = new SearchResultsFrame(this, qualifiedNames, searchText);
+        srf.setParent(browser);
+        srf.showStaggered();
+    }
+
+    public int searchTable(String qualifiedName, String searchText) throws NavigatorException {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {}
+        return 12;
     }
 
     private Object runQuery(String query, Object[] values, boolean asynchronous,

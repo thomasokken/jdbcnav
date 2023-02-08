@@ -69,6 +69,10 @@ public interface Database {
     Collection<Table> getDirtyTables();
     void commitTables(Collection<Table> tables) throws NavigatorException;
     Collection<Table> getSelectedTables() throws NavigatorException;
+    
+    // Search a collection of tables
+    void searchTables(List<String> qualifiedNames, String searchText) throws NavigatorException;
+    int searchTable(String qualifiedName, String searchText) throws NavigatorException;
 
     // runQuery() may return either a Data object or a Table, depending on
     // whether or not the output from the query represents an updatable view

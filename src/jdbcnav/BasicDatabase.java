@@ -57,6 +57,7 @@ public abstract class BasicDatabase implements Database {
         return new String[] {
             "Edit",
             "Details",
+            "Search Tables...",
             "-",
             "Generate Script...",
             "Duplicate",
@@ -77,18 +78,21 @@ public abstract class BasicDatabase implements Database {
                 details();
                 break;
             case 2:
-                generateScript();
+                searchTables();
                 break;
             case 3:
-                duplicate();
+                generateScript();
                 break;
             case 4:
-                removeOrphans();
+                duplicate();
                 break;
             case 5:
-                clearCache();
+                removeOrphans();
                 break;
             case 6:
+                clearCache();
+                break;
+            case 7:
                 reloadTree();
                 break;
         }
@@ -148,6 +152,41 @@ public abstract class BasicDatabase implements Database {
                 }
             }
         }
+    }
+    
+    private void searchTables() {
+        SearchTablesDialog.Callback cb = new SearchTablesDialog.Callback() {
+            public void invoke(String searchText) {
+                searchTables2(searchText);
+            }
+        };
+        SearchTablesDialog std = new SearchTablesDialog(browser, cb);
+        std.showCentered();
+    }
+    
+    private void searchTables2(String searchText) {
+        Collection<BrowserNode> selection = browser.getSelectedNodes();
+        List<String> tables = new ArrayList<String>();
+        for (BrowserNode bn : selection) {
+            if (!(bn instanceof MyNode))
+                continue;
+            MyNode n = (MyNode) bn;
+            if (!n.isLeaf())
+                continue;
+            MyNode target;
+            if ((target = n.getTarget()) != null)
+                n = target;
+            tables.add(n.qualifiedName);
+        }
+        if (!tables.isEmpty()) 
+            try {
+                Main.backgroundJobStarted();
+                searchTables(tables, searchText);
+            } catch (NavigatorException e) {
+                MessageBox.show("Search Tables failed", e);
+            } finally {
+                Main.backgroundJobEnded();
+            }
     }
 
     private void generateScript() {
