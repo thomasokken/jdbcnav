@@ -59,6 +59,8 @@ public class SearchResultsFrame extends MyFrame {
                 }
                 if (noHits)
                     html.append("No matching rows found.");
+                else
+                    html.append("Done.");
                 setHtml(html + "</font></body></html>");
             } catch (NavigatorException e) {
                 // TODO: Show message box?
@@ -75,6 +77,7 @@ public class SearchResultsFrame extends MyFrame {
         }
         public void run() {
             SearchResultsFrame.this.editor.setText(html);
+            SearchResultsFrame.this.pack();
         }
     }
     
