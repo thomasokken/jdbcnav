@@ -73,6 +73,7 @@ public interface Database {
     // Search a collection of tables
     void searchTables(List<String> qualifiedNames, String searchText) throws NavigatorException;
     int searchTable(String qualifiedName, String searchText) throws NavigatorException;
+    void runSearch(String qualifiedName, String searchText);
 
     // runQuery() may return either a Data object or a Table, depending on
     // whether or not the output from the query represents an updatable view

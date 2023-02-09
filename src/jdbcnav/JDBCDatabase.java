@@ -1252,6 +1252,44 @@ public class JDBCDatabase extends BasicDatabase {
                 } catch (SQLException e) {}
         }
     }
+    
+    public void runSearch(String qualifiedName, String searchText) {
+        try {
+            Table table = getTable(qualifiedName);
+            StringBuffer query = new StringBuffer();
+            List<Object> args = new ArrayList<Object>();
+            query.append("select * from " + table.getQualifiedName() + " where ");
+            boolean first = true;
+            for (int i = 0; i < table.getColumnCount(); i++) {
+                TypeSpec spec = table.getTypeSpecs()[i];
+                Object value;
+                try {
+                    value = spec.stringToObject(searchText);
+                    value = nav2db(spec, value);
+                } catch (Exception e) {
+                    continue;
+                }
+                if (first)
+                    first = false;
+                else
+                    query.append(" or ");
+                query.append(quote(table.getColumnNames()[i]));
+                if (value instanceof String)
+                    query.append(" like ?");
+                else
+                    query.append(" = ?");
+                args.add(value);
+            }
+            Object[] argsArray = args.toArray(new Object[args.size()]);
+            table = (Table) runQuery(query.toString(), argsArray);
+            TableFrame tf = new TableFrame(table, browser);
+            tf.setParent(browser);
+            tf.showStaggered();
+        } catch (Exception e) {
+            MessageBox.show(e);
+            return;
+        }
+    }
 
     private Object runQuery(String query, Object[] values, boolean asynchronous,
                            boolean allowTable) throws NavigatorException {

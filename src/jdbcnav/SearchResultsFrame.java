@@ -19,13 +19,12 @@
 package jdbcnav;
 
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.table.*;
 
 import jdbcnav.model.*;
 import jdbcnav.util.*;
@@ -53,7 +52,8 @@ public class SearchResultsFrame extends MyFrame {
                     setHtml(html + "Searching " + qn + "...\n</font></body></html>");
                     int c = db.searchTable(qn, searchText);
                     if (c > 0) {
-                        html.append(qn + ": " + c + " matching " + (c == 1 ? "row" : "rows") + "<br>\n");
+                        html.append(qe(qn) + ": <a href=\"q." + qu(qn) + "\">" + c + " matching " + (c == 1 ? "row" : "rows")
+                                + "</a> (<a href=\"t." + qu(qn) + "\">table</a>)<br>\n");
                         noHits = false;
                     }
                 }
@@ -134,272 +134,22 @@ public class SearchResultsFrame extends MyFrame {
         super.dispose();
     }
 
-    /*
-    private String buildHtmlDetails() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("<html><body><font face='lucida' size='2'>\n");
-        buf.append("<b><a name='top'>Table</a>: <a href='table'>");
-        buf.append(q(dbTable.getQualifiedName()) + "</a></b>\n");
-        buf.append("<p>\n");
-
-        String remarks = dbTable.getRemarks();
-        if (remarks != null && !remarks.equals("")) {
-            buf.append("Remarks:\n");
-            buf.append("<p>\n");
-            // The following is my Poor Man's <pre> tag.
-            // JEditorPane does support <pre>, but I think it looks awful:
-            // the fixed-width font is too big, and after the </pre> tag
-            // it does not switch back to the font that was in effect before
-            // the <pre> tag. Ugh. Never mind!
-            StringTokenizer tok = new StringTokenizer(remarks, " \t\n\r", true);
-            int pos = 0;
-            while (tok.hasMoreTokens()) {
-                String t = tok.nextToken();
-                if (t.equals(" ")) {
-                    pos++;
-                    if (pos > 64) {
-                        buf.append("\n<br>\n");
-                        pos = 0;
-                    } else
-                        buf.append("&nbsp;");
-                } else if (t.equals("\t")) {
-                    int sp = 8 - pos % 8;
-                    pos += sp;
-                    if (pos > 64) {
-                        buf.append("\n<br>\n");
-                        pos = 0;
-                    } else {
-                        while (sp-- > 0)
-                            buf.append("&nbsp;");
-                    }
-                } else if (t.equals("\n") || t.equals("\r")) {
-                    buf.append("\n<br>\n");
-                    pos = 0;
-                } else {
-                    if (pos + t.length() > 64) {
-                        buf.append("\n<br>\n");
-                        pos = 0;
-                    }
-                    buf.append(q(t));
-                    pos += t.length();
-                }
-            }
-            buf.append("\n<p>\n");
-        }
-
-        if (pk != null) {
-            buf.append("Primary Key:\n");
-            buf.append("<ul>\n");
-            if (pk.getName() != null)
-                buf.append("<li>Name: <a href='pk'>"
-                            + q(pk.getName()) + "</a>\n");
-            buf.append("<li>Columns: ");
-            for (int i = 0; i < pk.getColumnCount(); i++) {
-                if (i != 0)
-                    buf.append(", ");
-                buf.append("<a href='pk." + i + "'>"
-                            + q(pk.getColumnName(i)) + "</a>");
-            }
-            buf.append("\n");
-            for (int i = 0; i < rks.length; i++) {
-                ForeignKey rk = rks[i];
-                buf.append("<li type='square'><b>Referenced by: "
-                            + "<a href='rtable." + i + "'>");
-                buf.append(q(rk.getThatQualifiedName()) + "</a></b>\n");
-                if (rk.getThatKeyName() != null)
-                    buf.append("<li type='circle'>Name: <a href='rk." + i
-                                + "'>" + q(rk.getThatKeyName()) + "</a>\n");
-                buf.append("<li type='circle'>Columns: ");
-                for (int j = 0; j < rk.getColumnCount(); j++) {
-                    if (j != 0)
-                        buf.append(", ");
-                    buf.append("<a href='rk." + i + "." + j
-                                + "'>" + q(rk.getThatColumnName(j))
-                                + "</a>");
-                }
-                buf.append("\n");
-                buf.append("<li type='circle'>On update: "
-                            + q(rk.getUpdateRule()) + "\n");
-                buf.append("<li type='circle'>On delete: "
-                            + q(rk.getDeleteRule()) + "\n");
-            }
-            buf.append("</ul>\n");
-        }
-
-        for (int i = 0; i < fks.length; i++) {
-            ForeignKey fk = fks[i];
-            buf.append("Foreign Key:\n");
-            buf.append("<ul>\n");
-            if (fk.getThisKeyName() != null)
-                buf.append("<li>Name: <a href='fk." + i
-                            + "'>" + q(fk.getThisKeyName()) + "</a>\n");
-            buf.append("<li>Columns: ");
-            for (int j = 0; j < fk.getColumnCount(); j++) {
-                if (j != 0)
-                    buf.append(", ");
-                buf.append("<a href='fk." + i + "." + j
-                            + "'>" + q(fk.getThisColumnName(j)) + "</a>");
-            }
-            buf.append("\n");
-            buf.append("<li type='square'><b>References: "
-                        + "<a href='table." + i + "'>");
-            buf.append(q(fk.getThatQualifiedName()) + "</a></b>\n");
-            if (fk.getThatKeyName() != null)
-                buf.append("<li type='circle'>Name: <a href='ref." + i
-                            + "'>" + q(fk.getThatKeyName()) + "</a>\n");
-            buf.append("<li type='circle'>Columns: ");
-            for (int j = 0; j < fk.getColumnCount(); j++) {
-                if (j != 0)
-                    buf.append(", ");
-                buf.append("<a href='ref." + i + "." + j
-                            + "'>" + q(fk.getThatColumnName(j)) + "</a>");
-            }
-            buf.append("\n");
-            buf.append("<li type='circle'>On update: "
-                        + q(fk.getUpdateRule()) + "\n");
-            buf.append("<li type='circle'>On delete: "
-                        + q(fk.getDeleteRule()) + "\n");
-            buf.append("</ul>\n");
-        }
-
-        for (int i = 0; i < indexes.length; i++) {
-            Index index = indexes[i];
-            buf.append("Index:\n");
-            buf.append("<ul>\n");
-            buf.append("<li>Name: <a href='index." + i
-                        + "'>" + q(index.getName()) + "</a>\n");
-            buf.append("<li>Columns: ");
-            for (int j = 0; j < index.getColumnCount(); j++) {
-                if (j != 0)
-                    buf.append(", ");
-                buf.append("<a href='index." + i + "." + j
-                            + "'>" + q(index.getColumnName(j)) + "</a>");
-            }
-            buf.append("\n");
-            buf.append("<li type='circle'>" + (index.isUnique() ? "Unique"
-                        : "Non-Unique") + "\n");
-            buf.append("</ul>\n");
-        }
-
-        buf.append("</font></body></html>");
-        return buf.toString();
-    }
-
     private void linkActivated(String link) {
-        String what;
-        int arg1 = -1;
-        int arg2 = -1;
-        StringTokenizer tok = new StringTokenizer(link, ".");
-        what = tok.nextToken();
-        if (tok.hasMoreTokens()) {
-            arg1 = Integer.parseInt(tok.nextToken());
-            if (tok.hasMoreTokens())
-                arg2 = Integer.parseInt(tok.nextToken());
-        }
-
-        if (what.equals("pk")) {
-            if (pk != null)
-                if (arg1 == -1) {
-                    int n = pk.getColumnCount();
-                    String[] colnames = new String[n];
-                    for (int i = 0; i < n; i++)
-                        colnames[i] = pk.getColumnName(i);
-                    selectRows(colnames);
-                } else
-                    selectRows(pk.getColumnName(arg1));
-        } else if (what.equals("table")) {
-            if (arg1 == -1) {
-                String qname = dbTable.getQualifiedName();
-                dbTable.getDatabase().showTableFrame(qname);
-            } else if (arg1 < fks.length) {
-                String qname = fks[arg1].getThatQualifiedName();
-                dbTable.getDatabase().showTableFrame(qname);
-            }
-        } else if (what.equals("rtable")) {
-            if (arg1 < rks.length) {
-                String qname = rks[arg1].getThatQualifiedName();
-                dbTable.getDatabase().showTableFrame(qname);
-            }
-        } else if (what.equals("fk")) {
-            if (arg1 < fks.length)
-                if (arg2 == -1) {
-                    int n = fks[arg1].getColumnCount();
-                    String[] cols = new String[n];
-                    for (int i = 0; i < n; i++)
-                        cols[i] = fks[arg1].getThisColumnName(i);
-                    selectRows(cols);
-                } else if (arg2 < fks[arg1].getColumnCount())
-                    selectRows(fks[arg1].getThisColumnName(arg2));
-        } else if (what.equals("ref")) {
-            String qname = fks[arg1].getThatQualifiedName();
-            TableDetailsFrame tdf = dbTable.getDatabase()
-                                           .showTableDetailsFrame(qname);
-            if (tdf != null) {
-                if (arg1 < fks.length)
-                    if (arg2 == -1) {
-                        int n = fks[arg1].getColumnCount();
-                        String[] cols = new String[n];
-                        for (int i = 0; i < n; i++)
-                            cols[i] = fks[arg1].getThatColumnName(i);
-                        tdf.selectRows(cols);
-                    } else if (arg2 < fks[arg1].getColumnCount())
-                        tdf.selectRows(fks[arg1].getThatColumnName(arg2));
-            }
-        } else if (what.equals("rk")) {
-            String qname = rks[arg1].getThatQualifiedName();
-            TableDetailsFrame tdf = dbTable.getDatabase()
-                                           .showTableDetailsFrame(qname);
-            if (tdf != null) {
-                if (arg1 < rks.length)
-                    if (arg2 == -1) {
-                        int n = rks[arg1].getColumnCount();
-                        String[] cols = new String[n];
-                        for (int i = 0; i < n; i++)
-                            cols[i] = rks[arg1].getThatColumnName(i);
-                        tdf.selectRows(cols);
-                    } else if (arg2 < rks[arg1].getColumnCount())
-                        tdf.selectRows(rks[arg1].getThatColumnName(arg2));
-            }
-        } else if (what.equals("index")) {
-            if (arg1 < indexes.length)
-                if (arg2 == -1) {
-                    int n = indexes[arg1].getColumnCount();
-                    String[] cols = new String[n];
-                    for (int i = 0; i < n; i++)
-                        cols[i] = indexes[arg1].getColumnName(i);
-                    selectRows(cols);
-                } else if (arg2 < indexes[arg1].getColumnCount())
-                    selectRows(indexes[arg1].getColumnName(arg2));
-        }
-    }
-    
-    private void editTable() {
-        dbTable.getDatabase().showTableFrame(dbTable.getQualifiedName());
+        // TODO: Get whole table with matching rows selected if URL starts with "t."
+        link = link.substring(2);
+        db.runSearch(link, searchText);
     }
 
-    private void selectRows(String name) {
-        selectRows(new String[] { name });
-    }
-
-    private void selectRows(String[] names) {
-        table.clearSelection();
-        table.addColumnSelectionInterval(0, table.getColumnCount() - 1);
-        TableModel tm = table.getModel();
-        int rows = tm.getRowCount();
-        for (int i = 0; i < names.length; i++) {
-            String name = names[i];
-            for (int j = 0; j < rows; j++)
-                if (tm.getValueAt(j, 1).equals(name))
-                    table.addRowSelectionInterval(j, j);
-        }
-    }
-
-    private static String q(String s) {
+    private static String qe(String s) {
         return FileUtils.encodeEntities(s);
     }
-    */
     
-    private void linkActivated(String link) {
-        // See above
+    private static String qu(String s) {
+        try {
+            return URLEncoder.encode(s, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            // Won't happen
+            return "";
+        }
     }
 }

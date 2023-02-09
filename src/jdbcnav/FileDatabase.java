@@ -172,6 +172,10 @@ public class FileDatabase extends BasicDatabase {
              + "capable of searching tables.");
     }
         
+    public void runSearch(String qualifiedName, String searchText) {
+        //
+    }
+        
     public Object runQuery(String query, boolean asynchronous,
                            boolean allowTable) throws NavigatorException {
         throw new NavigatorException("File Data Source is not "
