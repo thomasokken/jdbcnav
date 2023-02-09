@@ -128,6 +128,9 @@ public class DateTime implements Comparable<DateTime> {
                 tzname.append(p);
             }
         }
+        if (!haveDate && !haveTime)
+            throw new IllegalArgumentException(
+                    "Malformed DateTime (" + s + ")");
         if (tzname.length() > 0) {
             String n = tzname.toString();
             if (n.startsWith("GMT+") || n.startsWith("GMT-"))

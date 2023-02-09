@@ -1204,10 +1204,53 @@ public class JDBCDatabase extends BasicDatabase {
     }
 
     public int searchTable(String qualifiedName, String searchText) throws NavigatorException {
+        Table table = getTable(qualifiedName);
+        StringBuffer query = new StringBuffer();
+        List<Object> args = new ArrayList<Object>();
+        query.append("select count(*) from " + table.getQualifiedName() + " where ");
+        boolean first = true;
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            TypeSpec spec = table.getTypeSpecs()[i];
+            Object value;
+            try {
+                value = spec.stringToObject(searchText);
+                value = nav2db(spec, value);
+            } catch (Exception e) {
+                continue;
+            }
+            if (first)
+                first = false;
+            else
+                query.append(" or ");
+            query.append(quote(table.getColumnNames()[i]));
+            if (value instanceof String)
+                query.append(" like ?");
+            else
+                query.append(" = ?");
+            args.add(value);
+        }
+        if (args.isEmpty())
+            return 0;
+        PreparedStatement stmt = null;
         try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {}
-        return 12;
+            stmt = con.prepareStatement(query.toString());
+            int idx = 1;
+            for (Object o : args)
+                if (o instanceof String)
+                    stmt.setString(idx++, "%" + o + "%");
+                else
+                    stmt.setObject(idx++, o);
+            ResultSet rs = stmt.executeQuery();
+            rs.next();
+            return rs.getInt(1);
+        } catch (SQLException e) {
+            throw new NavigatorException("Search Table failed", e);
+        } finally {
+            if (stmt != null)
+                try {
+                    stmt.close();
+                } catch (SQLException e) {}
+        }
     }
 
     private Object runQuery(String query, Object[] values, boolean asynchronous,
