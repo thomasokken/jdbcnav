@@ -135,9 +135,14 @@ public class SearchResultsFrame extends MyFrame {
     }
 
     private void linkActivated(String link) {
-        // TODO: Get whole table with matching rows selected if URL starts with "t."
-        link = link.substring(2);
-        db.runSearch(link, searchText);
+        String qualifiedName = link.substring(2);
+        if (link.startsWith("q.")) {
+            db.runSearch(qualifiedName, searchText);
+        } else {
+            TableFrame editFrame = db.showTableFrame(qualifiedName);
+            if (editFrame != null)
+                editFrame.selectRowsForSearch(searchText);
+        }
     }
 
     private static String qe(String s) {

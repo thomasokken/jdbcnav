@@ -94,6 +94,9 @@ public interface Database {
     String unquote(String s);
     String makeQualifiedName(String catalog, String schema, String name);
     String[] parseQualifiedName(String qualifiedName);
+    
+    // Case sensitivity of text types
+    boolean isCaseSensitive();
 
     // TypeSpec support
     String objectToString(TypeSpec spec, Object o);

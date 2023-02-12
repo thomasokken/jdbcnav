@@ -44,6 +44,7 @@ public class JDBCDatabase extends BasicDatabase {
     private String password;
     protected Connection con;
     private ArrayList<Table> editedTables = new ArrayList<Table>();
+    private boolean caseSensitive = true;
 
 
     public static void open(Database.OpenCallback opencb) {
@@ -54,6 +55,25 @@ public class JDBCDatabase extends BasicDatabase {
         this.name = name;
         this.internalDriverName = driver;
         this.con = con;
+        
+        ResultSet rs = null;
+        try {
+            DatabaseMetaData dbmd = con.getMetaData();
+            rs = dbmd.getTypeInfo();
+            while (rs.next()) {
+                if (rs.getInt("DATA_TYPE") == Types.CHAR) {
+                    caseSensitive = rs.getBoolean("CASE_SENSITIVE");
+                    break;
+                }
+            }
+        } catch (SQLException e) {
+            //
+        } finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException e) {}
+        }
     }
 
     private static JDBCDatabase create(String driver, String url, String username,
@@ -673,6 +693,10 @@ public class JDBCDatabase extends BasicDatabase {
         }
         return tables;
     }
+    
+    public boolean isCaseSensitive() {
+        return caseSensitive;
+    }
 
     public Table loadTable(String qualifiedName) throws NavigatorException {
         return newJDBCTable(qualifiedName);
@@ -1223,11 +1247,13 @@ public class JDBCDatabase extends BasicDatabase {
             else
                 query.append(" or ");
             query.append(quote(table.getColumnNames()[i]));
-            if (value instanceof String)
+            if (value instanceof String) {
                 query.append(" like ?");
-            else
+                args.add("%" + value + "%");
+            } else {
                 query.append(" = ?");
-            args.add(value);
+                args.add(value);
+            }
         }
         if (args.isEmpty())
             return 0;
@@ -1236,10 +1262,7 @@ public class JDBCDatabase extends BasicDatabase {
             stmt = con.prepareStatement(query.toString());
             int idx = 1;
             for (Object o : args)
-                if (o instanceof String)
-                    stmt.setString(idx++, "%" + o + "%");
-                else
-                    stmt.setObject(idx++, o);
+                stmt.setObject(idx++, o);
             ResultSet rs = stmt.executeQuery();
             rs.next();
             return rs.getInt(1);
@@ -1274,11 +1297,13 @@ public class JDBCDatabase extends BasicDatabase {
                 else
                     query.append(" or ");
                 query.append(quote(table.getColumnNames()[i]));
-                if (value instanceof String)
+                if (value instanceof String) {
                     query.append(" like ?");
-                else
+                    args.add("%" + value + "%");
+                } else {
                     query.append(" = ?");
-                args.add(value);
+                    args.add(value);
+                }
             }
             Object[] argsArray = args.toArray(new Object[args.size()]);
             table = (Table) runQuery(query.toString(), argsArray);

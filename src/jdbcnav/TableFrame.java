@@ -420,21 +420,102 @@ public class TableFrame extends QueryResultFrame {
             return;
         }
 
-        rowSelectionHandler = new RowSelectionHandler(keyIndex, value);
+        rowSelectionHandler = new RowSelectionHandlerForKey(keyIndex, value);
+    }
+    
+    public void selectRowsForSearch(String searchText) {
+        try {
+            rowSelectionHandler.finish();
+        } catch (NullPointerException e) {
+            // Guess we didn't have an active RowSelectionHandler, then.
+            // Note: I don't do the usual thing of simply testing for 'null'
+            // before dereferencing 'rowSelectionHandler', because there is
+            // a race condition there (RowSelectionHandler.finish(), which
+            // sets 'rowSelectionHandler' to null, can get called between the
+            // test and the dereference, since it can get called from the
+            // background thread that loads table data asynchronously).
+            // We could avoid the race condition by using a lock, but this
+            // was easier. :-)
+        }
+
+        rowSelectionHandler = new RowSelectionHandlerForSearch(searchText);
     }
 
-    private class RowSelectionHandler implements Data.StateListener,
+    private class RowSelectionHandlerForKey extends RowSelectionHandler {
+        private int[] keyIndex;
+        private Object[] keyValue;
+
+        public RowSelectionHandlerForKey(int[] keyIndex, Object[] keyValue) {
+            this.keyIndex = keyIndex;
+            this.keyValue = keyValue;
+            init();
+        }
+        
+        protected boolean matches(int row) {
+            for (int j = 0; j < keyIndex.length; j++) {
+                Object o1 = keyValue[j];
+                Object o2 = model.getValueAt(row, keyIndex[j]);
+                if (o1 == null ? o2 != null : !o1.equals(o2))
+                    return false;
+            }
+            return true;
+        }
+    }
+    
+    private class RowSelectionHandlerForSearch extends RowSelectionHandler {
+        private Object[] obj;
+        private boolean caseInsensitive;
+        
+        public RowSelectionHandlerForSearch(String searchText) {
+            caseInsensitive = dbTable.getDatabase().isCaseSensitive();
+            int cols = model.getColumnCount();
+            obj = new Object[cols];
+            for (int c = 0; c < cols; c++) {
+                TypeSpec spec = dbTable.getTypeSpecs()[c];
+                try {
+                    obj[c] = spec.stringToObject(searchText);
+                } catch (Exception e) {}
+            }
+
+            init();
+        }
+        
+        protected boolean matches(int row) {
+            for (int c = 0; c < obj.length; c++) {
+                Object so = obj[c];
+                if (so == null)
+                    continue;
+                Object to = model.getValueAt(row, c);
+                if (so instanceof String) {
+                    if (!(to instanceof String))
+                        continue;
+                    String s, t;
+                    if (caseInsensitive) {
+                        s = ((String) so).toLowerCase();
+                        t = ((String) to).toLowerCase();
+                    } else {
+                        s = (String) so;
+                        t = (String) to;
+                    }
+                    if (t.contains(s))
+                        return true;
+                } else {
+                    if (so.equals(to))
+                        return true;
+                }
+            }
+            return false;
+        }
+    }
+    
+    private abstract class RowSelectionHandler implements Data.StateListener,
                                     MyTable.UserInteractionListener, Runnable {
         private int lastRow = 0;
         private boolean allowAutoScroll = true;
-        private int[] keyIndex;
-        private Object[] keyValue;
         private ArrayList<Integer> rowsToSelect = new ArrayList<Integer>();
         private Rectangle selectRect;
 
-        public RowSelectionHandler(int[] keyIndex, Object[] keyValue) {
-            this.keyIndex = keyIndex;
-            this.keyValue = keyValue;
+        protected void init() {
             model.addStateListener(this);
             table.addUserInteractionListener(this);
             table.clearSelection();
@@ -445,19 +526,15 @@ public class TableFrame extends QueryResultFrame {
             table.removeUserInteractionListener(this);
             rowSelectionHandler = null;
         }
+        
+        protected abstract boolean matches(int row);
 
         // Data.StateListener methods
         public synchronized void stateChanged(int state, int row) {
             boolean workToDo = false;
             if (row > lastRow) {
                 for (int i = lastRow; i < row; i++) {
-                    matchvalue: {
-                        for (int j = 0; j < keyIndex.length; j++) {
-                            Object o1 = keyValue[j];
-                            Object o2 = model.getValueAt(i, keyIndex[j]);
-                            if (o1 == null ? o2 != null : !o1.equals(o2))
-                                break matchvalue;
-                        }
+                    if (matches(i)) {
                         rowsToSelect.add(i);
                         workToDo = true;
                     }

@@ -859,11 +859,10 @@ public class Preferences {
         xml.writeComment("Class Path:");
         xml.writeComment("A list of directories and jar/zip files from   ");
         xml.writeComment("which JDBC Navigator will load JDBC drivers.   ");
-        xml.writeComment("If you are using JDK 1.5 or later, you may also");
-        xml.writeComment("use the word \"CLASSPATH\" anywhere in this list,");
-        xml.writeComment("to indicate that the value of the CLASSPATH    ");
-        xml.writeComment("environment variable should be inserted at that");
-        xml.writeComment("point in the sequence.                         ");
+        xml.writeComment("You may also use the word \"CLASSPATH\" anywhere ");
+        xml.writeComment("in this list, to indicate that the value of the");
+        xml.writeComment("CLASSPATH environment variable should be       ");
+        xml.writeComment("inserted at that point in the sequence.        ");
         xml.openTag("classpath");
         for (String item : classPath)
             xml.wholeTag("item", item);

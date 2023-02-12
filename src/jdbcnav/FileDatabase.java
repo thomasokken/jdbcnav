@@ -153,6 +153,10 @@ public class FileDatabase extends BasicDatabase {
         }
         return al;
     }
+    
+    public boolean isCaseSensitive() {
+        return true;
+    }
 
     public Table loadTable(String qualifiedName) throws NavigatorException {
         for (FileTable t : tables)
@@ -627,7 +631,7 @@ public class FileDatabase extends BasicDatabase {
             else if (name.equals("index_columns"))
                 index.setColumns(arrayBuffer.toArray(STRARRAY));
             else if (name.equals("unique"))
-                index.setUnique(parseBoolean(data));
+                index.setUnique(Boolean.parseBoolean(data));
             else if (name.equals("data"))
                 table.setData(tr);
             else if (name.equals("row")) {
@@ -680,7 +684,7 @@ public class FileDatabase extends BasicDatabase {
                                            + "\" is not an integer.");
                 }
             } else if (name.equals("size_in_bits")) {
-                spec.size_in_bits = parseBoolean(data);
+                spec.size_in_bits = Boolean.parseBoolean(data);
             } else if (name.equals("scale")) {
                 try {
                     spec.scale = Integer.parseInt(data);
@@ -689,7 +693,7 @@ public class FileDatabase extends BasicDatabase {
                                            + "\" is not an integer.");
                 }
             } else if (name.equals("scale_in_bits")) {
-                spec.scale_in_bits = parseBoolean(data);
+                spec.scale_in_bits = Boolean.parseBoolean(data);
             } else if (name.equals("min_exp")) {
                 try {
                     spec.min_exp = Integer.parseInt(data);
@@ -705,11 +709,11 @@ public class FileDatabase extends BasicDatabase {
                                            + "\" is not an integer.");
                 }
             } else if (name.equals("exp_of_2")) {
-                spec.exp_of_2 = parseBoolean(data);
+                spec.exp_of_2 = Boolean.parseBoolean(data);
             } else if (name.equals("part_of_key")) {
-                spec.part_of_key = parseBoolean(data);
+                spec.part_of_key = Boolean.parseBoolean(data);
             } else if (name.equals("part_of_index")) {
-                spec.part_of_index = parseBoolean(data);
+                spec.part_of_index = Boolean.parseBoolean(data);
             } else if (name.equals("jdbc_db_type")) {
                 spec.jdbcDbType = data;
             } else if (name.equals("jdbc_size")) {
@@ -822,10 +826,5 @@ public class FileDatabase extends BasicDatabase {
             } catch (Exception e) {}
         }
         return super.objectToString(spec, o);
-    }
-
-    // This is needed because Boolean.parseBoolean(String) is a JDK 1.5 feature
-    private static boolean parseBoolean(String s) {
-        return s != null && s.equalsIgnoreCase("true");
     }
 }
