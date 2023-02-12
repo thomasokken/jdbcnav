@@ -464,10 +464,10 @@ public class TableFrame extends QueryResultFrame {
     
     private class RowSelectionHandlerForSearch extends RowSelectionHandler {
         private Object[] obj;
-        private boolean caseInsensitive;
+        private boolean caseSensitive;
         
         public RowSelectionHandlerForSearch(String searchText) {
-            caseInsensitive = dbTable.getDatabase().isCaseSensitive();
+            caseSensitive = dbTable.getDatabase().isCaseSensitive();
             int cols = model.getColumnCount();
             obj = new Object[cols];
             for (int c = 0; c < cols; c++) {
@@ -490,12 +490,12 @@ public class TableFrame extends QueryResultFrame {
                     if (!(to instanceof String))
                         continue;
                     String s, t;
-                    if (caseInsensitive) {
-                        s = ((String) so).toLowerCase();
-                        t = ((String) to).toLowerCase();
-                    } else {
+                    if (caseSensitive) {
                         s = (String) so;
                         t = (String) to;
+                    } else {
+                        s = ((String) so).toLowerCase();
+                        t = ((String) to).toLowerCase();
                     }
                     if (t.contains(s))
                         return true;
