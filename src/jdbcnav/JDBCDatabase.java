@@ -1221,7 +1221,7 @@ public class JDBCDatabase extends BasicDatabase {
         // No-op
     }
 
-    public void searchTables(List<String> qualifiedNames, String searchText) throws NavigatorException {
+    public void searchTables(Set<String> qualifiedNames, String searchText) throws NavigatorException {
         SearchResultsFrame srf = new SearchResultsFrame(this, qualifiedNames, searchText);
         srf.setParent(browser);
         srf.showStaggered();

@@ -53,6 +53,11 @@ public class SearchTablesDialog extends MyFrame {
 
         gbc.gridy++;
         searchTextTF = new MyTextField();
+        searchTextTF.addActionListener(new ActionListener() {
+        						public void actionPerformed(ActionEvent e) {
+        							ok();
+        						}
+        					});
         c.add(searchTextTF, gbc);
 
         gbc.gridy++;

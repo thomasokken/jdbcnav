@@ -71,7 +71,7 @@ public interface Database {
     Collection<Table> getSelectedTables() throws NavigatorException;
     
     // Search a collection of tables
-    void searchTables(List<String> qualifiedNames, String searchText) throws NavigatorException;
+    void searchTables(Set<String> qualifiedNames, String searchText) throws NavigatorException;
     int searchTable(String qualifiedName, String searchText) throws NavigatorException;
     void runSearch(String qualifiedName, String searchText);
 

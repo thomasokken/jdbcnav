@@ -166,7 +166,7 @@ public abstract class BasicDatabase implements Database {
     
     private void searchTables2(String searchText) {
         Collection<BrowserNode> selection = browser.getSelectedNodes();
-        List<String> tables = new ArrayList<String>();
+        Set<String> tables = new TreeSet<String>();
         for (BrowserNode bn : selection) {
             if (!(bn instanceof MyNode))
                 continue;

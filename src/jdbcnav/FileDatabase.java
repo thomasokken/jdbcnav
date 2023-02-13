@@ -166,7 +166,7 @@ public class FileDatabase extends BasicDatabase {
                     + " not found in File Data Source.");
     }
 
-    public void searchTables(List<String> qualifiedNames, String searchText) throws NavigatorException {
+    public void searchTables(Set<String> qualifiedNames, String searchText) throws NavigatorException {
         throw new NavigatorException("File Data Source is not "
              + "capable of searching tables.");
     }

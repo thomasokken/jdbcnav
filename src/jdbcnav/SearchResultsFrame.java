@@ -21,7 +21,7 @@ package jdbcnav;
 import java.awt.*;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.List;
+import java.util.Set;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -37,8 +37,8 @@ public class SearchResultsFrame extends MyFrame {
     private JEditorPane editor;
     
     private class SearchThread extends Thread {
-        private List<String> qualifiedNames;
-        public SearchThread(List<String> qualifiedNames) {
+        private Set<String> qualifiedNames;
+        public SearchThread(Set<String> qualifiedNames) {
             this.qualifiedNames = qualifiedNames;
         }
         public void run() {
@@ -85,7 +85,7 @@ public class SearchResultsFrame extends MyFrame {
         SwingUtilities.invokeLater(new HtmlSetter(html));
     }
 
-    public SearchResultsFrame(Database db, List<String> qualifiedNames, String searchText) {
+    public SearchResultsFrame(Database db, Set<String> qualifiedNames, String searchText) {
         super("Search Results", true, true, true, true);
         this.db = db;
         this.searchText = searchText;
