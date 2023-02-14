@@ -18,16 +18,26 @@
 
 package jdbcnav;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
+import java.awt.Container;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import jdbcnav.model.ForeignKey;
 import jdbcnav.model.Table;
 import jdbcnav.util.MyGridBagConstraints;
 import jdbcnav.util.MyGridBagLayout;
 import jdbcnav.util.NavigatorException;
+
 
 public class MultiCommitDialog extends MyFrame {
     private Table[] dirty;

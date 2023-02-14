@@ -18,8 +18,9 @@
 
 package jdbcnav.util;
 
-import java.io.*;
-import java.util.*;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+
 
 /**
  * Utility class for writing simple XML files. VERY simple XML files!

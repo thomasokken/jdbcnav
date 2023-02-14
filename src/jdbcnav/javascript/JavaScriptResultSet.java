@@ -18,11 +18,17 @@
 
 package jdbcnav.javascript;
 
-import java.sql.*;
-import java.util.*;
-import org.mozilla.javascript.*;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.TreeMap;
 
-import jdbcnav.util.*;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.EvaluatorException;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.WrappedException;
+
+import jdbcnav.util.MiscUtils;
 
 
 public class JavaScriptResultSet implements Scriptable {

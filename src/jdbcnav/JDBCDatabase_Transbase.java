@@ -18,9 +18,18 @@
 
 package jdbcnav;
 
-import java.lang.reflect.*;
-import java.sql.*;
-import jdbcnav.model.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+
+import jdbcnav.model.DateTime;
+import jdbcnav.model.Interval;
+import jdbcnav.model.TypeSpec;
 
 
 public class JDBCDatabase_Transbase extends JDBCDatabase {

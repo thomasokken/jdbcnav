@@ -18,7 +18,10 @@
 
 package jdbcnav.javascript;
 
-import org.mozilla.javascript.*;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.EvaluatorException;
+import org.mozilla.javascript.Function;
+import org.mozilla.javascript.Scriptable;
 
 
 public abstract class BasicFunction implements Function {

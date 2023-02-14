@@ -18,20 +18,82 @@
 
 package jdbcnav;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.lang.reflect.*;
-import java.sql.*;
-import java.util.*;
+import java.awt.Container;
+import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Blob;
+import java.sql.CallableStatement;
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-import javax.swing.*;
-import org.mozilla.javascript.*;
+import javax.swing.AbstractListModel;
+import javax.swing.BoxLayout;
+import javax.swing.ComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
-import jdbcnav.javascript.*;
-import jdbcnav.model.*;
-import jdbcnav.util.*;
+import org.mozilla.javascript.Scriptable;
+
+import jdbcnav.javascript.JavaScriptCallableStatement;
+import jdbcnav.javascript.JavaScriptPreparedStatement;
+import jdbcnav.javascript.JavaScriptStatement;
+import jdbcnav.model.BackgroundLoadData;
+import jdbcnav.model.BasicData;
+import jdbcnav.model.BasicForeignKey;
+import jdbcnav.model.BasicIndex;
+import jdbcnav.model.BasicPrimaryKey;
+import jdbcnav.model.BasicTable;
+import jdbcnav.model.BlobWrapper;
+import jdbcnav.model.ClobWrapper;
+import jdbcnav.model.Data;
+import jdbcnav.model.Database;
+import jdbcnav.model.DateTime;
+import jdbcnav.model.ForeignKey;
+import jdbcnav.model.Index;
+import jdbcnav.model.PrimaryKey;
+import jdbcnav.model.Table;
+import jdbcnav.model.TypeSpec;
+import jdbcnav.util.MiscUtils;
+import jdbcnav.util.MyGridBagConstraints;
+import jdbcnav.util.MyGridBagLayout;
+import jdbcnav.util.MyTextField;
+import jdbcnav.util.NavigatorException;
 
 
 public class JDBCDatabase extends BasicDatabase {

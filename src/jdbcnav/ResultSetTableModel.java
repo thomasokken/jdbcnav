@@ -18,14 +18,36 @@
 
 package jdbcnav;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.table.*;
+import java.awt.Toolkit;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.StringTokenizer;
 
-import jdbcnav.model.*;
-import jdbcnav.util.*;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.table.AbstractTableModel;
+
+import jdbcnav.model.BasicData;
+import jdbcnav.model.BlobWrapper;
+import jdbcnav.model.ClobWrapper;
+import jdbcnav.model.Data;
+import jdbcnav.model.PrimaryKey;
+import jdbcnav.model.Table;
+import jdbcnav.model.TypeSpec;
+import jdbcnav.model.TypeSpecTableModel;
+import jdbcnav.util.ArrayCollection;
+import jdbcnav.util.CSVTokenizer;
+import jdbcnav.util.FileUtils;
+import jdbcnav.util.MiscUtils;
+import jdbcnav.util.NavigatorException;
 
 
 // TODO: when deleting or updating primary key values in a table that

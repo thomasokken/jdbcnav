@@ -18,7 +18,7 @@
 
 package jdbcnav.model;
 
-import org.mozilla.javascript.*;
+import org.mozilla.javascript.Scriptable;
 
 import jdbcnav.javascript.JavaScriptArray;
 

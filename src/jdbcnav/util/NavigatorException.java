@@ -18,6 +18,7 @@
 
 package jdbcnav.util;
 
+
 public class NavigatorException extends Exception {
     private Throwable rootCause;
 

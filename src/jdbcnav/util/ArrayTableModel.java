@@ -18,8 +18,11 @@
 
 package jdbcnav.util;
 
-import java.util.*;
-import javax.swing.table.*;
+import java.util.Arrays;
+import java.util.Comparator;
+
+import javax.swing.table.AbstractTableModel;
+
 import jdbcnav.SortedTableModel;
 import jdbcnav.model.TypeSpec;
 import jdbcnav.model.TypeSpecTableModel;

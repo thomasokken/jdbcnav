@@ -18,17 +18,41 @@
 
 package jdbcnav;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
-import javax.swing.*;
-import javax.xml.parsers.*;
-import org.mozilla.javascript.*;
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
 
-import jdbcnav.model.*;
-import jdbcnav.util.*;
+import javax.swing.JFileChooser;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.mozilla.javascript.Scriptable;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.helpers.DefaultHandler;
+
+import jdbcnav.model.BasicData;
+import jdbcnav.model.BasicForeignKey;
+import jdbcnav.model.BasicIndex;
+import jdbcnav.model.BasicPrimaryKey;
+import jdbcnav.model.BasicTable;
+import jdbcnav.model.Data;
+import jdbcnav.model.Database;
+import jdbcnav.model.ForeignKey;
+import jdbcnav.model.Index;
+import jdbcnav.model.PrimaryKey;
+import jdbcnav.model.Table;
+import jdbcnav.model.TypeSpec;
+import jdbcnav.util.FileUtils;
+import jdbcnav.util.NavigatorException;
+import jdbcnav.util.XMLWriter;
 
 
 public class FileDatabase extends BasicDatabase {

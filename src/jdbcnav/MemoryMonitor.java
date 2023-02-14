@@ -18,8 +18,12 @@
 
 package jdbcnav;
 
-import java.lang.ref.*;
-import javax.swing.*;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.SoftReference;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 
 public class MemoryMonitor implements Runnable {
     private static final int RESERVE_BYTES = 5242880;

@@ -18,13 +18,25 @@
 
 package jdbcnav.javascript;
 
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.text.*;
-import org.mozilla.javascript.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
-import jdbcnav.*;
-import jdbcnav.util.*;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JOptionPane;
+import javax.swing.KeyStroke;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.EvaluatorException;
+import org.mozilla.javascript.JavaScriptException;
+
+import jdbcnav.Main;
+import jdbcnav.MessageBox;
+import jdbcnav.TextEditorFrame;
+import jdbcnav.util.MiscUtils;
 
 
 public class JavaScriptFrame extends TextEditorFrame {

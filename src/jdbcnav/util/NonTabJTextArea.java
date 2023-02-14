@@ -18,9 +18,11 @@
 
 package jdbcnav.util;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.AWTKeyStroke;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
+import java.util.HashSet;
+
 import javax.swing.text.Document;
 
 

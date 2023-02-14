@@ -18,7 +18,8 @@
 
 package jdbcnav.util;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Iterator;
 
 
 public class IteratorEnumeration<T> implements Enumeration<T> {

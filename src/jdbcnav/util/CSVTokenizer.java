@@ -18,7 +18,7 @@
 
 package jdbcnav.util;
 
-import java.util.*;
+import java.util.NoSuchElementException;
 
 
 public class CSVTokenizer {

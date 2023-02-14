@@ -18,7 +18,7 @@
 
 package jdbcnav.util;
 
-import javax.swing.*;
+import javax.swing.JTextArea;
 import javax.swing.text.Document;
 
 

@@ -18,8 +18,10 @@
 
 package jdbcnav.util;
 
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Array;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 
 public class ArrayCollection<T> implements Collection<T> {

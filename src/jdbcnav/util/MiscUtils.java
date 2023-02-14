@@ -19,10 +19,12 @@
 package jdbcnav.util;
 
 import java.awt.Toolkit;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.sql.Types;
-import java.util.*;
+import java.util.Date;
+
 
 public class MiscUtils {
     public static boolean strEq(String a, String b) {

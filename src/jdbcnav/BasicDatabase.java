@@ -18,12 +18,34 @@
 
 package jdbcnav;
 
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-import jdbcnav.model.*;
-import jdbcnav.util.*;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
+import jdbcnav.model.BlobWrapper;
+import jdbcnav.model.BrowserNode;
+import jdbcnav.model.Database;
+import jdbcnav.model.DateTime;
+import jdbcnav.model.Interval;
+import jdbcnav.model.Table;
+import jdbcnav.model.TypeSpec;
+import jdbcnav.util.FileUtils;
+import jdbcnav.util.NavigatorException;
+
 
 /**
  * Despite its name, this class isn't really a basic database; it's just

@@ -21,6 +21,7 @@ package jdbcnav;
 import jdbcnav.model.Table;
 import jdbcnav.util.NavigatorException;
 
+
 public interface TableChangeHandler {
     void insertRow(Table table, Object[] row) throws NavigatorException;
     void deleteRow(Table table, Object[] key) throws NavigatorException;

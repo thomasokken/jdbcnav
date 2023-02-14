@@ -18,8 +18,11 @@
 
 package jdbcnav;
 
-import jdbcnav.model.*;
-import jdbcnav.util.*;
+import jdbcnav.model.BlobWrapper;
+import jdbcnav.model.DateTime;
+import jdbcnav.model.Interval;
+import jdbcnav.model.TypeSpec;
+import jdbcnav.util.FileUtils;
 
 
 public class ScriptGenerator_DB2 extends ScriptGenerator {

@@ -18,10 +18,15 @@
 
 package jdbcnav;
 
-import java.text.*;
-import java.util.*;
-import jdbcnav.model.*;
+import java.text.SimpleDateFormat;
+import java.util.StringTokenizer;
+
+import jdbcnav.model.BlobWrapper;
+import jdbcnav.model.DateTime;
+import jdbcnav.model.Interval;
+import jdbcnav.model.TypeSpec;
 import jdbcnav.util.FileUtils;
+
 
 public class ScriptGenerator_MySQL extends ScriptGenerator {
     protected String printType(TypeSpec td) {

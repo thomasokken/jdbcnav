@@ -18,10 +18,18 @@
 
 package jdbcnav.util;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JColorChooser;
+import javax.swing.JPanel;
+
 import jdbcnav.MyFrame;
+
 
 public class ColorChooser extends MyFrame {
     private JColorChooser jcc;

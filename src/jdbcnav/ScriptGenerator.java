@@ -18,10 +18,20 @@
 
 package jdbcnav;
 
-import java.text.*;
-import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
+import java.util.WeakHashMap;
 
-import jdbcnav.model.*;
+import jdbcnav.model.ClobWrapper;
+import jdbcnav.model.DateTime;
+import jdbcnav.model.ForeignKey;
+import jdbcnav.model.Index;
+import jdbcnav.model.Interval;
+import jdbcnav.model.PrimaryKey;
+import jdbcnav.model.Table;
+import jdbcnav.model.TypeSpec;
 import jdbcnav.util.MiscUtils;
 import jdbcnav.util.NavigatorException;
 

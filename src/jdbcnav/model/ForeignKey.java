@@ -18,6 +18,7 @@
 
 package jdbcnav.model;
 
+
 public interface ForeignKey {
     String getThisKeyName();
     String getThatKeyName();

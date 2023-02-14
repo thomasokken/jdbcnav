@@ -18,16 +18,20 @@
 
 package jdbcnav;
 
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Set;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
-import jdbcnav.model.*;
-import jdbcnav.util.*;
+import jdbcnav.model.Database;
+import jdbcnav.util.FileUtils;
+import jdbcnav.util.MyGridBagConstraints;
+import jdbcnav.util.NavigatorException;
 
 
 public class SearchResultsFrame extends MyFrame {

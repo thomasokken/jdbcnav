@@ -19,7 +19,11 @@
 package jdbcnav;
 
 import java.text.DecimalFormat;
-import jdbcnav.model.*;
+
+import jdbcnav.model.BlobWrapper;
+import jdbcnav.model.Interval;
+import jdbcnav.model.TypeSpec;
+
 
 public class ScriptGenerator_PostgreSQL extends ScriptGenerator {
     protected String printType(TypeSpec td) {

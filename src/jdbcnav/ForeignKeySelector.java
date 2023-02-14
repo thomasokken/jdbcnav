@@ -18,12 +18,23 @@
 
 package jdbcnav;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+
 import jdbcnav.model.Data;
 import jdbcnav.util.MyGridBagLayout;
 import jdbcnav.util.MyGridBagConstraints;
+
 
 public class ForeignKeySelector extends MyFrame {
     private int tableRow;

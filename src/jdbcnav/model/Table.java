@@ -21,6 +21,7 @@ package jdbcnav.model;
 import jdbcnav.ResultSetTableModel;
 import jdbcnav.util.NavigatorException;
 
+
 public interface Table extends Comparable<Table> {
     Database getDatabase();
     String getCatalog();

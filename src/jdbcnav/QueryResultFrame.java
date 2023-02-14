@@ -18,17 +18,50 @@
 
 package jdbcnav;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
-import jdbcnav.model.*;
-import jdbcnav.util.*;
+import jdbcnav.model.BfileWrapper;
+import jdbcnav.model.BlobWrapper;
+import jdbcnav.model.ClobWrapper;
+import jdbcnav.model.Data;
+import jdbcnav.model.Database;
+import jdbcnav.model.Table;
+import jdbcnav.model.TypeSpec;
+import jdbcnav.util.MiscUtils;
+import jdbcnav.util.MyGridBagConstraints;
+import jdbcnav.util.MyGridBagLayout;
+import jdbcnav.util.NavigatorException;
 
 
 public class QueryResultFrame extends MyFrame

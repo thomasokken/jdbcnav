@@ -19,7 +19,9 @@
 package jdbcnav.model;
 
 import java.util.Iterator;
+
 import jdbcnav.util.NavigatorException;
+
 
 public interface BrowserNode {
     String getName();

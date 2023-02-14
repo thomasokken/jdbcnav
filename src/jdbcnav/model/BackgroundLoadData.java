@@ -18,7 +18,8 @@
 
 package jdbcnav.model;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
 
 
 public class BackgroundLoadData implements Data {

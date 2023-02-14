@@ -19,8 +19,13 @@
 package jdbcnav;
 
 import java.util.StringTokenizer;
-import jdbcnav.model.*;
-import jdbcnav.util.*;
+
+import jdbcnav.model.BlobWrapper;
+import jdbcnav.model.DateTime;
+import jdbcnav.model.Interval;
+import jdbcnav.model.TypeSpec;
+import jdbcnav.util.FileUtils;
+
 
 public class ScriptGenerator_Transbase extends ScriptGenerator {
     protected String printType(TypeSpec td) {

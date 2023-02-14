@@ -18,7 +18,7 @@
 
 package jdbcnav;
 
-import jdbcnav.model.*;
+import jdbcnav.model.TypeSpec;
 
 
 public class ScriptGenerator_MS_SQL extends ScriptGenerator {

@@ -18,9 +18,13 @@
 
 package jdbcnav;
 
-import java.awt.*;
-import java.util.*;
-import javax.swing.*;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.util.ArrayList;
+
+import javax.swing.JDesktopPane;
+import javax.swing.JInternalFrame;
 
 
 public class MyFrame extends JInternalFrame {

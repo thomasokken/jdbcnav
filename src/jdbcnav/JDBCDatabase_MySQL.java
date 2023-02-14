@@ -18,8 +18,12 @@
 
 package jdbcnav;
 
-import java.sql.*;
-import java.text.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.SimpleDateFormat;
+
 import jdbcnav.model.TypeSpec;
 
 

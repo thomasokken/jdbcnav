@@ -18,9 +18,12 @@
 
 package jdbcnav;
 
-import java.io.*;
-import java.util.*;
-import javax.swing.text.*;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.util.StringTokenizer;
+
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 import jdbcnav.model.Data;
 import jdbcnav.model.Database;

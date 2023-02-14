@@ -19,8 +19,10 @@
 package jdbcnav;
 
 import java.lang.reflect.Method;
-import java.sql.*;
-import jdbcnav.model.*;
+import java.sql.Connection;
+
+import jdbcnav.model.DateTime;
+import jdbcnav.model.TypeSpec;
 
 
 public class JDBCDatabase_MS_SQL extends JDBCDatabase {

@@ -18,7 +18,8 @@
 
 package jdbcnav.javascript;
 
-import org.mozilla.javascript.*;
+import org.mozilla.javascript.Scriptable;
+
 
 public class JavaScriptArray implements Scriptable {
     private Object[] array;

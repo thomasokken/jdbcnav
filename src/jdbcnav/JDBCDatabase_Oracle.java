@@ -18,13 +18,40 @@
 
 package jdbcnav;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.sql.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+import java.util.TreeMap;
 
-import jdbcnav.model.*;
-import jdbcnav.util.*;
+import jdbcnav.model.BasicIndex;
+import jdbcnav.model.BfileWrapper;
+import jdbcnav.model.Data;
+import jdbcnav.model.DateTime;
+import jdbcnav.model.Index;
+import jdbcnav.model.Interval;
+import jdbcnav.model.PrimaryKey;
+import jdbcnav.model.Table;
+import jdbcnav.model.TypeSpec;
+import jdbcnav.util.NavigatorException;
 
 
 public class JDBCDatabase_Oracle extends JDBCDatabase {

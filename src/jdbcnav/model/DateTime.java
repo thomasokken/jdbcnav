@@ -18,7 +18,13 @@
 
 package jdbcnav.model;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
+import java.util.TimeZone;
+
 
 /**
  * This class implements a database-neutral Date/Time representation.

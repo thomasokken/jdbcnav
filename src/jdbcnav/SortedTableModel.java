@@ -18,7 +18,7 @@
 
 package jdbcnav;
 
-import javax.swing.table.*;
+import javax.swing.table.TableModel;
 
 
 public interface SortedTableModel extends TableModel {

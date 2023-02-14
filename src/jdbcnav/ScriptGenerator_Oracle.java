@@ -18,8 +18,13 @@
 
 package jdbcnav;
 
-import jdbcnav.model.*;
+import jdbcnav.model.BfileWrapper;
+import jdbcnav.model.BlobWrapper;
+import jdbcnav.model.DateTime;
+import jdbcnav.model.Interval;
+import jdbcnav.model.TypeSpec;
 import jdbcnav.util.FileUtils;
+
 
 public class ScriptGenerator_Oracle extends ScriptGenerator {
     protected boolean oracle9types = true;

@@ -18,9 +18,16 @@
 
 package jdbcnav;
 
-import java.sql.*;
-import java.lang.reflect.*;
-import jdbcnav.model.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import jdbcnav.model.Interval;
+import jdbcnav.model.TypeSpec;
 import jdbcnav.util.NavigatorException;
 
 

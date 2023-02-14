@@ -18,15 +18,33 @@
 
 package jdbcnav;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.StringTokenizer;
 
-import jdbcnav.model.*;
-import jdbcnav.util.*;
+import javax.swing.JEditorPane;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.table.TableModel;
+
+import jdbcnav.model.ForeignKey;
+import jdbcnav.model.Index;
+import jdbcnav.model.PrimaryKey;
+import jdbcnav.model.Table;
+import jdbcnav.model.TypeSpec;
+import jdbcnav.util.ArrayTableModel;
+import jdbcnav.util.FileUtils;
+import jdbcnav.util.MiscUtils;
+import jdbcnav.util.MyGridBagConstraints;
+import jdbcnav.util.MyGridBagLayout;
+import jdbcnav.util.NavigatorException;
 
 
 public class TableDetailsFrame extends MyFrame {

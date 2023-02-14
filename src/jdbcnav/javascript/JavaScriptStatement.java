@@ -18,8 +18,13 @@
 
 package jdbcnav.javascript;
 
-import java.sql.*;
-import org.mozilla.javascript.*;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.EvaluatorException;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.WrappedException;
 
 
 public class JavaScriptStatement implements Scriptable {

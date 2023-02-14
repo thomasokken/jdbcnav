@@ -18,7 +18,8 @@
 
 package jdbcnav;
 
-import java.sql.*;
+import java.sql.Connection;
+
 import jdbcnav.model.TypeSpec;
 
 

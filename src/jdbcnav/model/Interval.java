@@ -20,6 +20,7 @@ package jdbcnav.model;
 
 import java.util.StringTokenizer;
 
+
 /**
  * This class implements a database-neutral Interval representation.
  */

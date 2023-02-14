@@ -19,12 +19,13 @@
 package jdbcnav;
 
 import java.awt.Toolkit;
-//import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.*;
-//import java.awt.datatransfer.StringSelection;
-//import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+
 
 public class Clipboard {
     private ArrayList<Listener> listeners;

@@ -18,9 +18,11 @@
 
 package jdbcnav.model;
 
-import java.io.*;
-import java.util.*;
-import org.mozilla.javascript.*;
+import java.io.File;
+import java.util.Collection;
+import java.util.Set;
+
+import org.mozilla.javascript.Scriptable;
 
 import jdbcnav.BrowserFrame;
 import jdbcnav.TableFrame;

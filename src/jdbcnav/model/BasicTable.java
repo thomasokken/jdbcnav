@@ -18,12 +18,19 @@
 
 package jdbcnav.model;
 
-import java.util.*;
-import org.mozilla.javascript.*;
+import java.util.ArrayList;
 
-import jdbcnav.*;
-import jdbcnav.javascript.*;
-import jdbcnav.util.*;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.EvaluatorException;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.WrappedException;
+
+import jdbcnav.BasicDatabase;
+import jdbcnav.ResultSetTableModel;
+import jdbcnav.javascript.BasicFunction;
+import jdbcnav.javascript.JavaScriptArray;
+import jdbcnav.util.MiscUtils;
+import jdbcnav.util.NavigatorException;
 
 
 public abstract class BasicTable implements Table, Scriptable {

@@ -18,8 +18,12 @@
 
 package jdbcnav;
 
-import jdbcnav.model.*;
+import jdbcnav.model.BlobWrapper;
+import jdbcnav.model.DateTime;
+import jdbcnav.model.Interval;
+import jdbcnav.model.TypeSpec;
 import jdbcnav.util.FileUtils;
+
 
 public class ScriptGenerator_SmallSQL extends ScriptGenerator {
     protected String printType(TypeSpec td) {

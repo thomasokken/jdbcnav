@@ -18,7 +18,7 @@
 
 package jdbcnav.model;
 
-import javax.swing.table.*;
+import javax.swing.table.TableModel;
 
 
 public interface TypeSpecTableModel extends TableModel {

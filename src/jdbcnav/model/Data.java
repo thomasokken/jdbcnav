@@ -18,6 +18,7 @@
 
 package jdbcnav.model;
 
+
 public interface Data {
     int getRowCount();
     int getColumnCount();

@@ -18,7 +18,7 @@
 
 package jdbcnav.util;
 
-import javax.swing.*;
+import javax.swing.JTextField;
 
 
 public class MyTextField extends JTextField {

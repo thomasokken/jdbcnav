@@ -18,6 +18,7 @@
 
 package jdbcnav.model;
 
+
 /**
  * This class is used as an intermediate representation of a column type.
  * It is used in preference to SQL in order to avoid any ambiguities; this
