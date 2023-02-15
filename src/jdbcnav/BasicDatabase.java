@@ -1192,6 +1192,14 @@ public abstract class BasicDatabase implements Database {
             if (java.util.Date.class.isAssignableFrom(klass))
                 return new java.util.Date(java.sql.Timestamp.valueOf(s).getTime());
 
+            if (Boolean.class.isAssignableFrom(klass))
+                if (s.equalsIgnoreCase("true"))
+                    return Boolean.TRUE;
+                else if (s.equalsIgnoreCase("false"))
+                    return Boolean.FALSE;
+                else
+                    throw new NumberFormatException("Invalid boolean \"" + s + "\"");
+
             java.lang.reflect.Constructor<?> cnstr =
                         klass.getConstructor(new Class[] { String.class });
             return cnstr.newInstance(new Object[] { s });
