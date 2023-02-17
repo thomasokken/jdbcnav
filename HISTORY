@@ -1,3 +1,10 @@
+2023-02-17: build 2734
+*) Search Tables: New feature to search through all columns of an arbitrary set
+of tables, looking for the search text in string, numeric, and date/time
+values.
+*) File selection dialogs now remember the current directory, so you don't have
+to navigate from the home directory every time.
+
 2023-02-04: build 2732
 *) Handle line breaks and tabs in cells when copying and pasting TSV. Cells
 containing any of \r \n \t " are enclosed in double quotes, and any double
