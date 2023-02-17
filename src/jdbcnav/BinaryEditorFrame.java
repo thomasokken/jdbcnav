@@ -338,7 +338,7 @@ public class BinaryEditorFrame extends MyFrame {
     }
 
     private void load(boolean merge) {
-        JFileChooser jfc = new JFileChooser();
+        JFileChooser jfc = new MyFileChooser();
         jfc.setDialogTitle(merge ? "Merge" : "Open");
         if (file != null)
             jfc.setSelectedFile(file);
@@ -384,7 +384,7 @@ public class BinaryEditorFrame extends MyFrame {
     }
 
     private boolean saveAs() {
-        JFileChooser jfc = new JFileChooser();
+        JFileChooser jfc = new MyFileChooser();
         jfc.setDialogTitle("Save");
         if (file != null)
             jfc.setSelectedFile(file);

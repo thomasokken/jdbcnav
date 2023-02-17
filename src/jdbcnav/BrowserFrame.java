@@ -424,7 +424,7 @@ public class BrowserFrame extends MyFrame {
     }
 
     private void save() {
-        JFileChooser jfc = new JFileChooser();
+        JFileChooser jfc = new MyFileChooser();
         jfc.setDialogTitle("Save File Data Source");
         if (file != null)
             jfc.setSelectedFile(file);

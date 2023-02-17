@@ -333,7 +333,7 @@ public abstract class BasicDatabase implements Database {
                 else if (res == JOptionPane.YES_OPTION) {
                     File file = null;
                     while (true) {
-                        JFileChooser jfc = new JFileChooser();
+                        JFileChooser jfc = new MyFileChooser();
                         jfc.setDialogTitle("Save");
                         if (file != null)
                             jfc.setSelectedFile(file);

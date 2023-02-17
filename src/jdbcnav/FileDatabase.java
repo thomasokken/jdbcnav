@@ -63,7 +63,7 @@ public class FileDatabase extends BasicDatabase {
     private static int dupCount = 0;
 
     public static void open(Database.OpenCallback opencb) {
-        JFileChooser jfc = new JFileChooser();
+        JFileChooser jfc = new MyFileChooser();
         jfc.setDialogTitle("Open File Data Source");
         if (jfc.showOpenDialog(Main.getDesktop())
                                             != JFileChooser.APPROVE_OPTION)

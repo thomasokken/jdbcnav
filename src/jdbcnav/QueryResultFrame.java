@@ -658,7 +658,7 @@ public class QueryResultFrame extends MyFrame
     }
 
     private void doImport() {
-        JFileChooser jfc = new JFileChooser();
+        JFileChooser jfc = new MyFileChooser();
         jfc.setDialogTitle("Import");
         JPanel p1 = new JPanel(new MyGridBagLayout());
         MyGridBagConstraints gbc = new MyGridBagConstraints();
@@ -727,7 +727,7 @@ public class QueryResultFrame extends MyFrame
     }
     
     private void export() {
-        JFileChooser jfc = new JFileChooser();
+        JFileChooser jfc = new MyFileChooser();
         jfc.setDialogTitle("Export");
         JCheckBox cb = new JCheckBox("Write column names as first row");
         cb.setSelected(true);

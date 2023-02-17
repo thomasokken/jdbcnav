@@ -594,7 +594,7 @@ public class Main extends JFrame {
     }
         
     private void openTextFile() {
-        JFileChooser jfc = new JFileChooser();
+        JFileChooser jfc = new MyFileChooser();
         jfc.setDialogTitle("Open File");
         if (jfc.showOpenDialog(Main.getDesktop())
                                 == JFileChooser.APPROVE_OPTION) {
@@ -618,7 +618,7 @@ public class Main extends JFrame {
     }
         
     private void openBinaryFile() {
-        JFileChooser jfc = new JFileChooser();
+        JFileChooser jfc = new MyFileChooser();
         jfc.setDialogTitle("Open File");
         if (jfc.showOpenDialog(Main.getDesktop())
                                 == JFileChooser.APPROVE_OPTION) {
