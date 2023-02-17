@@ -26,6 +26,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -37,6 +38,7 @@ import jdbcnav.util.MyTextField;
 public class SearchTablesDialog extends MyFrame {
     private Callback cb;
     private JTextField searchTextTF;
+    private JTextField intervalTF;
     private JCheckBox matchSubstringCB;
 
     public SearchTablesDialog(BrowserFrame bf, Callback cb) {
@@ -56,11 +58,11 @@ public class SearchTablesDialog extends MyFrame {
         gbc.anchor = MyGridBagConstraints.WEST;
         gbc.gridwidth = 1;
         gbc.fill = MyGridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
+        gbc.weightx = 4;
         c.add(new JLabel("Search for: "), gbc);
 
         gbc.gridy++;
-        searchTextTF = new MyTextField();
+        searchTextTF = new MyTextField(16);
         searchTextTF.addActionListener(new ActionListener() {
         						public void actionPerformed(ActionEvent e) {
         							ok();
@@ -68,8 +70,47 @@ public class SearchTablesDialog extends MyFrame {
         					});
         c.add(searchTextTF, gbc);
         
+        gbc.gridx++;
+        gbc.weightx = 0;
+        c.add(new JLabel("±"), gbc);
+        
+        gbc.gridx++;
+        gbc.weightx = 1;
+        intervalTF = new MyTextField(4);
+        intervalTF.addActionListener(new ActionListener() {
+                                public void actionPerformed(ActionEvent e) {
+                                    ok();
+                                }
+                            });
+        c.add(intervalTF, gbc);
+        
+        gbc.gridx++;
+        gbc.weightx = 0;
+        JButton helpB = new JButton("?");
+        helpB.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        JOptionPane.showInternalMessageDialog(
+                            Main.getDesktop(),
+                            "You can use the ± field to specify a search interval. The value\n"
+                            + "in this field is interpreted as a floating-point number.\n"
+                            + "When searching floating-point fields, this value is subtracted\n"
+                            + "and added to the search value as is; when searching time or timestamp\n"
+                            + "fields, this value is subtracted and added as a number of seconds,\n"
+                            + "and when searching date fields, this value is subtracted and added\n"
+                            + "as a number of days.\n"
+                            + "For integer and date fields, only the integer part of this value is used.\n"
+                            + "Leave this field blank to search for exact matches.");
+                    }
+                });
+        c.add(helpB, gbc);
+        
+        gbc.gridx = 0;
         gbc.gridy++;
+        gbc.gridwidth = 4;
+        gbc.weightx = 1;
         matchSubstringCB = new JCheckBox("Match Substring");
+        matchSubstringCB.setSelected(true);
         c.add(matchSubstringCB, gbc);
 
         gbc.gridy++;
@@ -80,6 +121,7 @@ public class SearchTablesDialog extends MyFrame {
         gbc = new MyGridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.gridwidth = 1;
         JButton okB = new JButton("OK");
         okB.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent e) {
@@ -100,6 +142,18 @@ public class SearchTablesDialog extends MyFrame {
     
     private void ok() {
         String searchText = searchTextTF.getText();
+        String intervalText = intervalTF.getText().trim();
+        double interval;
+        if (intervalText.equals("")) {
+            interval = 0;
+        } else {
+            try {
+                interval = Double.parseDouble(intervalText);
+            } catch (NumberFormatException e) {
+                MessageBox.show("Invalid interval \"" + intervalText + "\"", null);
+                return;
+            }
+        }
         boolean matchSubstring = matchSubstringCB.isSelected();
         dispose();
         cb.invoke(searchText, matchSubstring);
