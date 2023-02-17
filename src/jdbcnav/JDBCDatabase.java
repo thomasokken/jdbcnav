@@ -1283,13 +1283,13 @@ public class JDBCDatabase extends BasicDatabase {
         // No-op
     }
 
-    public void searchTables(Set<String> qualifiedNames, String searchText) throws NavigatorException {
-        SearchResultsFrame srf = new SearchResultsFrame(this, qualifiedNames, searchText);
+    public void searchTables(Set<String> qualifiedNames, String searchText, boolean matchSubstring) throws NavigatorException {
+        SearchResultsFrame srf = new SearchResultsFrame(this, qualifiedNames, searchText, matchSubstring);
         srf.setParent(browser);
         srf.showStaggered();
     }
 
-    public int searchTable(String qualifiedName, String searchText) throws NavigatorException {
+    public int searchTable(String qualifiedName, String searchText, boolean matchSubstring) throws NavigatorException {
         Table table = getTable(qualifiedName);
         StringBuffer query = new StringBuffer();
         List<Object> args = new ArrayList<Object>();
@@ -1309,7 +1309,7 @@ public class JDBCDatabase extends BasicDatabase {
             else
                 query.append(" or ");
             query.append(quote(table.getColumnNames()[i]));
-            if (value instanceof String) {
+            if (matchSubstring && value instanceof String) {
                 query.append(" like ?");
                 args.add("%" + value + "%");
             } else {
@@ -1338,7 +1338,7 @@ public class JDBCDatabase extends BasicDatabase {
         }
     }
     
-    public void runSearch(String qualifiedName, String searchText) {
+    public void runSearch(String qualifiedName, String searchText, boolean matchSubstring) {
         try {
             Table table = getTable(qualifiedName);
             StringBuffer query = new StringBuffer();
@@ -1359,7 +1359,7 @@ public class JDBCDatabase extends BasicDatabase {
                 else
                     query.append(" or ");
                 query.append(quote(table.getColumnNames()[i]));
-                if (value instanceof String) {
+                if (matchSubstring && value instanceof String) {
                     query.append(" like ?");
                     args.add("%" + value + "%");
                 } else {

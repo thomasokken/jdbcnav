@@ -435,7 +435,7 @@ public class TableFrame extends QueryResultFrame {
         rowSelectionHandler = new RowSelectionHandlerForKey(keyIndex, value);
     }
     
-    public void selectRowsForSearch(String searchText) {
+    public void selectRowsForSearch(String searchText, boolean matchSubstring) {
         try {
             rowSelectionHandler.finish();
         } catch (NullPointerException e) {
@@ -450,7 +450,7 @@ public class TableFrame extends QueryResultFrame {
             // was easier. :-)
         }
 
-        rowSelectionHandler = new RowSelectionHandlerForSearch(searchText);
+        rowSelectionHandler = new RowSelectionHandlerForSearch(searchText, matchSubstring);
     }
 
     private class RowSelectionHandlerForKey extends RowSelectionHandler {
@@ -476,9 +476,10 @@ public class TableFrame extends QueryResultFrame {
     
     private class RowSelectionHandlerForSearch extends RowSelectionHandler {
         private Object[] obj;
+        private boolean matchSubstring;
         private boolean caseSensitive;
         
-        public RowSelectionHandlerForSearch(String searchText) {
+        public RowSelectionHandlerForSearch(String searchText, boolean matchSubstring) {
             caseSensitive = dbTable.getDatabase().isCaseSensitive();
             int cols = model.getColumnCount();
             obj = new Object[cols];
@@ -488,6 +489,7 @@ public class TableFrame extends QueryResultFrame {
                     obj[c] = spec.stringToObject(searchText);
                 } catch (Exception e) {}
             }
+            this.matchSubstring = matchSubstring;
 
             init();
         }
@@ -501,16 +503,26 @@ public class TableFrame extends QueryResultFrame {
                 if (so instanceof String) {
                     if (!(to instanceof String))
                         continue;
-                    String s, t;
-                    if (caseSensitive) {
-                        s = (String) so;
-                        t = (String) to;
+                    if (matchSubstring) {
+                        String s, t;
+                        if (caseSensitive) {
+                            s = (String) so;
+                            t = (String) to;
+                        } else {
+                            s = ((String) so).toLowerCase();
+                            t = ((String) to).toLowerCase();
+                        }
+                        if (t.contains(s))
+                            return true;
                     } else {
-                        s = ((String) so).toLowerCase();
-                        t = ((String) to).toLowerCase();
+                        if (caseSensitive) {
+                            if (((String) to).equals(so))
+                                return true;
+                        } else {
+                            if (((String) to).equalsIgnoreCase((String) so))
+                                return true;
+                        }
                     }
-                    if (t.contains(s))
-                        return true;
                 } else {
                     if (so.equals(to))
                         return true;

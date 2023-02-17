@@ -24,6 +24,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -36,6 +37,7 @@ import jdbcnav.util.MyTextField;
 public class SearchTablesDialog extends MyFrame {
     private Callback cb;
     private JTextField searchTextTF;
+    private JCheckBox matchSubstringCB;
 
     public SearchTablesDialog(BrowserFrame bf, Callback cb) {
         super("Search Tables");
@@ -65,6 +67,10 @@ public class SearchTablesDialog extends MyFrame {
         						}
         					});
         c.add(searchTextTF, gbc);
+        
+        gbc.gridy++;
+        matchSubstringCB = new JCheckBox("Match Substring");
+        c.add(matchSubstringCB, gbc);
 
         gbc.gridy++;
         JPanel p = new JPanel();
@@ -94,11 +100,12 @@ public class SearchTablesDialog extends MyFrame {
     
     private void ok() {
         String searchText = searchTextTF.getText();
+        boolean matchSubstring = matchSubstringCB.isSelected();
         dispose();
-        cb.invoke(searchText);
+        cb.invoke(searchText, matchSubstring);
     }
 
     public interface Callback {
-        public void invoke(String searchText);
+        public void invoke(String searchText, boolean matchSubstring);
     }
 }
