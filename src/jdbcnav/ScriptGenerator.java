@@ -297,7 +297,7 @@ public class ScriptGenerator {
             else
                 comma = true;
             buf.append("\n    ");
-            buf.append(table.getColumnNames()[i]);
+            buf.append(table.getDatabase().quote(table.getColumnNames()[i]));
             buf.append(" ");
             if (sameAsSource)
                 buf.append(table.getTypeSpecs()[i].native_representation);
@@ -319,7 +319,7 @@ public class ScriptGenerator {
             for (int i = 0; i < pk.getColumnCount(); i++) {
                 if (i > 0)
                     buf.append(", ");
-                buf.append(pk.getColumnName(i));
+                buf.append(table.getDatabase().quote(pk.getColumnName(i)));
             }
             buf.append(")");
         }
@@ -337,7 +337,7 @@ public class ScriptGenerator {
             for (int j = 0; j < fk.getColumnCount(); j++) {
                 if (j > 0)
                     buf.append(", ");
-                buf.append(fk.getThisColumnName(j));
+                buf.append(table.getDatabase().quote(fk.getThisColumnName(j)));
             }
             buf.append(")\n        references ");
             if (fqtn)
@@ -348,7 +348,7 @@ public class ScriptGenerator {
             for (int j = 0; j < fk.getColumnCount(); j++) {
                 if (j > 0)
                     buf.append(", ");
-                buf.append(fk.getThatColumnName(j));
+                buf.append(table.getDatabase().quote(fk.getThatColumnName(j)));
             }
             buf.append(")");
             String upd = onUpdateString(fk.getUpdateRule());
@@ -383,7 +383,7 @@ public class ScriptGenerator {
             for (int j = 0; j < index.getColumnCount(); j++) {
                 if (j > 0)
                     buf.append(", ");
-                buf.append(index.getColumnName(j));
+                buf.append(table.getDatabase().quote(index.getColumnName(j)));
             }
             buf.append(");\n");
         }
@@ -416,7 +416,7 @@ public class ScriptGenerator {
                     for (int j = 0; j < rk.getColumnCount(); j++) {
                         if (j > 0)
                             buf.append(", ");
-                        buf.append(rk.getThatColumnName(j));
+                        buf.append(table.getDatabase().quote(rk.getThatColumnName(j)));
                     }
                     buf.append(")\n    references ");
                     if (fqtn)
@@ -427,7 +427,7 @@ public class ScriptGenerator {
                     for (int j = 0; j < rk.getColumnCount(); j++) {
                         if (j > 0)
                             buf.append(", ");
-                        buf.append(rk.getThisColumnName(j));
+                        buf.append(table.getDatabase().quote(rk.getThisColumnName(j)));
                     }
                     buf.append(")");
                     String upd = onUpdateString(rk.getUpdateRule());
