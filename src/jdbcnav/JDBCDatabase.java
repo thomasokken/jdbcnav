@@ -1321,47 +1321,51 @@ public class JDBCDatabase extends BasicDatabase {
             } else if (params.interval == 0) {
                 query.append(" = ?");
                 args.add(dbVal);
-            } else if (navVal instanceof DateTime) {
-                try {
-                    Object dbVal1 = ((DateTime) navVal).withOffset(params.intervalSeconds, params.intervalNanos, false);
-                    Object dbVal2 = ((DateTime) navVal).withOffset(params.intervalSeconds, params.intervalNanos, true);
-                    query.append(" between ? and ?");
-                    args.add(dbVal1);
-                    args.add(dbVal2);
-                } catch (Exception e) {}
-            } else if (dbVal instanceof Number) {
+            } else {
                 Object dbVal1, dbVal2;
-                if (dbVal instanceof BigDecimal) {
-                    BigDecimal interval = new BigDecimal(params.interval);
-                    dbVal1 = ((BigDecimal) dbVal).subtract(interval);
-                    dbVal2 = ((BigDecimal) dbVal).add(interval);
-                } else if (dbVal instanceof Float) {
-                    dbVal1 = (float) (((Float) dbVal) - params.interval);
-                    dbVal2 = (float) (((Float) dbVal) + params.interval);
-                } else if (dbVal instanceof Double) {
-                    dbVal1 = (double) (((Double) dbVal) - params.interval);
-                    dbVal2 = (double) (((Double) dbVal) + params.interval);
-                } else if (dbVal instanceof Short) {
-                    dbVal1 = (short) (((Short) dbVal) - params.interval);
-                    dbVal2 = (short) (((Short) dbVal) + params.interval);
-                } else if (dbVal instanceof Integer) {
-                    dbVal1 = (int) (((Integer) dbVal) - params.interval);
-                    dbVal2 = (int) (((Integer) dbVal) + params.interval);
-                } else if (dbVal instanceof Long) {
-                    dbVal1 = (long) (((Long) dbVal) - params.interval);
-                    dbVal2 = (long) (((Long) dbVal) + params.interval);
+                if (navVal instanceof DateTime) {
+                    try {
+                        dbVal1 = ((DateTime) navVal).withOffset(params.intervalSeconds, params.intervalNanos, false);
+                        dbVal2 = ((DateTime) navVal).withOffset(params.intervalSeconds, params.intervalNanos, true);
+                        dbVal1 = nav2db(spec, dbVal1);
+                        dbVal2 = nav2db(spec, dbVal2);
+                    } catch (Exception e) {
+                        continue;
+                    }
+                } else if (dbVal instanceof Number) {
+                    if (dbVal instanceof BigDecimal) {
+                        BigDecimal interval = new BigDecimal(params.interval);
+                        dbVal1 = ((BigDecimal) dbVal).subtract(interval);
+                        dbVal2 = ((BigDecimal) dbVal).add(interval);
+                    } else if (dbVal instanceof Float) {
+                        dbVal1 = (float) (((Float) dbVal) - params.interval);
+                        dbVal2 = (float) (((Float) dbVal) + params.interval);
+                    } else if (dbVal instanceof Double) {
+                        dbVal1 = (double) (((Double) dbVal) - params.interval);
+                        dbVal2 = (double) (((Double) dbVal) + params.interval);
+                    } else if (dbVal instanceof Short) {
+                        dbVal1 = (short) (((Short) dbVal) - params.interval);
+                        dbVal2 = (short) (((Short) dbVal) + params.interval);
+                    } else if (dbVal instanceof Integer) {
+                        dbVal1 = (int) (((Integer) dbVal) - params.interval);
+                        dbVal2 = (int) (((Integer) dbVal) + params.interval);
+                    } else if (dbVal instanceof Long) {
+                        dbVal1 = (long) (((Long) dbVal) - params.interval);
+                        dbVal2 = (long) (((Long) dbVal) + params.interval);
+                    } else {
+                        throw new UnsupportedOperationException("Don't know how to handle intervals for " + dbVal.getClass().getName());
+                    }
                 } else {
-                    throw new UnsupportedOperationException("Don't know how to handle intervals for " + dbVal.getClass().getName());
+                    // Shouldn't get here.
+                    // Just falling back on exact matching, because there's no way to do
+                    // an interval match on something other than a number or timestamp.
+                    query.append(" = ?");
+                    args.add(dbVal);
+                    continue;
                 }
                 query.append(" between ? and ?");
                 args.add(dbVal1);
                 args.add(dbVal2);
-            } else {
-                // Shouldn't get here.
-                // Just falling back on exact matching, because there's no way to do
-                // an interval match on something other than a number or timestamp.
-                query.append(" = ?");
-                args.add(dbVal);
             }
         }
         Object[] argsArray = args.toArray(new Object[args.size()]);

@@ -150,8 +150,6 @@ public class SearchTablesDialog extends MyFrame {
             MessageBox.show("Invalid interval \"" + intervalText + "\"", null);
             return;
         }
-        MessageBox.show("interval = " + params.interval + "\nintervalSeconds = "
-                + params.intervalSeconds + "\nintervalNanos = " + params.intervalNanos, null);
         dispose();
         cb.invoke(params);
     }

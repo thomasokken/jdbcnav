@@ -67,7 +67,7 @@ public class SearchResultsFrame extends MyFrame {
                     html.append("Done.");
                 setHtml(html + "</font></body></html>");
             } catch (NavigatorException e) {
-                // TODO: Show message box?
+                MessageBox.show(e);
             } finally {
                 SearchResultsFrame.this.searchThread = null;
             }
