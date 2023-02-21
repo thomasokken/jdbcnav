@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.CallableStatement;
 import java.sql.Clob;
@@ -1288,19 +1289,19 @@ public class JDBCDatabase extends BasicDatabase {
         srf.setParent(browser);
         srf.showStaggered();
     }
-
-    public int searchTable(String qualifiedName, SearchParams params) throws NavigatorException {
+    
+    private Object[] prepQuery(String qualifiedName, SearchParams params, boolean doCount) throws NavigatorException {
         Table table = getTable(qualifiedName);
         StringBuffer query = new StringBuffer();
         List<Object> args = new ArrayList<Object>();
-        query.append("select count(*) from " + table.getQualifiedName() + " where ");
+        query.append("select " + (doCount ? "count(*)" : "*") + " from " + table.getQualifiedName() + " where ");
         boolean first = true;
         for (int i = 0; i < table.getColumnCount(); i++) {
             TypeSpec spec = table.getTypeSpecs()[i];
-            Object value;
+            Object navVal, dbVal;
             try {
-                value = spec.stringToObject(params.text);
-                value = nav2db(spec, value);
+                navVal = spec.stringToObject(params.text);
+                dbVal = nav2db(spec, navVal);
             } catch (Exception e) {
                 continue;
             }
@@ -1309,19 +1310,73 @@ public class JDBCDatabase extends BasicDatabase {
             else
                 query.append(" or ");
             query.append(quote(table.getColumnNames()[i]));
-            if (params.matchSubstring && value instanceof String) {
-                query.append(" like ?");
-                args.add("%" + value + "%");
-            } else {
+            if (dbVal instanceof String) {
+                if (params.matchSubstring) {
+                    query.append(" like ?");
+                    args.add("%" + dbVal + "%");
+                } else {
+                    query.append(" = ?");
+                    args.add(dbVal);
+                }
+            } else if (params.interval == 0) {
                 query.append(" = ?");
-                args.add(value);
+                args.add(dbVal);
+            } else if (navVal instanceof DateTime) {
+                try {
+                    Object dbVal1 = ((DateTime) navVal).withOffset(params.intervalSeconds, params.intervalNanos, false);
+                    Object dbVal2 = ((DateTime) navVal).withOffset(params.intervalSeconds, params.intervalNanos, true);
+                    query.append(" between ? and ?");
+                    args.add(dbVal1);
+                    args.add(dbVal2);
+                } catch (Exception e) {}
+            } else if (dbVal instanceof Number) {
+                Object dbVal1, dbVal2;
+                if (dbVal instanceof BigDecimal) {
+                    BigDecimal interval = new BigDecimal(params.interval);
+                    dbVal1 = ((BigDecimal) dbVal).subtract(interval);
+                    dbVal2 = ((BigDecimal) dbVal).add(interval);
+                } else if (dbVal instanceof Float) {
+                    dbVal1 = (float) (((Float) dbVal) - params.interval);
+                    dbVal2 = (float) (((Float) dbVal) + params.interval);
+                } else if (dbVal instanceof Double) {
+                    dbVal1 = (double) (((Double) dbVal) - params.interval);
+                    dbVal2 = (double) (((Double) dbVal) + params.interval);
+                } else if (dbVal instanceof Short) {
+                    dbVal1 = (short) (((Short) dbVal) - params.interval);
+                    dbVal2 = (short) (((Short) dbVal) + params.interval);
+                } else if (dbVal instanceof Integer) {
+                    dbVal1 = (int) (((Integer) dbVal) - params.interval);
+                    dbVal2 = (int) (((Integer) dbVal) + params.interval);
+                } else if (dbVal instanceof Long) {
+                    dbVal1 = (long) (((Long) dbVal) - params.interval);
+                    dbVal2 = (long) (((Long) dbVal) + params.interval);
+                } else {
+                    throw new UnsupportedOperationException("Don't know how to handle intervals for " + dbVal.getClass().getName());
+                }
+                query.append(" between ? and ?");
+                args.add(dbVal1);
+                args.add(dbVal2);
+            } else {
+                // Shouldn't get here.
+                // Just falling back on exact matching, because there's no way to do
+                // an interval match on something other than a number or timestamp.
+                query.append(" = ?");
+                args.add(dbVal);
             }
         }
-        if (args.isEmpty())
+        Object[] argsArray = args.toArray(new Object[args.size()]);
+        return new Object[] { query.toString(), argsArray };
+    }
+
+    public int searchTable(String qualifiedName, SearchParams params) throws NavigatorException {
+        Object[] oa = prepQuery(qualifiedName, params, true);
+        String query = (String) oa[0];
+        Object[] args = (Object[]) oa[1];
+        if (args.length == 0)
             return 0;
         PreparedStatement stmt = null;
         try {
-            stmt = con.prepareStatement(query.toString());
+            stmt = con.prepareStatement(query);
             int idx = 1;
             for (Object o : args)
                 stmt.setObject(idx++, o);
@@ -1340,35 +1395,10 @@ public class JDBCDatabase extends BasicDatabase {
     
     public void runSearch(String qualifiedName, SearchParams params) {
         try {
-            Table table = getTable(qualifiedName);
-            StringBuffer query = new StringBuffer();
-            List<Object> args = new ArrayList<Object>();
-            query.append("select * from " + table.getQualifiedName() + " where ");
-            boolean first = true;
-            for (int i = 0; i < table.getColumnCount(); i++) {
-                TypeSpec spec = table.getTypeSpecs()[i];
-                Object value;
-                try {
-                    value = spec.stringToObject(params.text);
-                    value = nav2db(spec, value);
-                } catch (Exception e) {
-                    continue;
-                }
-                if (first)
-                    first = false;
-                else
-                    query.append(" or ");
-                query.append(quote(table.getColumnNames()[i]));
-                if (params.matchSubstring && value instanceof String) {
-                    query.append(" like ?");
-                    args.add("%" + value + "%");
-                } else {
-                    query.append(" = ?");
-                    args.add(value);
-                }
-            }
-            Object[] argsArray = args.toArray(new Object[args.size()]);
-            table = (Table) runQuery(query.toString(), argsArray);
+            Object[] oa = prepQuery(qualifiedName, params, false);
+            String query = (String) oa[0];
+            Object[] args = (Object[]) oa[1];
+            Table table = (Table) runQuery(query, args);
             TableFrame tf = new TableFrame(table, browser);
             tf.setParent(browser);
             tf.showStaggered();

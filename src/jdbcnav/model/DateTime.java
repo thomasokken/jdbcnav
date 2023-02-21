@@ -150,6 +150,30 @@ public class DateTime implements Comparable<DateTime> {
         cal.set(Calendar.MILLISECOND, 0);
         time = cal.getTimeInMillis();
     }
+    
+    public DateTime withOffset(long s, int ns, boolean plus) {
+        DateTime res = new DateTime(time, nanos, tz);
+        // The offsets are given in seconds and nanos, while we're using milliseconds
+        // and nanos internally. So, a bit of impedance matching...
+        s = s * 1000 + ns / 1000000;
+        ns %= 1000000;
+        if (plus) {
+            res.nanos += ns;
+            if (res.nanos >= 1000000) {
+                res.time++;
+                res.nanos -= 1000000;
+            }
+            res.time += s;
+        } else {
+            res.nanos -= ns;
+            if (res.nanos < 0) {
+                res.time--;
+                res.nanos += 1000000;
+            }
+            res.time -= s;
+        }
+        return res;
+    }
 
     public String toString() {
         return toString(TypeSpec.TIMESTAMP_TZ, 9, ZONE_ID);
