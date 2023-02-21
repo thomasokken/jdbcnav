@@ -95,10 +95,9 @@ public class SearchTablesDialog extends MyFrame {
                             "You can use the ± field to specify a search interval. The value\n"
                             + "in this field is interpreted as a floating-point number.\n"
                             + "When searching floating-point fields, this value is subtracted\n"
-                            + "and added to the search value as is; when searching time or timestamp\n"
-                            + "fields, this value is subtracted and added as a number of seconds,\n"
-                            + "and when searching date fields, this value is subtracted and added\n"
-                            + "as a number of days.\n"
+                            + "and added to the search value as is, and when searching date/time\n"
+                            + "fields, it is interpreted as a number of days.\n"
+                            + "date/time intervals can be specified in d.ddd or d:h:m:s.sss formats.\n"
                             + "For integer and date fields, only the integer part of this value is used.\n"
                             + "Leave this field blank to search for exact matches.");
                     }
@@ -143,23 +142,21 @@ public class SearchTablesDialog extends MyFrame {
     private void ok() {
         String searchText = searchTextTF.getText();
         String intervalText = intervalTF.getText().trim();
-        double interval;
-        if (intervalText.equals("")) {
-            interval = 0;
-        } else {
-            try {
-                interval = Double.parseDouble(intervalText);
-            } catch (NumberFormatException e) {
-                MessageBox.show("Invalid interval \"" + intervalText + "\"", null);
-                return;
-            }
-        }
         boolean matchSubstring = matchSubstringCB.isSelected();
+        SearchParams params;
+        try {
+            params = new SearchParams(searchText, intervalText, matchSubstring);
+        } catch (NumberFormatException e) {
+            MessageBox.show("Invalid interval \"" + intervalText + "\"", null);
+            return;
+        }
+        MessageBox.show("interval = " + params.interval + "\nintervalSeconds = "
+                + params.intervalSeconds + "\nintervalNanos = " + params.intervalNanos, null);
         dispose();
-        cb.invoke(searchText, matchSubstring);
+        cb.invoke(params);
     }
 
     public interface Callback {
-        public void invoke(String searchText, boolean matchSubstring);
+        public void invoke(SearchParams params);
     }
 }

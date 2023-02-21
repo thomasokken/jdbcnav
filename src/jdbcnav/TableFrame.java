@@ -435,7 +435,7 @@ public class TableFrame extends QueryResultFrame {
         rowSelectionHandler = new RowSelectionHandlerForKey(keyIndex, value);
     }
     
-    public void selectRowsForSearch(String searchText, boolean matchSubstring) {
+    public void selectRowsForSearch(SearchParams params) {
         try {
             rowSelectionHandler.finish();
         } catch (NullPointerException e) {
@@ -450,7 +450,7 @@ public class TableFrame extends QueryResultFrame {
             // was easier. :-)
         }
 
-        rowSelectionHandler = new RowSelectionHandlerForSearch(searchText, matchSubstring);
+        rowSelectionHandler = new RowSelectionHandlerForSearch(params);
     }
 
     private class RowSelectionHandlerForKey extends RowSelectionHandler {
@@ -479,17 +479,17 @@ public class TableFrame extends QueryResultFrame {
         private boolean matchSubstring;
         private boolean caseSensitive;
         
-        public RowSelectionHandlerForSearch(String searchText, boolean matchSubstring) {
+        public RowSelectionHandlerForSearch(SearchParams params) {
             caseSensitive = dbTable.getDatabase().isCaseSensitive();
             int cols = model.getColumnCount();
             obj = new Object[cols];
             for (int c = 0; c < cols; c++) {
                 TypeSpec spec = dbTable.getTypeSpecs()[c];
                 try {
-                    obj[c] = spec.stringToObject(searchText);
+                    obj[c] = spec.stringToObject(params.text);
                 } catch (Exception e) {}
             }
-            this.matchSubstring = matchSubstring;
+            this.matchSubstring = params.matchSubstring;
 
             init();
         }

@@ -36,8 +36,7 @@ import jdbcnav.util.NavigatorException;
 
 public class SearchResultsFrame extends MyFrame {
     private Database db;
-    private String searchText;
-    private boolean matchSubstring;
+    private SearchParams params;
     private SearchThread searchThread;
     private JEditorPane editor;
     
@@ -55,7 +54,7 @@ public class SearchResultsFrame extends MyFrame {
                     if (Thread.interrupted())
                         return;
                     setHtml(html + "Searching " + qn + "...\n</font></body></html>");
-                    int c = db.searchTable(qn, searchText, matchSubstring);
+                    int c = db.searchTable(qn, params);
                     if (c > 0) {
                         html.append(qe(qn) + ": <a href=\"q." + qu(qn) + "\">" + c + " matching " + (c == 1 ? "row" : "rows")
                                 + "</a> (<a href=\"t." + qu(qn) + "\">table</a>)<br>\n");
@@ -90,11 +89,10 @@ public class SearchResultsFrame extends MyFrame {
         SwingUtilities.invokeLater(new HtmlSetter(html));
     }
 
-    public SearchResultsFrame(Database db, Set<String> qualifiedNames, String searchText, boolean matchSubstring) {
+    public SearchResultsFrame(Database db, Set<String> qualifiedNames, SearchParams params) {
         super("Search Results", true, true, true, true);
         this.db = db;
-        this.searchText = searchText;
-        this.matchSubstring = matchSubstring;
+        this.params = params;
 
         editor = new JEditorPane();
         editor.setEditable(false);
@@ -143,11 +141,11 @@ public class SearchResultsFrame extends MyFrame {
     private void linkActivated(String link) {
         String qualifiedName = link.substring(2);
         if (link.startsWith("q.")) {
-            db.runSearch(qualifiedName, searchText, matchSubstring);
+            db.runSearch(qualifiedName, params);
         } else {
             TableFrame editFrame = db.showTableFrame(qualifiedName);
             if (editFrame != null)
-                editFrame.selectRowsForSearch(searchText, matchSubstring);
+                editFrame.selectRowsForSearch(params);
         }
     }
 

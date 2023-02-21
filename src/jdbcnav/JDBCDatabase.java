@@ -1283,13 +1283,13 @@ public class JDBCDatabase extends BasicDatabase {
         // No-op
     }
 
-    public void searchTables(Set<String> qualifiedNames, String searchText, boolean matchSubstring) throws NavigatorException {
-        SearchResultsFrame srf = new SearchResultsFrame(this, qualifiedNames, searchText, matchSubstring);
+    public void searchTables(Set<String> qualifiedNames, SearchParams params) throws NavigatorException {
+        SearchResultsFrame srf = new SearchResultsFrame(this, qualifiedNames, params);
         srf.setParent(browser);
         srf.showStaggered();
     }
 
-    public int searchTable(String qualifiedName, String searchText, boolean matchSubstring) throws NavigatorException {
+    public int searchTable(String qualifiedName, SearchParams params) throws NavigatorException {
         Table table = getTable(qualifiedName);
         StringBuffer query = new StringBuffer();
         List<Object> args = new ArrayList<Object>();
@@ -1299,7 +1299,7 @@ public class JDBCDatabase extends BasicDatabase {
             TypeSpec spec = table.getTypeSpecs()[i];
             Object value;
             try {
-                value = spec.stringToObject(searchText);
+                value = spec.stringToObject(params.text);
                 value = nav2db(spec, value);
             } catch (Exception e) {
                 continue;
@@ -1309,7 +1309,7 @@ public class JDBCDatabase extends BasicDatabase {
             else
                 query.append(" or ");
             query.append(quote(table.getColumnNames()[i]));
-            if (matchSubstring && value instanceof String) {
+            if (params.matchSubstring && value instanceof String) {
                 query.append(" like ?");
                 args.add("%" + value + "%");
             } else {
@@ -1338,7 +1338,7 @@ public class JDBCDatabase extends BasicDatabase {
         }
     }
     
-    public void runSearch(String qualifiedName, String searchText, boolean matchSubstring) {
+    public void runSearch(String qualifiedName, SearchParams params) {
         try {
             Table table = getTable(qualifiedName);
             StringBuffer query = new StringBuffer();
@@ -1349,7 +1349,7 @@ public class JDBCDatabase extends BasicDatabase {
                 TypeSpec spec = table.getTypeSpecs()[i];
                 Object value;
                 try {
-                    value = spec.stringToObject(searchText);
+                    value = spec.stringToObject(params.text);
                     value = nav2db(spec, value);
                 } catch (Exception e) {
                     continue;
@@ -1359,7 +1359,7 @@ public class JDBCDatabase extends BasicDatabase {
                 else
                     query.append(" or ");
                 query.append(quote(table.getColumnNames()[i]));
-                if (matchSubstring && value instanceof String) {
+                if (params.matchSubstring && value instanceof String) {
                     query.append(" like ?");
                     args.add("%" + value + "%");
                 } else {

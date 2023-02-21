@@ -25,6 +25,7 @@ import java.util.Set;
 import org.mozilla.javascript.Scriptable;
 
 import jdbcnav.BrowserFrame;
+import jdbcnav.SearchParams;
 import jdbcnav.TableFrame;
 import jdbcnav.TableDetailsFrame;
 import jdbcnav.util.NavigatorException;
@@ -73,9 +74,9 @@ public interface Database {
     Collection<Table> getSelectedTables() throws NavigatorException;
     
     // Search a collection of tables
-    void searchTables(Set<String> qualifiedNames, String searchText, boolean matchSubstring) throws NavigatorException;
-    int searchTable(String qualifiedName, String searchText, boolean matchSubstring) throws NavigatorException;
-    void runSearch(String qualifiedName, String searchText, boolean matchSubstring);
+    void searchTables(Set<String> qualifiedNames, SearchParams params) throws NavigatorException;
+    int searchTable(String qualifiedName, SearchParams params) throws NavigatorException;
+    void runSearch(String qualifiedName, SearchParams params);
 
     // runQuery() may return either a Data object or a Table, depending on
     // whether or not the output from the query represents an updatable view

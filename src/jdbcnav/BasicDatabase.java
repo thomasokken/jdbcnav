@@ -178,15 +178,15 @@ public abstract class BasicDatabase implements Database {
     
     private void searchTables() {
         SearchTablesDialog.Callback cb = new SearchTablesDialog.Callback() {
-            public void invoke(String searchText, boolean matchSubstring) {
-                searchTables2(searchText, matchSubstring);
+            public void invoke(SearchParams params) {
+                searchTables2(params);
             }
         };
         SearchTablesDialog std = new SearchTablesDialog(browser, cb);
         std.showCentered();
     }
     
-    private void searchTables2(String searchText, boolean matchSubstring) {
+    private void searchTables2(SearchParams params) {
         Collection<BrowserNode> selection = browser.getSelectedNodes();
         Set<String> tables = new TreeSet<String>();
         for (BrowserNode bn : selection) {
@@ -203,7 +203,7 @@ public abstract class BasicDatabase implements Database {
         if (!tables.isEmpty()) 
             try {
                 Main.backgroundJobStarted();
-                searchTables(tables, searchText, matchSubstring);
+                searchTables(tables, params);
             } catch (NavigatorException e) {
                 MessageBox.show("Search Tables failed", e);
             } finally {
