@@ -1,3 +1,6 @@
+2023-02-22: build 2735
+*) Search Tables: Added support for interval searching.
+
 2023-02-17: build 2734
 *) Search Tables: New feature to search through all columns of an arbitrary set
 of tables, looking for the search text in string, numeric, and date/time
