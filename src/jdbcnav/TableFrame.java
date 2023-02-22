@@ -26,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
@@ -37,6 +38,7 @@ import javax.swing.SwingUtilities;
 
 import jdbcnav.model.Data;
 import jdbcnav.model.Database;
+import jdbcnav.model.DateTime;
 import jdbcnav.model.ForeignKey;
 import jdbcnav.model.PrimaryKey;
 import jdbcnav.model.Table;
@@ -475,7 +477,7 @@ public class TableFrame extends QueryResultFrame {
     }
     
     private class RowSelectionHandlerForSearch extends RowSelectionHandler {
-        private Object[] obj;
+        private Object[] obj, otherObj;
         private boolean matchSubstring;
         private boolean caseSensitive;
         
@@ -483,10 +485,55 @@ public class TableFrame extends QueryResultFrame {
             caseSensitive = dbTable.getDatabase().isCaseSensitive();
             int cols = model.getColumnCount();
             obj = new Object[cols];
+            otherObj = params.interval == 0 ? null : new Object[cols];
             for (int c = 0; c < cols; c++) {
                 TypeSpec spec = dbTable.getTypeSpecs()[c];
                 try {
-                    obj[c] = spec.stringToObject(params.text);
+                    Object navObj = spec.stringToObject(params.text);
+                    if (params.interval == 0) {
+                        obj[c] = navObj;
+                    } else {
+                        Object navObj1, navObj2;
+                        if (navObj instanceof DateTime) {
+                            try {
+                                navObj1 = ((DateTime) navObj).withOffset(params.intervalSeconds, params.intervalNanos, false);
+                                navObj2 = ((DateTime) navObj).withOffset(params.intervalSeconds, params.intervalNanos, true);
+                            } catch (Exception e) {
+                                continue;
+                            }
+                        } else if (navObj instanceof Number) {
+                            if (navObj instanceof BigDecimal) {
+                                BigDecimal interval = new BigDecimal(params.interval);
+                                navObj1 = ((BigDecimal) navObj).subtract(interval);
+                                navObj2 = ((BigDecimal) navObj).add(interval);
+                            } else if (navObj instanceof Float) {
+                                navObj1 = (float) (((Float) navObj) - params.interval);
+                                navObj2 = (float) (((Float) navObj) + params.interval);
+                            } else if (navObj instanceof Double) {
+                                navObj1 = (double) (((Double) navObj) - params.interval);
+                                navObj2 = (double) (((Double) navObj) + params.interval);
+                            } else if (navObj instanceof Short) {
+                                navObj1 = (short) (((Short) navObj) - params.interval);
+                                navObj2 = (short) (((Short) navObj) + params.interval);
+                            } else if (navObj instanceof Integer) {
+                                navObj1 = (int) (((Integer) navObj) - params.interval);
+                                navObj2 = (int) (((Integer) navObj) + params.interval);
+                            } else if (navObj instanceof Long) {
+                                navObj1 = (long) (((Long) navObj) - params.interval);
+                                navObj2 = (long) (((Long) navObj) + params.interval);
+                            } else {
+                                throw new UnsupportedOperationException("Don't know how to handle intervals for " + navObj.getClass().getName());
+                            }
+                        } else {
+                            // Shouldn't get here.
+                            // Just falling back on exact matching, because there's no way to do
+                            // an interval match on something other than a number or timestamp.
+                            obj[c] = navObj;
+                            continue;
+                        }
+                        obj[c] = navObj1;
+                        otherObj[c] = navObj2;
+                    }
                 } catch (Exception e) {}
             }
             this.matchSubstring = params.matchSubstring;
@@ -500,6 +547,8 @@ public class TableFrame extends QueryResultFrame {
                 if (so == null)
                     continue;
                 Object to = model.getValueAt(row, c);
+                if (to == null)
+                    continue;
                 if (so instanceof String) {
                     if (!(to instanceof String))
                         continue;
@@ -524,8 +573,15 @@ public class TableFrame extends QueryResultFrame {
                         }
                     }
                 } else {
-                    if (so.equals(to))
-                        return true;
+                    if (otherObj == null || otherObj[c] == null) {
+                        if (so.equals(to))
+                            return true;
+                    } else {
+                        @SuppressWarnings("unchecked")
+                        Comparable<Object> tc = (Comparable<Object>) to;
+                        if (tc.compareTo(so) >= 0 && tc.compareTo(otherObj[c]) <= 0)
+                            return true;
+                    }
                 }
             }
             return false;
