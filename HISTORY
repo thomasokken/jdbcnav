@@ -1,3 +1,8 @@
+2023-02-23: build 2736
+*) MacOS: Fixed cut/copy/paste keyboard shortcuts in text fields, to make sure
+they are always Command-X instead of Ctrl-X etc., regardless of which Look-and-
+Feel is in effect.
+
 2023-02-22: build 2735
 *) Search Tables: Added support for interval searching.
 
