@@ -58,6 +58,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
@@ -74,6 +75,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
+import javax.swing.text.DefaultEditorKit;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
@@ -226,6 +228,20 @@ public class Main extends JFrame {
             //
         } catch (UnsupportedLookAndFeelException e) {
             //
+        }
+
+        /* The textfield edit shortcut keys use the Ctrl modifier by default.
+         * Platform-specific Look-and-Feels can override this, but since we
+         * support choosing arbitrary LaFs, it's better to be safe and enforce
+         * the platform-specific modifier. At the very least, this is necessary
+         * to make Command-V etc. work on the Mac.
+         */
+        int shortcutMask = MiscUtils.getMenuShortcutKeyMask();
+        if (shortcutMask != MiscUtils.CTRL_MASK) {
+            InputMap im = (InputMap) UIManager.get("TextField.focusInputMap");
+            im.put(KeyStroke.getKeyStroke('C', shortcutMask), DefaultEditorKit.copyAction);
+            im.put(KeyStroke.getKeyStroke('V', shortcutMask), DefaultEditorKit.pasteAction);
+            im.put(KeyStroke.getKeyStroke('X', shortcutMask), DefaultEditorKit.cutAction);
         }
 
         initArrowAndHourglassCursor();
