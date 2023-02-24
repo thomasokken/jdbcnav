@@ -51,8 +51,6 @@ public abstract class BasicTable implements Table, Scriptable {
     protected Index[] indexes;
     protected ResultSetTableModel model;
     private int suffix;
-    private Data pkValues;
-    private int pkValuesFromModel;
 
     protected BasicTable() {
         // Nothing to do
@@ -99,44 +97,33 @@ public abstract class BasicTable implements Table, Scriptable {
         if (pk == null)
             return null;
         if (model == null) {
-            if (pkValues == null) {
-                // Populate pkValues using a separate query; we don't want
-                // to force creating a model since that will load the entire
-                // table, which could be prohibitively expensive.
-                pkValues = getPKValues2();
-                pkValuesFromModel = -1;
-            }
-        } else {
-            int nrows = model.getRowCount();
-            if (nrows > pkValuesFromModel) {
-                // Additional rows have been loaded; update pkValues to
-                // include the new rows. Since the model may have been
-                // re-sorted, we have no choice but to reload pkValues
-                // from scratch.
-                int[] col = getPKColumns();
-                int ncols = col.length;
-                String[] names = new String[ncols];
-                TypeSpec[] typeSpecs = new TypeSpec[ncols];
-                for (int i = 0; i < ncols; i++) {
-                    names[i] = columnNames[col[i]];
-                    typeSpecs[i] = model.getTypeSpec(col[i]);
-                }
-                ArrayList<Object[]> data = new ArrayList<Object[]>();
-                for (int i = 0; i < nrows; i++) {
-                    Object[] row = new Object[ncols];
-                    for (int j = 0; j < ncols; j++)
-                        row[j] = model.getValueAt(i, col[j]);
-                    data.add(row);
-                }
-                BasicData bd = new BasicData();
-                bd.setColumnNames(names);
-                bd.setTypeSpecs(typeSpecs);
-                bd.setData(data);
-                pkValues = bd;
-                pkValuesFromModel = nrows;
-            }
+            // Get PK values using a separate query; we don't want
+            // to force creating a model since that will load the entire
+            // table, which could be prohibitively expensive.
+            return getPKValues2();
         }
-        return pkValues;
+        // Get PK values from the in-memory model.
+        int nrows = model.getRowCount();
+        int[] col = getPKColumns();
+        int ncols = col.length;
+        String[] names = new String[ncols];
+        TypeSpec[] typeSpecs = new TypeSpec[ncols];
+        for (int i = 0; i < ncols; i++) {
+            names[i] = columnNames[col[i]];
+            typeSpecs[i] = model.getTypeSpec(col[i]);
+        }
+        ArrayList<Object[]> data = new ArrayList<Object[]>();
+        for (int i = 0; i < nrows; i++) {
+            Object[] row = new Object[ncols];
+            for (int j = 0; j < ncols; j++)
+                row[j] = model.getValueAt(i, col[j]);
+            data.add(row);
+        }
+        BasicData bd = new BasicData();
+        bd.setColumnNames(names);
+        bd.setTypeSpecs(typeSpecs);
+        bd.setData(data);
+        return bd;
     }
 
     protected Data getPKValues2() throws NavigatorException {
@@ -211,7 +198,6 @@ public abstract class BasicTable implements Table, Scriptable {
 
     public synchronized void unloadModel() {
         model = null;
-        pkValues = null;
     }
 
     public synchronized void reload() throws NavigatorException {
@@ -220,7 +206,6 @@ public abstract class BasicTable implements Table, Scriptable {
             model = new ResultSetTableModel(getData(true), this);
         else
             model.load(getData(true));
-        pkValues = null;
     }
 
     private int[] pkColumns;
