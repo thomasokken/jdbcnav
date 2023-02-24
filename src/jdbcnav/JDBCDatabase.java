@@ -1498,7 +1498,10 @@ public class JDBCDatabase extends BasicDatabase {
                     }
                     case 3:
                         // Looking for table names
-                        if (t.equals(",") || t.equalsIgnoreCase("where") || t.equalsIgnoreCase("join"))
+                        if (t.equals(",")
+                                || t.equalsIgnoreCase("where")
+                                || t.equalsIgnoreCase("group")
+                                || t.equalsIgnoreCase("join"))
                             break scanner;
                         name = t;
                         state = 4;
@@ -1512,7 +1515,9 @@ public class JDBCDatabase extends BasicDatabase {
                             // first word after the table name should be
                             // "where" or "join"; else we have a construct we
                             // can't handle.
-                            if (t.equalsIgnoreCase("where") || t.equalsIgnoreCase("join"))
+                            if (t.equalsIgnoreCase("where")
+                                    || t.equalsIgnoreCase("group")
+                                    || t.equalsIgnoreCase("join"))
                                 success = true;
                             state = 6;
                             break scanner;
@@ -1521,7 +1526,9 @@ public class JDBCDatabase extends BasicDatabase {
                             // word was a table name. If the current word
                             // matches "foo", we've found our table and are
                             // done; otherwise, we move on to look for a comma.
-                            if (t.equalsIgnoreCase("where") || t.equalsIgnoreCase("join"))
+                            if (t.equalsIgnoreCase("where")
+                                    || t.equalsIgnoreCase("group")
+                                    || t.equalsIgnoreCase("join"))
                                 break scanner;
                             if (t.equalsIgnoreCase(identifier)) {
                                 success = true;
