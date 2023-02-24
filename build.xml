@@ -35,7 +35,8 @@
            srcdir="srcboot"
            destdir="classes"
            debug="on"
-           debuglevel="source,lines">
+           debuglevel="source,lines"
+           includeantruntime="false">
       <compilerarg value="-Xlint:deprecation"/>
       <compilerarg value="-Xlint:unchecked"/>
     </javac>
@@ -52,7 +53,8 @@
            srcdir="src"
            destdir="classes/foo"
            debug="on"
-           debuglevel="source,lines">
+           debuglevel="source,lines"
+           includeantruntime="false">
       <compilerarg value="-Xlint:deprecation"/>
       <compilerarg value="-Xlint:unchecked"/>
     </javac>
