@@ -2229,6 +2229,9 @@ public class JDBCDatabase extends BasicDatabase {
                         Main.getDesktop(),
                         "Driver \"" + driver + "\" was not found.");
                 return;
+            } catch (UnsupportedClassVersionError e) {
+                MessageBox.show("Driver \"" + driver + "\" could not be loaded.", e);
+                return;
             }
 
             synchronized (this) {
