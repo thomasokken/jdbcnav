@@ -24,6 +24,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
@@ -31,10 +32,14 @@ import java.util.ArrayList;
 import java.util.TreeSet;
 
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import jdbcnav.model.Data;
 import jdbcnav.model.Database;
@@ -49,6 +54,7 @@ import jdbcnav.util.NavigatorException;
 
 public class TableFrame extends QueryResultFrame {
     private JPopupMenu popupMenu;
+    private JMenu selectionMenu;
     private int popupRow;
     private int popupColumn;
     private RowSelectionHandler rowSelectionHandler;
@@ -58,7 +64,8 @@ public class TableFrame extends QueryResultFrame {
     public TableFrame(Table dbTable, BrowserFrame browser)
                                                     throws NavigatorException {
         super(browser, dbTable);
-        JMenu m = getJMenuBar().getMenu(0);
+        JMenuBar mb = getJMenuBar();
+        JMenu m = mb.getMenu(0);
         JMenuItem mi = new JMenuItem("Details");
         mi.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent e) {
@@ -66,6 +73,36 @@ public class TableFrame extends QueryResultFrame {
                                 }
                             });
         m.add(mi, m.getItemCount() - 1);
+        
+        if (!dbTable.isUpdatableQueryResult()) {
+            selectionMenu = new JMenu("Selection");
+            mi = new JMenuItem("Prev");
+            mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_UP, MiscUtils.getMenuShortcutKeyMask()));
+            mi.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    table.scrollToNextSelectedRow(true);
+                }
+            });
+            selectionMenu.add(mi);
+            mi = new JMenuItem("Next");
+            mi.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, MiscUtils.getMenuShortcutKeyMask()));
+            mi.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    table.scrollToNextSelectedRow(false);
+                }
+            });
+            selectionMenu.add(mi);
+            mb.add(selectionMenu);
+            
+            ListSelectionListener lsl = new ListSelectionListener() {
+                public void valueChanged(ListSelectionEvent e) {
+                    selectionChanged();
+                }
+            };
+            table.getSelectionModel().addListSelectionListener(lsl);
+            table.getColumnModel().getSelectionModel().addListSelectionListener(lsl);
+            selectionChanged();
+        }
 
         table.addMouseListener(new MouseAdapter() {
                                     public void mousePressed(MouseEvent e) {
@@ -319,6 +356,11 @@ public class TableFrame extends QueryResultFrame {
             tdf.showStaggered();
         } else
             db.showTableDetailsFrame(dbTable.getQualifiedName());
+    }
+    
+    private void selectionChanged() {
+        int rows = table.getSelectedRowCount();
+        selectionMenu.setVisible(rows > 1 || rows == 1 && table.getSelectedColumnCount() > 1);
     }
 
     private void selectFkValue() {

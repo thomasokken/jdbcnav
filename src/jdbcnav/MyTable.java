@@ -489,6 +489,51 @@ public class MyTable extends JTable {
         TableCellEditor editor = getCellEditor(row, column);
         editor.cancelCellEditing();
     }
+    
+    public void scrollToNextSelectedRow(boolean up) {
+        cancelEditing();
+        JViewport view = (JViewport) SwingUtilities.getAncestorOfClass(
+                JViewport.class, MyTable.this);
+        if (view == null)
+            return;
+        Rectangle vr = view.getViewRect();
+        int[] selection = getSelectedRows();
+        if (selection.length == 0)
+            return;
+        Rectangle dr = null;
+        if (up) {
+            for (int row = selection.length - 1; row >= 0; row--) {
+                Rectangle r = getCellRect(selection[row], 0, true);
+                if (r.y < vr.y) {
+                    dr = r;
+                    break;
+                }
+            }
+            if (dr == null) {
+                Rectangle r = getCellRect(selection[selection.length - 1], 0, true);
+                if (r.y + r.height > vr.y + vr.height)
+                    dr = r;
+            }
+        } else {
+            for (int row = 0; row < selection.length; row++) {
+                Rectangle r = getCellRect(selection[row], 0, true);
+                if (r.y + r.height > vr.y + vr.height) {
+                    dr = r;
+                    break;
+                }
+            }
+            if (dr == null) {
+                Rectangle r = getCellRect(selection[0], 0, true);
+                if (r.y < vr.y)
+                    dr = r;
+            }
+        }
+        if (dr != null) {
+            dr.x = vr.x;
+            dr.width = vr.width;
+            scrollRectToVisible(dr);
+        }
+    }
 
     private void mouseInHeader(MouseEvent e) {
         int physicalColumn = columnAtPoint(e.getPoint());
