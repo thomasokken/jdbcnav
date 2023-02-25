@@ -1103,13 +1103,13 @@ public class Preferences {
 
             label = new JLabel(
                     change ?
-                        ("<html>Please enter the password for decrypting JDBC"
-                        + "<br>connection configurations from the .jdbcnavrc file."
-                        + "</html>")
-                    :
                         ("<html>Please enter a new password for protecting JDBC"
                         + "<br>connection configurations in the .jdbcnavrc file."
                         + "<br>A zero-length password will disable encryption."
+                        + "</html>")
+                    :
+                        ("<html>Please enter the password for decrypting JDBC"
+                        + "<br>connection configurations from the .jdbcnavrc file."
                         + "</html>")
                 );
             
