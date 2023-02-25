@@ -366,7 +366,7 @@ public class Preferences {
                 // Opening log writer
                 try {
                     logStream = new PrintStream(new BufferedOutputStream(
-                                    new FileOutputStream(logFileName)), true);
+                                new FileOutputStream(logFileName, true)), true);
                 } catch (IOException e) {
                     MessageBox.show("Could not open log file.", e);
                     return;
