@@ -396,10 +396,17 @@ public class Main extends JFrame {
                             });
         m.add(mi);
         m.addSeparator();
-        mi = new JMenuItem("Set Password...");
+        mi = new JMenuItem("Enter Password...");
         mi.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent e) {
-                                    setPassword();
+                                    setPassword(false);
+                                }
+                            });
+        m.add(mi);
+        mi = new JMenuItem("Change Password...");
+        mi.addActionListener(new ActionListener() {
+                                public void actionPerformed(ActionEvent e) {
+                                    setPassword(true);
                                 }
                             });
         m.add(mi);
@@ -670,9 +677,9 @@ public class Main extends JFrame {
         }
     }
 
-    private void setPassword() {
+    private void setPassword(boolean change) {
         Preferences prefs = Preferences.getPreferences();
-        prefs.setPassword();
+        prefs.setPassword(change);
     }
 
     private void preferences() {

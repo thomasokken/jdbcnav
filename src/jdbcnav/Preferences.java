@@ -479,7 +479,7 @@ public class Preferences {
                                     else
                                         key = null;
                                 }
-                            });
+                            }, false);
                     }
                 });
     }
@@ -1055,7 +1055,7 @@ public class Preferences {
         }
     }
 
-    public void setPassword() {
+    public void setPassword(boolean change) {
         PasswordDialog.askPassword(
                 new PasswordDialog.Callback() {
                     public void passwordEntered(char[] password) {
@@ -1066,7 +1066,7 @@ public class Preferences {
                             key = null;
                         write();
                     }
-                });
+                }, change);
     }
 
     private static class PasswordDialog extends MyFrame {
@@ -1074,7 +1074,7 @@ public class Preferences {
             public void passwordEntered(char[] password);
         }
 
-        public static void askPassword(Callback callback) {
+        public static void askPassword(Callback callback, boolean change) {
             if (instance == null) {
                 instance = new PasswordDialog();
                 instance.callback = callback;
