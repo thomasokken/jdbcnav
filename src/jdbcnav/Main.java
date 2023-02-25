@@ -52,6 +52,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -208,6 +211,21 @@ public class Main extends JFrame {
 
     public static void main(String[] args) {
         Preferences prefs = Preferences.getPreferences();
+        
+        Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+            public void uncaughtException(Thread t, Throwable e) {
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                pw.println("Exception in thread \"" + t.getName() + "\"");
+                e.printStackTrace(pw);
+                pw.flush();
+                String s = sw.toString();
+                System.err.print(s);
+                System.err.flush();
+                log(1, s);
+            }
+        });
+        
         String lafName = prefs.getLookAndFeelName();
         String lafClass = null;
         UIManager.LookAndFeelInfo laf[] = UIManager.getInstalledLookAndFeels();
