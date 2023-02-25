@@ -44,6 +44,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -473,9 +474,9 @@ public class Preferences {
                     public void run() {
                         PasswordDialog.askPassword(
                             new PasswordDialog.Callback() {
-                                public void passwordEntered(char[] password) {
+                                public void passwordEntered(char[] password, boolean change) {
                                     if (password.length > 0)
-                                        makeKey(password);
+                                        makeKey(password, false);
                                     else
                                         key = null;
                                 }
@@ -929,15 +930,13 @@ public class Preferences {
     }
 
 
-    private void makeKey(char[] password) {
+    private void makeKey(char[] password, boolean change) {
         byte[] b = new byte[24];
         for (int i = 0; i < 24; i++)
             b[i] = (byte) password[i % password.length];
+        SecretKeySpec oldKey = key;
         key = new SecretKeySpec(b, "DESede");
-        tryToDecryptConfigs();
-    }
 
-    private void tryToDecryptConfigs() {
         boolean tears = false;
         boolean joy = false;
         for (Iterator<byte[]> iter = encryptedConfigs.iterator(); iter.hasNext();) {
@@ -973,16 +972,23 @@ public class Preferences {
             JOptionPane.showInternalMessageDialog(Main.getDesktop(),
                 "Some encrypted configurations were successfully\n"
                 + "decrypted, but there are others in the .jdbcnavrc\n"
-                + "file that were encrypted using a different\n"
+                + "file that have been encrypted using a different\n"
                 + "password. They will remain encrypted until you\n"
                 + "enter that password as well.");
-        } else if (tears) {
+        } else if (tears && !change) {
             JOptionPane.showInternalMessageDialog(Main.getDesktop(),
-                "The password you entered did not match the encrypted\n"
+                "The password you entered did not match all the encrypted\n"
                 + "configurations that were read from the .jdbcnavrc file\n"
-                + "on startup. They will remain encrypted until you\n"
-                + "enter the correct password.");
+                + "on startup. The non-matching configurations will\n"
+                + "remain encrypted until you enter the correct password.");
+        } else if (!joy && !change) {
+            JOptionPane.showInternalMessageDialog(Main.getDesktop(),
+                "There were no encrypted configurations left to decrypt.\n"
+                + "The password was not changed. Use \"Change Password\"\n"
+                + "to enter a completely new password.");
         }
+        if (!change && !joy)
+            key = oldKey;
     }
 
 
@@ -1058,9 +1064,9 @@ public class Preferences {
     public void setPassword(boolean change) {
         PasswordDialog.askPassword(
                 new PasswordDialog.Callback() {
-                    public void passwordEntered(char[] password) {
+                    public void passwordEntered(char[] password, boolean change) {
                         if (password.length > 0) {
-                            makeKey(password);
+                            makeKey(password, change);
                             JDBCDatabase.reloadConnectionConfigs();
                         } else
                             key = null;
@@ -1071,61 +1077,80 @@ public class Preferences {
 
     private static class PasswordDialog extends MyFrame {
         public interface Callback {
-            public void passwordEntered(char[] password);
+            public void passwordEntered(char[] password, boolean change);
         }
 
         public static void askPassword(Callback callback, boolean change) {
-            if (instance == null) {
-                instance = new PasswordDialog();
-                instance.callback = callback;
-                instance.showCentered();
-            } else {
-                instance.callback = callback;
-                instance.deiconifyAndRaise();
-            }
+            if (instance != null)
+                instance.dispose();
+            instance = new PasswordDialog(change);
+            instance.callback = callback;
+            instance.showCentered();
         }
 
-        private static PasswordDialog instance;
+        private boolean change;
+        private JLabel label;
         private JPasswordField passwd;
         private Callback callback;
+        private char[] firstPwd;
+        private static PasswordDialog instance;
 
-        private PasswordDialog() {
-            super("Password", false, true, false, false);
+        private PasswordDialog(boolean change) {
+            super((change ? "Change" : "Enter") + " Password", false, true, false, false);
+            this.change = change;
             Container c = getContentPane();
             c.setLayout(new MyGridBagLayout());
 
-            JLabel label = new JLabel(
-                    "<html>Please enter the password for protecting JDBC"
-                    + "<br>connection configurations in the .jdbcnavrc file."
-                    + "<br>A zero-length password will disable encryption."
-                    + "</html>");
+            label = new JLabel(
+                    change ?
+                        ("<html>Please enter the password for decrypting JDBC"
+                        + "<br>connection configurations from the .jdbcnavrc file."
+                        + "</html>")
+                    :
+                        ("<html>Please enter a new password for protecting JDBC"
+                        + "<br>connection configurations in the .jdbcnavrc file."
+                        + "<br>A zero-length password will disable encryption."
+                        + "</html>")
+                );
+            
             MyGridBagConstraints gbc = new MyGridBagConstraints();
             gbc.gridx = 0;
             gbc.gridy = 0;
             c.add(label, gbc);
+            
+            if (!change)
+                label = null;
 
+            ActionListener listener = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (label != null) {
+                        label.setText("<html>Re-enter the new password</html>");
+                        label = null;
+                        firstPwd = passwd.getPassword();
+                        passwd.setText("");
+                        return;
+                    }
+                    char[] pwd = passwd.getPassword();
+                    if (PasswordDialog.this.change && !Arrays.equals(pwd, firstPwd)) {
+                        dispose();
+                        JOptionPane.showInternalMessageDialog(Main.getDesktop(),
+                                "Passwords do not match.");
+                        return;
+                    }
+                    Callback cb = callback;
+                    dispose();
+                    cb.passwordEntered(pwd, PasswordDialog.this.change);
+                }
+            };
+            
             passwd = new JPasswordField(24);
-            passwd.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                char[] pwd = passwd.getPassword();
-                                Callback cb = callback;
-                                dispose();
-                                cb.passwordEntered(pwd);
-                            }
-                        });
+            passwd.addActionListener(listener);
             gbc.gridy++;
             c.add(passwd, gbc);
             
             JPanel p = new JPanel(new GridLayout(1, 2));
             JButton button = new JButton("OK");
-            button.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                char[] pwd = passwd.getPassword();
-                                Callback cb = callback;
-                                dispose();
-                                cb.passwordEntered(pwd);
-                            }
-                        });
+            button.addActionListener(listener);
             p.add(button);
             button = new JButton("Cancel");
             button.addActionListener(new ActionListener() {
@@ -1139,7 +1164,7 @@ public class Preferences {
 
             pack();
         }
-
+        
         public void dispose() {
             instance = null;
             super.dispose();
