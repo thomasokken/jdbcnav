@@ -1,6 +1,6 @@
 2023-02-25: build 2737
 *) Split Set Password into Enter Password and Change Password. Better messages,
-and forces you to enter new a password twice, so you can't accidentally encrypt
+and forces you to enter a new password twice, so you can't accidentally encrypt
 your configs with a mis-typed password.
 
 2023-02-23: build 2736
