@@ -1930,7 +1930,11 @@ public class JDBCDatabase extends BasicDatabase {
                             columnScalesList.add(scale);
                         defaultsList.add(rs.getString("COLUMN_DEF"));
                         isNullableList.add(rs.getString("IS_NULLABLE"));
-                        isGeneratedList.add(rs.getString("IS_GENERATEDCOLUMN"));
+                        try {
+                            isGeneratedList.add(rs.getString("IS_GENERATEDCOLUMN"));
+                        } catch (SQLException e) {
+                            isGeneratedList.add("");
+                        }
                         cols++;
                     }
                 } catch (SQLException e) {
