@@ -1,0 +1,6 @@
+#!/bin/sh
+ant jar
+mkdir tmp
+mv jdbcnav.jar tmp
+jpackage --main-jar jdbcnav.jar --main-class jdbcnavboot.Boot -n "JDBC Navigator" --input tmp
+rm -rf tmp
