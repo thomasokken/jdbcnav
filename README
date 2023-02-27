@@ -1,59 +1,29 @@
 Choose from the following Ant targets:
 
-compile:
-Compiles the source files under "src" and "srcboot" to "classes".
-Once this is done, you can run JDBC Navigator by making sure that Rhino
-(js.jar) and "classes" are in the class path, and running
-"java jdbcnavboot.Boot". Alternatively, instead of placing "classes" in the
-class path, you can use "classes/foo", and use "jdbcnav.Main" as the startup
-class; this runs the application without a custom class loader, so everything
-it needs (Rhino and the JDBC drivers) must be in the class path.
-The "compile" target uses three sub-targets; they are explained below.
-
 compile-boot:
 Compiles the first-stage loader containing the custom class loader, and the
 first-stage boot class, jdbcnavboot.Boot.
 
 compile-main:
 Compiles all the classes under jdbcnav.*, including the second-stage boot class
-jdbcnav.Main (this is the startup class you need to invoke when using a
-"smalljar" build).
+jdbcnav.Main.
 
 compile-resources:
-Creates non-class resources -- currently jdbcnav/VERSION and jdbcnav/images/*.
+Creates jdbcnav/VERSION and jdbcnav/images/*, without using build.number.
+
+compile-resources-release:
+Creates jdbcnav/VERSION and jdbcnav/images/*.number.
+
+jar:
+Creates a jar file named "jdbcnav.jar", which contains JDBC Navigator, all of
+Rhino, and a MANIFEST.MF with a Main-Class entry pointing to jdbcnavboot.Boot.
+
+release-jar:
+Like the "jar" target, except this one also uses build.number.
 
 javadoc:
 Creates javadoc documentation under "javadoc", which you can access by pointing
 your browser at "javadoc/index.html" (relative to the project base directory).
-
-jar:
-Creates a jar file named "jdbcnav.jar", which contains JDBC
-Navigator, all of Rhino, and a MANIFEST.MF with a Main-Class entry pointing to
-jdbcnavboot.Boot.
-You can run this file using "java -jar jdbcnav-standalone.jar"; on operating
-systems that support it, you can also run it by double-clicking it, or typing
-its name like a command in a shell. This may require execute permissions to be
-set on the file first.
-If you run JDBC Navigator this way, using JDK 1.4.*, you will have to tell it
-where to find your JDBC Drivers (using the Preferences dialog). When a
-standalone jar file is run using "java -jar" or an equivalent mechanism, the
-Java VM ignores the CLASSPATH setting, so even if your JDBC drivers are listed
-in your CLASSPATH, the application can't find them without your help.
-When you run the standalone version of JDBC Navigator using JDK 1.5 or later,
-it will be able to see your CLASSPATH environment variable, so you don't need
-to tell it about any JDBC drivers you have that are in that path (but you may
-still use the Preferences dialog to specify drivers that are not listed in
-CLASSPATH).
-
-smalljar:
-Creates a jar file named "jdbcnav-small.jar", containing only JDBC Navigator.
-In order to run it, you need to place it, the Rhino jar file (js.jar), and all
-your JDBC drivers (e.g. classes12.zip (Oracle), postgresql.jar (PostgreSQL)),
-in the class path (either using the CLASSPATH environment variable or using the
-"-classpath" option to the "java" command).
-Assuming you have js.jar in the class path, and jdbcnav.jar is in the current
-directory, you start the application by saying
-"java -classpath jdbcnav.jar jdbcnav.Main".
 
 clean:
 Deletes all build targets; restores the project directory to its original
