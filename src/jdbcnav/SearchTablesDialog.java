@@ -64,15 +64,15 @@ public class SearchTablesDialog extends MyFrame {
         gbc.gridy++;
         searchTextTF = new MyTextField(16);
         searchTextTF.addActionListener(new ActionListener() {
-        						public void actionPerformed(ActionEvent e) {
-        							ok();
-        						}
-        					});
+                                public void actionPerformed(ActionEvent e) {
+                                    ok();
+                                }
+                            });
         c.add(searchTextTF, gbc);
         
         gbc.gridx++;
         gbc.weightx = 0;
-        c.add(new JLabel("±"), gbc);
+        c.add(new JLabel("\u00b1"), gbc);
         
         gbc.gridx++;
         gbc.weightx = 1;
@@ -92,7 +92,7 @@ public class SearchTablesDialog extends MyFrame {
                     public void actionPerformed(ActionEvent e) {
                         JOptionPane.showInternalMessageDialog(
                             Main.getDesktop(),
-                            "You can use the ± field to specify a search interval. The value\n"
+                            "You can use the \u00b1 field to specify a search interval. The value\n"
                             + "in this field is interpreted as a floating-point number.\n"
                             + "When searching floating-point fields, this value is subtracted\n"
                             + "and added to the search value as is, and when searching date/time\n"
