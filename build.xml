@@ -39,8 +39,7 @@
   </target>
 
   <!-- Compile the app, with classes hidden away in a bogus "foo" -->
-  <!-- directory, where only our "sneaky" class loader (and the   -->
-  <!-- "smalljar" target!) know to look...                        -->
+  <!-- directory, where only our SneakyClassLoader knows to look. -->
   <target name="compile-main">
     <mkdir dir="classes/foo"/>
     <javac source="1.7"
