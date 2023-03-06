@@ -230,6 +230,28 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
                 isGenerated[i] = "YES";
     }
 
+    protected boolean useInSearchTable(TypeSpec spec, SearchParams params, Object val) {
+        if (spec.jdbcDbType.equals("uniqueidentifier") && !params.matchSubstring) {
+            if (!(val instanceof String))
+                return false;
+            // TODO: Is this too strict?
+            // 00000000-0000-0000-0000-000000000000
+            String id = (String) val;
+            if (id.length() != 36)
+                return false;
+            if (id.charAt(8) != '-' || id.charAt(13) != '-' || id.charAt(18) != '-' || id.charAt(23) != '-')
+                return false;
+            id = id.substring(0, 8) + id.substring(9, 13) + id.substring(14, 18) + id.substring(19, 23) + id.substring(24);
+            for (int i = 0; i < 32; i++) {
+                char c = id.charAt(i);
+                if (!(c >= '0' && c <= '0' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F'))
+                    return false;
+            }
+            return true;
+        } else
+            return super.useInSearchTable(spec, params, val);
+    }
+
     protected Object db2nav(TypeSpec spec, Object o) {
         if (o == null)
             return null;

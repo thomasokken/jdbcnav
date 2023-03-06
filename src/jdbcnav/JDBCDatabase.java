@@ -1305,6 +1305,8 @@ public class JDBCDatabase extends BasicDatabase {
             } catch (Exception e) {
                 continue;
             }
+            if (!useInSearchTable(spec, params, dbVal))
+                continue;
             if (first)
                 first = false;
             else
@@ -1370,6 +1372,10 @@ public class JDBCDatabase extends BasicDatabase {
         }
         Object[] argsArray = args.toArray(new Object[args.size()]);
         return new Object[] { query.toString(), argsArray };
+    }
+
+    protected boolean useInSearchTable(TypeSpec spec, SearchParams params, Object val) {
+        return true;
     }
 
     public int searchTable(String qualifiedName, SearchParams params) throws NavigatorException {
