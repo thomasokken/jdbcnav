@@ -231,25 +231,31 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
     }
 
     protected boolean useInSearchTable(TypeSpec spec, SearchParams params, Object val) {
-        if (spec.jdbcDbType.equals("uniqueidentifier") && !params.matchSubstring) {
-            if (!(val instanceof String))
-                return false;
-            // TODO: Is this too strict?
-            // 00000000-0000-0000-0000-000000000000
-            String id = (String) val;
-            if (id.length() != 36)
-                return false;
-            if (id.charAt(8) != '-' || id.charAt(13) != '-' || id.charAt(18) != '-' || id.charAt(23) != '-')
-                return false;
-            id = id.substring(0, 8) + id.substring(9, 13) + id.substring(14, 18) + id.substring(19, 23) + id.substring(24);
-            for (int i = 0; i < 32; i++) {
-                char c = id.charAt(i);
-                if (!(c >= '0' && c <= '0' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F'))
-                    return false;
-            }
-            return true;
-        } else
+        if (params.matchSubstring || !spec.jdbcDbType.equals("uniqueidentifier"))
             return super.useInSearchTable(spec, params, val);
+	/* When using a malformed Guid, an exception is thrown by the MS SQL
+	 * JDBC driver, but not in the PreparedStatement.setObject() call as
+	 * you might expect. Rather, it happens in the ResultSet.next() call.
+	 * This means that we need to catch malformed Guids before we even pass
+	 * them to the driver, and that is what this method does.
+	 * Note that the exception is not thrown for LIKE queries, which is why
+	 * we check for params.matchSubstring, above.
+         */
+        if (!(val instanceof String))
+            return false;
+        // Format: 00000000-0000-0000-0000-000000000000
+        String id = (String) val;
+        if (id.length() < 36)
+            return false;
+        if (id.charAt(8) != '-' || id.charAt(13) != '-' || id.charAt(18) != '-' || id.charAt(23) != '-')
+            return false;
+        id = id.substring(0, 8) + id.substring(9, 13) + id.substring(14, 18) + id.substring(19, 23) + id.substring(24, 36);
+        for (int i = 0; i < 32; i++) {
+            char c = id.charAt(i);
+            if (!(c >= '0' && c <= '0' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F'))
+                return false;
+        }
+        return true;
     }
 
     protected Object db2nav(TypeSpec spec, Object o) {
