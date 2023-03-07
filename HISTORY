@@ -3,7 +3,7 @@
 repeat or tweak a search. It also shows the search parameters in the search
 results window.
 *) Search Tables now deals with MS SQL uniqueidentifier in non-LIKE queries.
-*) Added work-around for older drivers without IS_GENERATEDCOLUMN
+*) Added work-around for older drivers without IS_GENERATEDCOLUMN.
 
 2023-02-25: build 2737
 *) Split Set Password into Enter Password and Change Password. Better messages,
