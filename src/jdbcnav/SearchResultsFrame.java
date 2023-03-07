@@ -90,7 +90,7 @@ public class SearchResultsFrame extends MyFrame {
     }
 
     public SearchResultsFrame(Database db, Set<String> qualifiedNames, SearchParams params) {
-        super(db.getBrowser().getTitle() + "/" + "Search Results", true, true, true, true);
+        super(db.getName() + "/" + "Search Results", true, true, true, true);
         this.db = db;
         this.params = params;
 
