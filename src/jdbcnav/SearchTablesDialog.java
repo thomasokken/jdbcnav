@@ -40,6 +40,10 @@ public class SearchTablesDialog extends MyFrame {
     private JTextField searchTextTF;
     private JTextField intervalTF;
     private JCheckBox matchSubstringCB;
+    
+    private static String lastSearchText;
+    private static String lastInterval;
+    private static boolean lastMatchSubstring;
 
     public SearchTablesDialog(BrowserFrame bf, Callback cb) {
         super("Search Tables");
@@ -137,6 +141,21 @@ public class SearchTablesDialog extends MyFrame {
         gbc.gridx++;
         p.add(cancelB, gbc);
         pack();
+        
+        // Restore last accepted state
+        String initialSearchText = null;
+        String initialInterval = null;
+        boolean initialMatchSubstring = false;;
+        synchronized (getClass()) {
+            initialSearchText = lastSearchText;
+            initialInterval = lastInterval;
+            initialMatchSubstring = lastMatchSubstring;
+        }
+        if (initialSearchText != null) {
+            searchTextTF.setText(initialSearchText);
+            intervalTF.setText(initialInterval);
+            matchSubstringCB.setSelected(initialMatchSubstring);
+        }
     }
     
     private void ok() {
@@ -149,6 +168,12 @@ public class SearchTablesDialog extends MyFrame {
         } catch (NumberFormatException e) {
             MessageBox.show("Invalid interval \"" + intervalText + "\"", null);
             return;
+        }
+        // Save state to use with next instance
+        synchronized (getClass()) {
+            lastSearchText = searchText;
+            lastInterval = intervalText;
+            lastMatchSubstring = matchSubstring;
         }
         dispose();
         cb.invoke(params);
