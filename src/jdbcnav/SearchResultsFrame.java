@@ -49,6 +49,10 @@ public class SearchResultsFrame extends MyFrame {
             try {
                 StringBuffer html = new StringBuffer();
                 html.append("<html><body><font face='lucida' size='2'>\n");
+                html.append("Searching for \"" + qe(params.text) + "\"");
+                if (params.interval != 0)
+                    html.append(" \u00b1 " + params.interval);
+                html.append(", " + (params.matchSubstring ? "substrings" : "exact strings") + "<br>\n");
                 boolean noHits = true;
                 for (String qn : qualifiedNames) {
                     if (Thread.interrupted())
