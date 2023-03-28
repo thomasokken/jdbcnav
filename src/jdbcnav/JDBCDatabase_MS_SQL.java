@@ -233,13 +233,13 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
     protected boolean useInSearchTable(TypeSpec spec, SearchParams params, Object val) {
         if (params.matchSubstring || !spec.jdbcDbType.equals("uniqueidentifier"))
             return super.useInSearchTable(spec, params, val);
-	/* When using a malformed Guid, an exception is thrown by the MS SQL
-	 * JDBC driver, but not in the PreparedStatement.setObject() call as
-	 * you might expect. Rather, it happens in the ResultSet.next() call.
-	 * This means that we need to catch malformed Guids before we even pass
-	 * them to the driver, and that is what this method does.
-	 * Note that the exception is not thrown for LIKE queries, which is why
-	 * we check for params.matchSubstring, above.
+        /* When using a malformed Guid, an exception is thrown by the MS SQL
+         * JDBC driver, but not in the PreparedStatement.setObject() call as
+         * you might expect. Rather, it happens in the ResultSet.next() call.
+         * This means that we need to catch malformed Guids before we even pass
+         * them to the driver, and that is what this method does.
+         * Note that the exception is not thrown for LIKE queries, which is why
+         * we check for params.matchSubstring, above.
          */
         if (!(val instanceof String))
             return false;

@@ -104,7 +104,7 @@ public class JavaScriptStatement implements Scriptable {
         else if (name.equals("close"))
             return closeFunction;
         else if (name.equals("getGeneratedKeys"))
-        	return getGeneratedKeysFunction;
+            return getGeneratedKeysFunction;
         else
             return NOT_FOUND;
     }
