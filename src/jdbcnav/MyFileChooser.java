@@ -19,27 +19,25 @@
 package jdbcnav;
 
 import java.awt.Component;
-import java.io.File;
 
 import javax.swing.JFileChooser;
 
 
 public class MyFileChooser extends JFileChooser {
-    private static File currentDirectory;
 
     public MyFileChooser() {
-        setCurrentDirectory(currentDirectory);
+        setCurrentDirectory(Preferences.getPreferences().getCurrentDirectory());
     }
 
     public int showOpenDialog(Component parent) {
         int result = super.showOpenDialog(parent);
-        currentDirectory = getCurrentDirectory();
+        Preferences.getPreferences().setCurrentDirectory(getCurrentDirectory());
         return result;
     }
 
     public int showSaveDialog(Component parent) {
         int result = super.showSaveDialog(parent);
-        currentDirectory = getCurrentDirectory();
+        Preferences.getPreferences().setCurrentDirectory(getCurrentDirectory());
         return result;
     }
 }

@@ -143,6 +143,9 @@ public class Preferences {
     // Class Path
     private ArrayList<String> classPath;
 
+    // Current directory for file choosers
+    private File currentDirectory;
+
     // Password for encrypting connection configs in the .jdbcnavrc file
     private SecretKeySpec key;
 
@@ -327,6 +330,15 @@ public class Preferences {
             for (String item : classPath)
                 addClassPathItem(item);
         }
+    }
+
+
+    public File getCurrentDirectory() {
+        return currentDirectory;
+    }
+
+    public void setCurrentDirectory(File dir) {
+        currentDirectory = dir;
     }
 
 
@@ -636,6 +648,10 @@ public class Preferences {
                     addClassPathItem(item);
                 } else if (name.equals("classpath"))
                     inClassPath = false;
+            } else if (name.equals("current-directory")) {
+                String path = value.trim();
+                File dir = new File(path);
+                currentDirectory = dir.isDirectory() ? dir : null;
             } else if (name.equals("laf-name")) {
                 lafName = value;
             } else if (name.equals("pk-highlight-color")) {
@@ -901,6 +917,10 @@ public class Preferences {
         for (String item : classPath)
             xml.wholeTag("item", item);
         xml.closeTag();
+
+        xml.newLine();
+        xml.writeComment("Current Directory for File Choosers:");
+        xml.wholeTag("current-directory", currentDirectory == null ? "" : currentDirectory.getAbsolutePath());
 
         xml.newLine();
         xml.writeComment("Log Level and File:");
