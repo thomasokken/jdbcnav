@@ -31,6 +31,7 @@ public class JavaScriptStatement implements Scriptable {
     private Statement stmt;
     private CloseFunction closeFunction = new CloseFunction();
     private ExecuteFunction executeFunction = new ExecuteFunction();
+    private GetGeneratedKeysFunction getGeneratedKeysFunction = new GetGeneratedKeysFunction();
 
     public JavaScriptStatement(Statement stmt) {
         this.stmt = stmt;
@@ -52,15 +53,33 @@ public class JavaScriptStatement implements Scriptable {
 
     private class ExecuteFunction extends BasicFunction {
         public Object call(Object[] args) {
-            if (args.length != 1 || !(args[0] instanceof String))
+            if (!(args.length == 1 && args[0] instanceof String)
+                    && !(args.length == 2 && args[0] instanceof String && args[1] instanceof Boolean))
                 throw new EvaluatorException(
-                        "Statement.execute() requires one String argument.");
+                        "Statement.execute() requires one String and an optional Boolean argument.");
             try {
-                boolean hasResultSet = stmt.execute((String) args[0]);
+                boolean hasResultSet;
+                if (args.length == 2 && args[1].equals(Boolean.TRUE))
+                    hasResultSet = stmt.execute((String) args[0], Statement.RETURN_GENERATED_KEYS);
+                else
+                    hasResultSet = stmt.execute((String) args[0]);
                 if (hasResultSet)
                     return new JavaScriptResultSet(stmt.getResultSet());
                 else
                     return stmt.getUpdateCount();
+            } catch (SQLException e) {
+                throw new WrappedException(e);
+            }
+        }
+    }
+
+    private class GetGeneratedKeysFunction extends BasicFunction {
+        public Object call(Object[] args) {
+            if (args.length != 0)
+                throw new EvaluatorException(
+                                "Statement.getGeneratedKeys() requires no arguments.");
+            try {
+                return new JavaScriptResultSet(stmt.getGeneratedKeys());
             } catch (SQLException e) {
                 throw new WrappedException(e);
             }
@@ -84,6 +103,8 @@ public class JavaScriptStatement implements Scriptable {
             return executeFunction;
         else if (name.equals("close"))
             return closeFunction;
+        else if (name.equals("getGeneratedKeys"))
+        	return getGeneratedKeysFunction;
         else
             return NOT_FOUND;
     }
@@ -99,7 +120,8 @@ public class JavaScriptStatement implements Scriptable {
     public Object[] getIds() {
         return new Object[] {
             "close",
-            "execute"
+            "execute",
+            "getGeneratedKeys"
         };
     }
 
