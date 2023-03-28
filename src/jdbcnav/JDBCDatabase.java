@@ -1776,10 +1776,14 @@ public class JDBCDatabase extends BasicDatabase {
         }
     }
 
-    public Scriptable prepareStatement(String statement)
+    public Scriptable prepareStatement(String statement, boolean returnGenKeys)
                                                     throws NavigatorException {
         try {
-            PreparedStatement pstmt = con.prepareStatement(statement);
+            PreparedStatement pstmt;
+            if (returnGenKeys)
+                pstmt = con.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS);
+            else
+                pstmt = con.prepareStatement(statement);
             return new JavaScriptPreparedStatement(pstmt);
         } catch (SQLException e) {
             throw new NavigatorException(e);

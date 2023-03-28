@@ -225,7 +225,7 @@ public class FileDatabase extends BasicDatabase {
                     + "capable of creating statements.");
     }
 
-    public Scriptable prepareStatement(String statement)
+    public Scriptable prepareStatement(String statement, boolean returnGenKeys)
                                                     throws NavigatorException {
         throw new NavigatorException("File Data Source is not "
                     + "capable of preparing statements.");

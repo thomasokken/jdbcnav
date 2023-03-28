@@ -89,7 +89,7 @@ public interface Database {
 
     int runUpdate(String query) throws NavigatorException;
     Scriptable createStatement() throws NavigatorException;
-    Scriptable prepareStatement(String statement) throws NavigatorException;
+    Scriptable prepareStatement(String statement, boolean returnGenKeys) throws NavigatorException;
     Scriptable prepareCall(String call) throws NavigatorException;
 
     // Utilities for quoting/unquoting identifiers

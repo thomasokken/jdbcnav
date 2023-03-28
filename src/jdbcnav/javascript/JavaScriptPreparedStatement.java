@@ -34,6 +34,7 @@ public class JavaScriptPreparedStatement implements Scriptable {
     private CloseFunction closeFunction = new CloseFunction();
     private ExecuteFunction executeFunction = new ExecuteFunction();
     private SetFunction setFunction = new SetFunction();
+    private GetGeneratedKeysFunction getGeneratedKeysFunction = new GetGeneratedKeysFunction();
 
     public JavaScriptPreparedStatement(PreparedStatement pstmt) {
         this.pstmt = pstmt;
@@ -117,6 +118,19 @@ public class JavaScriptPreparedStatement implements Scriptable {
         }
     }
 
+    private class GetGeneratedKeysFunction extends BasicFunction {
+        public Object call(Object[] args) {
+            if (args.length != 0)
+                throw new EvaluatorException(
+                                "PreparedStatement.getGeneratedKeys() requires no arguments.");
+            try {
+                return new JavaScriptResultSet(pstmt.getGeneratedKeys());
+            } catch (SQLException e) {
+                throw new WrappedException(e);
+            }
+        }
+    }
+
     public void delete(int index) {
         //
     }
@@ -136,6 +150,8 @@ public class JavaScriptPreparedStatement implements Scriptable {
             return closeFunction;
         else if (name.equals("setObject"))
             return setFunction;
+        else if (name.equals("getGeneratedKeys"))
+            return getGeneratedKeysFunction;
         else
             return NOT_FOUND;
     }
@@ -152,7 +168,8 @@ public class JavaScriptPreparedStatement implements Scriptable {
         return new Object[] {
             "close",
             "execute",
-            "setObject"
+            "setObject",
+            "getGeneratedKeys"
         };
     }
 
