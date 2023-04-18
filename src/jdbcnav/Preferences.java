@@ -380,6 +380,7 @@ public class Preferences {
                 try {
                     logStream = new PrintStream(new BufferedOutputStream(
                                 new FileOutputStream(logFileName, true)), true);
+                    logStream.println("===============================================================================");
                 } catch (IOException e) {
                     MessageBox.show("Could not open log file.", e);
                     return;
