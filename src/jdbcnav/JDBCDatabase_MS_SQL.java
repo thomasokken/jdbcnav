@@ -252,7 +252,7 @@ public class JDBCDatabase_MS_SQL extends JDBCDatabase {
         id = id.substring(0, 8) + id.substring(9, 13) + id.substring(14, 18) + id.substring(19, 23) + id.substring(24, 36);
         for (int i = 0; i < 32; i++) {
             char c = id.charAt(i);
-            if (!(c >= '0' && c <= '0' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F'))
+            if (!(c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F'))
                 return false;
         }
         return true;
