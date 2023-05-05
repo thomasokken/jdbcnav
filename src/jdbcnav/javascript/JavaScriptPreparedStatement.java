@@ -79,7 +79,7 @@ public class JavaScriptPreparedStatement implements Scriptable {
                                     + " requires 2, 3, or 4 arguments.");
             if (args[0] instanceof Number
                     && (args.length < 3 ||
-                        args[2] instanceof Number || args[2] instanceof String)
+                        args[2] instanceof Number || args[2] instanceof CharSequence)
                     && (args.length < 4 || args[3] instanceof Number)) {
                 try {
                     if (args.length == 2)
@@ -91,7 +91,7 @@ public class JavaScriptPreparedStatement implements Scriptable {
                         else
                             try {
                                 type = MiscUtils.sqlTypeStringToInt(
-                                                        (String) args[2]);
+                                                        args[2].toString());
                             } catch (IllegalArgumentException e) {
                                 throw new EvaluatorException(e.getMessage());
                             }

@@ -78,16 +78,16 @@ public class JavaScriptCallableStatement implements Scriptable {
                 throw new EvaluatorException(
                                     "CallableStatement.registerOutParameter()"
                                     + " requires 2 or 3 arguments.");
-            if ((args[0] instanceof Number || args[0] instanceof String)
-                    && (args[1] instanceof Number || args[1] instanceof String)
+            if ((args[0] instanceof Number || args[0] instanceof CharSequence)
+                    && (args[1] instanceof Number || args[1] instanceof CharSequence)
                     && (args.length == 2 ||
-                    args[2] instanceof Number || args[2] instanceof String)) {
+                    args[2] instanceof Number || args[2] instanceof CharSequence)) {
                 int type;
                 if (args[1] instanceof Number)
                     type = ((Number) args[1]).intValue();
                 else
                     try {
-                        type = MiscUtils.sqlTypeStringToInt((String) args[1]);
+                        type = MiscUtils.sqlTypeStringToInt(args[1].toString());
                     } catch (IllegalArgumentException e) {
                         throw new WrappedException(e);
                     }
@@ -99,7 +99,7 @@ public class JavaScriptCallableStatement implements Scriptable {
                                         type);
                         else
                             cstmt.registerOutParameter(
-                                        (String) args[0],
+                                        args[0].toString(),
                                         type);
                     else
                         if (args[0] instanceof Number)
@@ -112,18 +112,18 @@ public class JavaScriptCallableStatement implements Scriptable {
                                 cstmt.registerOutParameter(
                                             ((Number) args[0]).intValue(),
                                             type,
-                                            (String) args[2]);
+                                            args[2].toString());
                         else
                             if (args[2] instanceof Number)
                                 cstmt.registerOutParameter(
-                                            (String) args[0],
+                                            args[0].toString(),
                                             type,
                                             ((Number) args[2]).intValue());
                             else
                                 cstmt.registerOutParameter(
-                                            (String) args[0],
+                                            args[0].toString(),
                                             type,
-                                            (String) args[2]);
+                                            args[2].toString());
                 } catch (SQLException e) {
                     throw new WrappedException(e);
                 }
@@ -141,9 +141,9 @@ public class JavaScriptCallableStatement implements Scriptable {
                 throw new EvaluatorException(
                                     "CallableStatement.setObject()"
                                     + " requires 2, 3, or 4 arguments.");
-            if ((args[0] instanceof Number || args[0] instanceof String)
+            if ((args[0] instanceof Number || args[0] instanceof CharSequence)
                     && (args.length < 3 ||
-                        args[2] instanceof Number || args[2] instanceof String)
+                        args[2] instanceof Number || args[2] instanceof CharSequence)
                     && (args.length < 4 || args[3] instanceof Number)) {
                 try {
                     if (args.length == 2)
@@ -151,7 +151,7 @@ public class JavaScriptCallableStatement implements Scriptable {
                             cstmt.setObject(((Number) args[0]).intValue(),
                                             args[1]);
                         else
-                            cstmt.setObject((String) args[0],
+                            cstmt.setObject(args[0].toString(),
                                             args[1]);
                     else {
                         int type;
@@ -160,7 +160,7 @@ public class JavaScriptCallableStatement implements Scriptable {
                         else
                             try {
                                 type = MiscUtils.sqlTypeStringToInt(
-                                                            (String) args[2]);
+                                                            args[2].toString());
                             } catch (IllegalArgumentException e) {
                                 throw new WrappedException(e);
                             }
@@ -170,7 +170,7 @@ public class JavaScriptCallableStatement implements Scriptable {
                                                 args[1],
                                                 type);
                             else
-                                cstmt.setObject((String) args[0],
+                                cstmt.setObject(args[0].toString(),
                                                 args[1],
                                                 type);
                         else
@@ -180,7 +180,7 @@ public class JavaScriptCallableStatement implements Scriptable {
                                                 type,
                                                 ((Number) args[3]).intValue());
                             else
-                                cstmt.setObject((String) args[0],
+                                cstmt.setObject(args[0].toString(),
                                                 args[1],
                                                 type,
                                                 ((Number) args[3]).intValue());
@@ -201,12 +201,12 @@ public class JavaScriptCallableStatement implements Scriptable {
     private class GetFunction extends BasicFunction {
         public Object call(Object[] args) {
             if (args.length == 1 && (args[0] instanceof Number
-                                 || args[0] instanceof String)) {
+                                 || args[0] instanceof CharSequence)) {
                 try {
                     if (args[0] instanceof Number)
                         return cstmt.getObject(((Number) args[0]).intValue());
                     else
-                        return cstmt.getObject((String) args[0]);
+                        return cstmt.getObject(args[0].toString());
                 } catch (SQLException e) {
                     throw new WrappedException(e);
                 }

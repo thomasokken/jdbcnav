@@ -53,16 +53,16 @@ public class JavaScriptStatement implements Scriptable {
 
     private class ExecuteFunction extends BasicFunction {
         public Object call(Object[] args) {
-            if (!(args.length == 1 && args[0] instanceof String)
-                    && !(args.length == 2 && args[0] instanceof String && args[1] instanceof Boolean))
+            if (!(args.length == 1 && args[0] instanceof CharSequence)
+                    && !(args.length == 2 && args[0] instanceof CharSequence && args[1] instanceof Boolean))
                 throw new EvaluatorException(
                         "Statement.execute() requires one String and an optional Boolean argument.");
             try {
                 boolean hasResultSet;
                 if (args.length == 2 && args[1].equals(Boolean.TRUE))
-                    hasResultSet = stmt.execute((String) args[0], Statement.RETURN_GENERATED_KEYS);
+                    hasResultSet = stmt.execute(args[0].toString(), Statement.RETURN_GENERATED_KEYS);
                 else
-                    hasResultSet = stmt.execute((String) args[0]);
+                    hasResultSet = stmt.execute(args[0].toString());
                 if (hasResultSet)
                     return new JavaScriptResultSet(stmt.getResultSet());
                 else

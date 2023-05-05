@@ -481,13 +481,13 @@ public class BrowserFrame extends MyFrame {
 
     private class PrepareStatementFunction extends BasicFunction {
         public Object call(Object[] args) {
-            if (!(args.length == 1 && args[0] instanceof String)
-                    && !(args.length == 2 && args[0] instanceof String && args[1] instanceof Boolean))
+            if (!(args.length == 1 && args[0] instanceof CharSequence)
+                    && !(args.length == 2 && args[0] instanceof CharSequence && args[1] instanceof Boolean))
                 throw new EvaluatorException(
                     "prepareStatement() requires one String and an optional Boolean argument.");
             try {
                 boolean returnGenKeys = args.length == 2 && args[1].equals(Boolean.TRUE);
-                return db.prepareStatement((String) args[0], returnGenKeys);
+                return db.prepareStatement(args[0].toString(), returnGenKeys);
             } catch (NavigatorException e) {
                 throw new WrappedException(e);
             }
@@ -496,11 +496,11 @@ public class BrowserFrame extends MyFrame {
 
     private class PrepareCallFunction extends BasicFunction {
         public Object call(Object[] args) {
-            if (args.length != 1 || !(args[0] instanceof String))
+            if (args.length != 1 || !(args[0] instanceof CharSequence))
                 throw new EvaluatorException(
                     "prepareCall() requires a single String argument.");
             try {
-                return db.prepareCall((String) args[0]);
+                return db.prepareCall(args[0].toString());
             } catch (NavigatorException e) {
                 throw new WrappedException(e);
             }
