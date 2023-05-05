@@ -1,3 +1,12 @@
+2023-05-05: build 2740
+*) Better handling of String params in JavaScript. When a JavaScript function
+is called with an argument like "foo"+"bar", the object that is actually passed
+is not a java.lang.String, but an org.mozilla.javascript.ConsString, and since
+the latter is not a subclass of the former, functions that expect Strings won't
+work with this kind of argument. I'm now dealing with this by not checking for
+String but for CharSequence, and not using a cast to String but a call to
+toString().
+
 2023-04-26: build 2739
 *) Fixed bug in MS SQL uniqueidentifier handling for Search Tables.
 *) File selection boxes now remember the current directory when the app exits.
