@@ -39,6 +39,15 @@ public class Clipboard {
             // Won't happen.
         }
     }
+    private static DataFlavor byteArrayFlavor;
+    static {
+        try {
+            byteArrayFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType
+                        + "; class=\"[B\"");
+        } catch (ClassNotFoundException e) {
+            // Won't happen.
+        }
+    }
 
     private class GridSelection implements Transferable {
         private Object[][] grid;
@@ -61,6 +70,36 @@ public class Clipboard {
         }
     }
 
+    private class ByteArraySelection implements Transferable {
+        private byte[] bytes;
+        public ByteArraySelection(byte[] bytes) {
+            this.bytes = bytes;
+        }
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[] { byteArrayFlavor, DataFlavor.stringFlavor };
+        }
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return flavor.equals(byteArrayFlavor) || flavor.equals(DataFlavor.stringFlavor);
+        }
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+            if (flavor.equals(byteArrayFlavor))
+                return bytes;
+            else if (flavor.equals(DataFlavor.stringFlavor))
+                return bytesAsString();
+            else
+                throw new UnsupportedFlavorException(flavor);
+        }
+        private String bytesAsString() {
+            StringBuffer buf = new StringBuffer();
+            for (int i = 0; i < bytes.length; i++) {
+                byte b = bytes[i];
+                buf.append("0123456789abcdef".charAt((b >> 4) & 15));
+                buf.append("0123456789abcdef".charAt(b & 15));
+            }
+            return buf.toString();
+        }
+    }
+
     public Clipboard() {
         sysClip = Toolkit.getDefaultToolkit().getSystemClipboard();
         listeners = new ArrayList<Listener>();
@@ -72,6 +111,8 @@ public class Clipboard {
             tr = null;
         else if (data instanceof Object[][])
             tr = new GridSelection((Object[][]) data);
+        else if (data instanceof byte[])
+            tr = new ByteArraySelection((byte[]) data);
         else
             tr = new StringSelection(data.toString());
         try {
@@ -90,6 +131,8 @@ public class Clipboard {
         try {
             if (tr.isDataFlavorSupported(gridFlavor))
                 return tr.getTransferData(gridFlavor);
+            else if (tr.isDataFlavorSupported(byteArrayFlavor))
+                return tr.getTransferData(byteArrayFlavor);
             else
                 return tr.getTransferData(DataFlavor.stringFlavor);
         } catch (UnsupportedFlavorException e) {
