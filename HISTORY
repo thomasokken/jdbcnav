@@ -1,3 +1,6 @@
+2023-08-21: build 2741
+*) Fixed byte[] copying and pasting.
+
 2023-05-05: build 2740
 *) Better handling of String params in JavaScript. When a JavaScript function
 is called with an argument like "foo"+"bar", the object that is actually passed
