@@ -18,11 +18,13 @@
 
 package jdbcnav;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,6 +42,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.Scrollable;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
@@ -140,7 +143,7 @@ public class BinaryEditorFrame extends MyFrame {
         // forwarding the appropriate Scrollable method calls to the JTextAreas
         // we contain.
 
-        JPanel p = new JPanel();
+        JPanel p = new TextPanel();
         p.setLayout(new MyGridBagLayout());
         MyGridBagConstraints gbc = new MyGridBagConstraints();
         gbc.gridx = gbc.gridy = 0;
@@ -283,6 +286,34 @@ public class BinaryEditorFrame extends MyFrame {
         }
     }
     
+    private class TextPanel extends JPanel implements Scrollable {
+        private JTextArea getFirstTextArea() {
+            return (JTextArea) getComponent(0);
+        }
+        public Dimension getPreferredScrollableViewportSize() {
+            Component comps[] = getComponents();
+            Dimension d = ((JTextArea) comps[0]).getPreferredScrollableViewportSize();
+            for (int i = 1; i <= 2; i++)
+                d.width += ((JTextArea) comps[i]).getPreferredScrollableViewportSize().width;
+            d.width += 24;
+            return d;
+        }
+        public int getScrollableUnitIncrement(Rectangle visibleRect,
+                int orientation, int direction) {
+            return getFirstTextArea().getScrollableUnitIncrement(visibleRect, orientation, direction);
+        }
+        public int getScrollableBlockIncrement(Rectangle visibleRect,
+                int orientation, int direction) {
+            return getFirstTextArea().getScrollableBlockIncrement(visibleRect, orientation, direction);
+        }
+        public boolean getScrollableTracksViewportWidth() {
+            return getFirstTextArea().getScrollableTracksViewportWidth();
+        }
+        public boolean getScrollableTracksViewportHeight() {
+            return getFirstTextArea().getScrollableTracksViewportHeight();
+        }
+    }
+
     private void nuke() {
         if (isDirty()) {
             Toolkit.getDefaultToolkit().beep();
