@@ -2052,6 +2052,22 @@ public class JDBCDatabase extends BasicDatabase {
     public static void reloadConnectionConfigs() {
         LoginDialog.reloadConnectionConfigs();
     }
+    
+    private static boolean loadDriver(String driverClassName) {
+        try {
+            Class.forName(driverClassName);
+            return true;
+        } catch (ClassNotFoundException e) {
+            Toolkit.getDefaultToolkit().beep();
+            JOptionPane.showInternalMessageDialog(
+                    Main.getDesktop(),
+                    "Driver \"" + driverClassName + "\" was not found.");
+            return false;
+        } catch (UnsupportedClassVersionError e) {
+            MessageBox.show("Driver \"" + driverClassName + "\" could not be loaded.", e);
+            return false;
+        }
+    }
 
     private static class LoginDialog extends MyFrame {
         private static LoginDialog instance;
@@ -2235,18 +2251,8 @@ public class JDBCDatabase extends BasicDatabase {
             String username = usernameTF.getText();
             String password = new String(passwordPF.getPassword());
 
-            try {
-                Class.forName(driver);
-            } catch (ClassNotFoundException e) {
-                Toolkit.getDefaultToolkit().beep();
-                JOptionPane.showInternalMessageDialog(
-                        Main.getDesktop(),
-                        "Driver \"" + driver + "\" was not found.");
+            if (!loadDriver(driver))
                 return;
-            } catch (UnsupportedClassVersionError e) {
-                MessageBox.show("Driver \"" + driver + "\" could not be loaded.", e);
-                return;
-            }
 
             synchronized (this) {
                 connectB.setEnabled(false);
@@ -2257,7 +2263,7 @@ public class JDBCDatabase extends BasicDatabase {
                 // DriverManager.getConnection() can take a long time,
                 // and we don't want to freeze awt during the wait; also,
                 // we want to allow the user to cancel the operation.
-                connectThread = new ConnectThread(name, url, driver,
+                connectThread = new ConnectThread(this, opencb, name, url, driver,
                                                   username, password);
                 Main.backgroundJobStarted();
                 Thread thr = new Thread(connectThread);
@@ -2280,15 +2286,19 @@ public class JDBCDatabase extends BasicDatabase {
             }
         }
 
-        private class ConnectThread implements Runnable {
+        private static class ConnectThread implements Runnable {
+            private LoginDialog dialog;
+            private OpenCallback opencb;
             private String name;
             private String url;
             private String driver;
             private String username;
             private String password;
 
-            public ConnectThread(String name, String url, String driver,
-                                 String username, String password) {
+            public ConnectThread(LoginDialog dialog, OpenCallback opencb, String name, String url,
+                                 String driver, String username, String password) {
+                this.dialog = dialog;
+                this.opencb = opencb;
                 this.name = name;
                 this.url = url;
                 this.driver = driver;
@@ -2301,45 +2311,49 @@ public class JDBCDatabase extends BasicDatabase {
                 try {
                     con = doConnect(driver, url, username, password);
                 } catch (SQLException e) {
-                    synchronized (LoginDialog.this) {
-                        // if this != connectThread, the operation was
-                        // cancelled, and so we should not report errors about
-                        // it to the user, nor change the state of the buttons
-                        // (the frame may have been destroyed already!).
-                        if (this == connectThread) {
-                            MessageBox.show("Could not open JDBC connection.",
-                                            e);
-                            connectB.setEnabled(true);
-                            saveB.setEnabled(true);
-                            deleteB.setEnabled(true);
-                            connectThread = null;
-                            Main.backgroundJobEnded();
+                    if (dialog != null)
+                        synchronized (dialog) {
+                            // if this != connectThread, the operation was
+                            // cancelled, and so we should not report errors about
+                            // it to the user, nor change the state of the buttons
+                            // (the frame may have been destroyed already!).
+                            if (this == dialog.connectThread) {
+                                MessageBox.show("Could not open JDBC connection.",
+                                                e);
+                                dialog.connectB.setEnabled(true);
+                                dialog.saveB.setEnabled(true);
+                                dialog.deleteB.setEnabled(true);
+                                dialog.connectThread = null;
+                                Main.backgroundJobEnded();
+                            }
                         }
-                    }
                     return;
                 }
 
-                synchronized (LoginDialog.this) {
-                    if (this != connectThread) {
-                        // User cancelled the operation.
-                        try {
-                            con.close();
-                        } catch (SQLException e) {}
-                        return;
-                    } else
-                        connectThread = null;
-                }
+                if (dialog != null)
+                    synchronized (dialog) {
+                        if (this != dialog.connectThread) {
+                            // User cancelled the operation.
+                            try {
+                                con.close();
+                            } catch (SQLException e) {}
+                            return;
+                        } else
+                            dialog.connectThread = null;
+                    }
 
                 // Open the browser, and dispose the login dialog, on
                 // the awt event thread; doing it here causes the awt
                 // repaint manager to get confused and throw an exception
                 // (which appears to be harmless, but still...).
                 SwingUtilities.invokeLater(
-                            new BrowserOpener1(name, con, driver, url, username, password));
+                            new BrowserOpener1(dialog, opencb, name, con, driver, url, username, password));
             }
         }
 
-        private class BrowserOpener1 implements Runnable {
+        private static class BrowserOpener1 implements Runnable {
+            private LoginDialog dialog;
+            private OpenCallback opencb;
             private String name;
             private Connection con;
             private String driver;
@@ -2347,8 +2361,11 @@ public class JDBCDatabase extends BasicDatabase {
             private String username;
             private String password;
 
-            public BrowserOpener1(String name, Connection con, String driver,
-                                  String url, String username, String password) {
+            public BrowserOpener1(LoginDialog dialog, OpenCallback opencb, String name, Connection con,
+                                  String driver, String url, String username,
+                                  String password) {
+                this.dialog = dialog;
+                this.opencb = opencb;
                 this.name = name;
                 this.con = con;
                 this.driver = driver;
@@ -2358,17 +2375,19 @@ public class JDBCDatabase extends BasicDatabase {
             }
 
             public void run() {
-                dispose();
+                if (dialog != null)
+                    dialog.dispose();
                 MyFrame waitDlg = new WaitDialog();
                 waitDlg.showCentered();
-                Thread thr = new Thread(new BrowserOpener2(name, con, driver, url, username, password, waitDlg));
+                Thread thr = new Thread(new BrowserOpener2(opencb, name, con, driver, url, username, password, waitDlg));
                 thr.setPriority(Thread.MIN_PRIORITY);
                 thr.setDaemon(true);
                 thr.start();
             }
         }
 
-        private class BrowserOpener2 implements Runnable {
+        private static class BrowserOpener2 implements Runnable {
+            private OpenCallback opencb;
             private String name;
             private Connection con;
             private String driver;
@@ -2377,7 +2396,7 @@ public class JDBCDatabase extends BasicDatabase {
             private String password;
             private MyFrame waitDlg;
 
-            public BrowserOpener2(String name, Connection con, String driver,
+            public BrowserOpener2(OpenCallback opencb, String name, Connection con, String driver,
                                   String url, String username, String password,
                                   MyFrame waitDlg) {
                 this.name = name;
@@ -2396,15 +2415,17 @@ public class JDBCDatabase extends BasicDatabase {
                 // Better to call it here first, in a background thread, so
                 // that this operation doesn't block the UI.
                 db.getRootNode();
-                SwingUtilities.invokeLater(new BrowserOpener3(waitDlg, db));
+                SwingUtilities.invokeLater(new BrowserOpener3(opencb, waitDlg, db));
             }
         }
 
-        private class BrowserOpener3 implements Runnable {
+        private static class BrowserOpener3 implements Runnable {
+            private OpenCallback opencb;
             private MyFrame waitDlg;
             private JDBCDatabase db;
 
-            public BrowserOpener3(MyFrame waitDlg, JDBCDatabase db) {
+            public BrowserOpener3(OpenCallback opencb, MyFrame waitDlg, JDBCDatabase db) {
+                this.opencb = opencb;
                 this.waitDlg = waitDlg;
                 this.db = db;
             }
@@ -2530,6 +2551,19 @@ public class JDBCDatabase extends BasicDatabase {
             return DriverManager.getConnection(url, props);
         } else {
             return DriverManager.getConnection(url, username, password);
+        }
+    }
+    
+    public static void connectNonInteractive(OpenCallback opencb, String driver, String url, String username, String password, String name) {
+        if (!loadDriver(driver))
+            return;
+        Connection con = null;
+        try {
+            con = doConnect(driver, url, username, password);
+            SwingUtilities.invokeLater(
+                    new LoginDialog.BrowserOpener1(null, opencb, name, con, driver, url, username, password));
+        } catch (SQLException e) {
+            MessageBox.show("Could not open connection.", e);
         }
     }
 

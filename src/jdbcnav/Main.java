@@ -58,7 +58,9 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Properties;
 
 import javax.swing.InputMap;
@@ -277,6 +279,72 @@ public class Main extends JFrame {
         Main nav = new Main();
         nav.setVisible(true);
         new MemoryMonitor();
+        
+        // Open connections specified on the command line, if any
+        TreeMap<Integer, Preferences.ConnectionConfig> configs = getCommandLineConnectionConfigs(args);
+        for (Preferences.ConnectionConfig config : configs.values())
+            JDBCDatabase.connectNonInteractive(nav.opencb, config.driver, config.url, config.username, config.password, config.name);
+    }
+    
+    private static TreeMap<Integer, Preferences.ConnectionConfig> getCommandLineConnectionConfigs(String[] args) {
+        TreeMap<Integer, Preferences.ConnectionConfig> map = new TreeMap<Integer, Preferences.ConnectionConfig>();
+        for (String arg : args) {
+            if (!arg.startsWith("-"))
+                continue;
+            arg = arg.substring(1);
+            int eq = arg.indexOf('=');
+            if (eq == -1)
+                continue;
+            String name = arg.substring(0, eq);
+            String value = arg.substring(eq + 1);
+            int n;
+            int dot = name.lastIndexOf('.');
+            if (dot == -1)
+                n = 1;
+            else {
+                try {
+                    n = Integer.parseInt(name.substring(dot + 1));
+                    name = name.substring(0, dot);
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+            }
+            Preferences.ConnectionConfig config = map.get(n);
+            boolean isNew = false;
+            if (config == null) {
+                config = new Preferences.ConnectionConfig(null);
+                isNew = true;
+            }
+            if (name.equals("driver"))
+                config.driver = value;
+            else if (name.equals("url"))
+                config.url = value;
+            else if (name.equals("user"))
+                config.username = value;
+            else if (name.equals("pass"))
+                config.password = value;
+            else if (name.equals("name"))
+                config.name = value;
+            else
+                continue;
+            if (isNew)
+                map.put(n, config);
+        }
+        for (Iterator<Map.Entry<Integer, Preferences.ConnectionConfig>> iter = map.entrySet().iterator(); iter.hasNext();) {
+            Map.Entry<Integer, Preferences.ConnectionConfig> entry = iter.next();
+            Preferences.ConnectionConfig config = entry.getValue();
+            if (config.driver == null || config.url == null) {
+                iter.remove();
+                continue;
+            }
+            if (config.name == null)
+                config.name = "cmdline." + entry.getKey();
+            if (config.username == null)
+                config.username = "";
+            if (config.password == null)
+                config.password = "";
+        }
+        return map;
     }
 
     private static final SimpleDateFormat timestampFormat =
