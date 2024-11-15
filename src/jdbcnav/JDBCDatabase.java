@@ -2399,6 +2399,7 @@ public class JDBCDatabase extends BasicDatabase {
             public BrowserOpener2(OpenCallback opencb, String name, Connection con, String driver,
                                   String url, String username, String password,
                                   MyFrame waitDlg) {
+                this.opencb = opencb;
                 this.name = name;
                 this.con = con;
                 this.driver = driver;

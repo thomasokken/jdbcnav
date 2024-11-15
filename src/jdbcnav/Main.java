@@ -98,6 +98,7 @@ import jdbcnav.util.MiscUtils;
 public class Main extends JFrame {
 
     private static Main instance;
+    private static boolean cmdLineConfigs = false;
     private static ArrayList<MyFrame> frameList = new ArrayList<MyFrame>();
     private static Cursor arrowAndHourglassCursor;
 
@@ -344,7 +345,13 @@ public class Main extends JFrame {
             if (config.password == null)
                 config.password = "";
         }
+        if (!map.isEmpty())
+            cmdLineConfigs = true;
         return map;
+    }
+    
+    public static boolean cmdLineConfigs() {
+        return cmdLineConfigs;
     }
 
     private static final SimpleDateFormat timestampFormat =

@@ -485,6 +485,8 @@ public class Preferences {
             Main.callWhenDesktopReady(
                 new Runnable() {
                     public void run() {
+                        if (Main.cmdLineConfigs())
+                            return;
                         PasswordDialog.askPassword(
                             new PasswordDialog.Callback() {
                                 public void passwordEntered(char[] password, boolean change) {
