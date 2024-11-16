@@ -48,6 +48,7 @@ public class Boot {
     // and the corresponding URL prefixes
     private static ArrayList<Object> activeHandles = new ArrayList<Object>();
     private static ArrayList<String> activeUrls = new ArrayList<String>();
+    private static SneakyClassLoader sneakyClassLoader;
 
     private static String fileSep = System.getProperty("file.separator");
     private static String pathSep = System.getProperty("path.separator");
@@ -70,7 +71,7 @@ public class Boot {
                 classPath.add(item);
         }
 
-        ClassLoader sneakyClassLoader = new SneakyClassLoader();
+        sneakyClassLoader = new SneakyClassLoader();
         Exception ex = null;
         try {
             Class mainClass = Class.forName("jdbcnav.Main", true,
@@ -106,6 +107,7 @@ public class Boot {
             return;
         classPath.add(item);
         File file = new File(item);
+        String url = null;
         if (file.isFile()) {
             try {
                 JarFile jarFile = new JarFile(file);
@@ -117,7 +119,7 @@ public class Boot {
                     // a drive letter. We add the slash because "file:"
                     // URLs need it.
                     path = "/" + path;
-                String url = "jar:file:" + path + "!";
+                url = "jar:file:" + path + "!";
                 activeUrls.add(url);
             } catch (IOException e) {}
         } else if (file.isDirectory()) {
@@ -129,8 +131,34 @@ public class Boot {
                 // a drive letter. We add the slash because "file:"
                 // URLs need it.
                 path = "/" + path;
-            String url = "file:" + path;
+            url = "file:" + path;
             activeUrls.add(url);
+        }
+
+        // Preload driver classes for JDBC 4.0 drivers
+        if (url != null) {
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new InputStreamReader(new URL(url + "/META-INF/services/java.sql.Driver").openStream(), "UTF-8"));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    int hash = line.indexOf('#');
+                    if (hash != -1)
+                        line = line.substring(0, hash);
+                    line = line.trim();
+                    if (line.length() > 0)
+                        try {
+                            Class.forName(line, true, sneakyClassLoader);
+                        } catch (ClassNotFoundException e) {}
+                }
+            } catch (IOException e) {
+                // Ignore
+            } finally {
+                if (reader != null)
+                    try {
+                        reader.close();
+                    } catch (IOException e) {}
+            }
         }
     }
 
