@@ -48,6 +48,7 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.MemoryImageSource;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -59,6 +60,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Properties;
@@ -282,72 +284,151 @@ public class Main extends JFrame {
         new MemoryMonitor();
         
         // Open connections specified on the command line, if any
-        TreeMap<Integer, Preferences.ConnectionConfig> configs = getCommandLineConnectionConfigs(args);
-        for (Preferences.ConnectionConfig config : configs.values())
+        List<Preferences.ConnectionConfig> configs = getCommandLineConnectionConfigs(args);
+        if (!configs.isEmpty())
+            cmdLineConfigs = true;
+        for (Preferences.ConnectionConfig config : configs)
             JDBCDatabase.connectNonInteractive(nav.opencb, config.driver, config.url, config.username, config.password, config.name);
     }
     
-    private static TreeMap<Integer, Preferences.ConnectionConfig> getCommandLineConnectionConfigs(String[] args) {
-        TreeMap<Integer, Preferences.ConnectionConfig> map = new TreeMap<Integer, Preferences.ConnectionConfig>();
+    private static List<Preferences.ConnectionConfig> getCommandLineConnectionConfigs(String[] args) {
+        TreeMap<Integer, Preferences.ConnectionConfig> cmdLineMap = new TreeMap<Integer, Preferences.ConnectionConfig>();
+        List<String> cmdLineErrors = new ArrayList<String>();
+        TreeMap<Integer, Preferences.ConnectionConfig> fileMap = new TreeMap<Integer, Preferences.ConnectionConfig>();
+        List<String> fileErrors = new ArrayList<String>();
+        boolean file = false;
         for (String arg : args) {
-            if (!arg.startsWith("-"))
-                continue;
-            arg = arg.substring(1);
-            int eq = arg.indexOf('=');
-            if (eq == -1)
-                continue;
-            String name = arg.substring(0, eq);
-            String value = arg.substring(eq + 1);
-            int n;
-            int dot = name.lastIndexOf('.');
-            if (dot == -1)
-                n = 1;
-            else {
-                try {
-                    n = Integer.parseInt(name.substring(dot + 1));
-                    name = name.substring(0, dot);
-                } catch (NumberFormatException e) {
+            String origArg = arg;
+            while (arg.startsWith("-"))
+                arg = arg.substring(1);
+            if (arg.startsWith("file=")) {
+                if (file) {
+                    cmdLineErrors.add("Only one 'file' option allowed");
                     continue;
+                } else
+                    file = true;
+                BufferedReader reader = null;
+                try {
+                    reader = new BufferedReader(new FileReader(arg.substring(5)));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        int hash = line.indexOf('#');
+                        if (hash != -1)
+                            line = line.substring(0, hash);
+                        line = line.trim();
+                        parseArg(line, false, fileMap, fileErrors);
+                    }
+                } catch (IOException e) {
+                    cmdLineErrors.add("Exception reading " + origArg + ": " + e.getMessage());
+                } finally {
+                    if (reader != null)
+                        try {
+                            reader.close();
+                        } catch (IOException e) {}
                 }
-            }
-            Preferences.ConnectionConfig config = map.get(n);
-            boolean isNew = false;
-            if (config == null) {
-                config = new Preferences.ConnectionConfig(null);
-                isNew = true;
-            }
-            if (name.equals("driver"))
-                config.driver = value;
-            else if (name.equals("url"))
-                config.url = value;
-            else if (name.equals("user"))
-                config.username = value;
-            else if (name.equals("pass"))
-                config.password = value;
-            else if (name.equals("name"))
-                config.name = value;
-            else
-                continue;
-            if (isNew)
-                map.put(n, config);
+            } else
+                parseArg(origArg, true, cmdLineMap, cmdLineErrors);
         }
+
+        List<Preferences.ConnectionConfig> list = new ArrayList<Preferences.ConnectionConfig>();
+        validateConfigs(false, fileMap, fileErrors, list);
+        validateConfigs(true, cmdLineMap, cmdLineErrors, list);
+        boolean fail = false;
+        if (!cmdLineErrors.isEmpty()) {
+            System.err.println("Command line option errors:");
+            for (String line : cmdLineErrors)
+                System.err.println("  " + line);
+            fail = true;
+        }
+        if (!fileErrors.isEmpty()) {
+            System.err.println("File item errors:");
+            for (String line : fileErrors)
+                System.err.println("  " + line);
+            fail = true;
+        }
+        if (fail)
+            System.exit(1);
+        return list;
+    }
+
+    private static void parseArg(String arg, boolean cmdline,
+                        TreeMap<Integer, Preferences.ConnectionConfig> map,
+                        List<String> errors) {
+        String origArg = arg;
+        while (arg.startsWith("-"))
+            arg = arg.substring(1);
+        if (cmdline && (arg.equals("h") || arg.equals("help"))) {
+            printHelp();
+            return;
+        }
+        int eq = arg.indexOf('=');
+        if (eq == -1) {
+            errors.add("Malformed option: " + origArg);
+            return;
+        }
+        String name = arg.substring(0, eq);
+        String value = arg.substring(eq + 1);
+        int n;
+        int dot = name.lastIndexOf('.');
+        if (dot == -1)
+            n = 1;
+        else {
+            try {
+                n = Integer.parseInt(name.substring(dot + 1));
+                name = name.substring(0, dot);
+            } catch (NumberFormatException e) {
+                errors.add("Malformed option: " + origArg);
+                return;
+            }
+        }
+        Preferences.ConnectionConfig config = map.get(n);
+        boolean isNew = false;
+        if (config == null) {
+            config = new Preferences.ConnectionConfig(null);
+            isNew = true;
+        }
+        if (name.equals("driver"))
+            config.driver = value;
+        else if (name.equals("url"))
+            config.url = value;
+        else if (name.equals("user"))
+            config.username = value;
+        else if (name.equals("pass"))
+            config.password = value;
+        else if (name.equals("name"))
+            config.name = value;
+        else {
+            errors.add("Unrecognized option: " + origArg);
+            return;
+        }
+        if (isNew)
+            map.put(n, config);
+    }
+
+    private static void validateConfigs(boolean cmdline,
+                            TreeMap<Integer, Preferences.ConnectionConfig> map,
+                            List<String> errors,
+                            List<Preferences.ConnectionConfig> list) {
         for (Iterator<Map.Entry<Integer, Preferences.ConnectionConfig>> iter = map.entrySet().iterator(); iter.hasNext();) {
             Map.Entry<Integer, Preferences.ConnectionConfig> entry = iter.next();
             Preferences.ConnectionConfig config = entry.getValue();
+            if (config.name == null)
+                config.name = (cmdline ? "cmdline." : "file.") + entry.getKey();
             if (config.driver == null || config.url == null) {
                 iter.remove();
+                errors.add("Config \"" + config.name + "\" is missing the driver or url");
                 continue;
             }
-            if (config.name == null)
-                config.name = "cmdline." + entry.getKey();
             if (config.username == null)
                 config.username = "";
             if (config.password == null)
                 config.password = "";
+            list.add(config);
         }
-        if (!map.isEmpty())
-            cmdLineConfigs = true;
-        return map;
+    }
+
+    private static void printHelp() {
+        System.err.println("I promise this will be more helpful later");
     }
     
     public static boolean cmdLineConfigs() {
