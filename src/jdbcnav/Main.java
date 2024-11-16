@@ -359,7 +359,7 @@ public class Main extends JFrame {
             arg = arg.substring(1);
         if (cmdline && (arg.equals("h") || arg.equals("help"))) {
             printHelp();
-            return;
+            System.exit(0);
         }
         int eq = arg.indexOf('=');
         if (eq == -1) {

@@ -48,7 +48,7 @@ public class Boot {
     // and the corresponding URL prefixes
     private static ArrayList<Object> activeHandles = new ArrayList<Object>();
     private static ArrayList<String> activeUrls = new ArrayList<String>();
-    private static SneakyClassLoader sneakyClassLoader;
+    private static ClassLoader sneakyClassLoader;
 
     private static String fileSep = System.getProperty("file.separator");
     private static String pathSep = System.getProperty("path.separator");
