@@ -2543,13 +2543,17 @@ public class JDBCDatabase extends BasicDatabase {
     private static Connection doConnect(String driver, String url, String username, String password) throws SQLException {
         if (driver.startsWith("oracle.")) {
             Properties props = new Properties();
-            props.put("user", username);
-            props.put("password", password);
+            if (username != null && !username.equals("") || password != null && !password.equals("")) {
+                props.put("user", username);
+                props.put("password", password);
+            }
             // This is to stop Oracle >= 9 drivers from returning
             // java.sql.Date objects for DATE columns, but stick with
             // java.sql.Timestamp like Oracle 8i.
             props.put("oracle.jdbc.V8Compatible", "true");
             return DriverManager.getConnection(url, props);
+        } else if ((username == null || username.equals("")) && (password == null || password.equals(""))) {
+            return DriverManager.getConnection(url);
         } else {
             return DriverManager.getConnection(url, username, password);
         }
