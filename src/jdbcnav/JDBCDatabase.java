@@ -142,7 +142,7 @@ public class JDBCDatabase extends BasicDatabase {
     private static JDBCDatabase create(String driver, String url, String username,
                                        String password, String name, Connection con) {
         String internalDriverName =
-            InternalDriverMap.getDriverName(driver, con);
+            InternalDriverMap.getDriverName(url, con);
         String className =
             InternalDriverMap.getDatabaseClassName(internalDriverName);
 
@@ -2054,6 +2054,8 @@ public class JDBCDatabase extends BasicDatabase {
     }
     
     private static boolean loadDriver(String driverClassName) {
+        if (driverClassName.equals(""))
+            return true;
         try {
             Class.forName(driverClassName);
             return true;

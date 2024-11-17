@@ -40,19 +40,21 @@ public class InternalDriverMap {
      * DatabaseMetaData to find out which version of the product we're talking
      * to.
      */
-    public static String getDriverName(String driverClassName, Connection con) {
-        if (driverClassName == null) {
+    public static String getDriverName(String url, Connection con) {
+        int colon1 = url.indexOf(':');
+        int colon2 = url.indexOf(':', colon1 + 1);
+        if (colon1 == -1 || colon2 == -1)
             return "Generic";
-        } else if (driverClassName.endsWith(".DB2Driver")) {
+        String dbName = url.substring(colon1 + 1, colon2);
+        if (dbName.equals("db2")) {
             return "DB2";
-        } else if (driverClassName.startsWith("org.apache.derby.")) {
+        } else if (dbName.equals("derby")) {
             return "Derby";
-        } else if (driverClassName.equals("com.mysql.jdbc.Driver")) {
+        } else if (dbName.equals("mysql")) {
             return "MySQL";
-        } else if (driverClassName.equals("com.microsoft.sqlserver.jdbc.SQLServerDriver")) {
+        } else if (dbName.equals("sqlserver")) {
             return "MS_SQL";
-        } else if (driverClassName.equals("oracle.jdbc.driver.OracleDriver")
-                || driverClassName.equals("oracle.jdbc.OracleDriver")) {
+        } else if (dbName.equals("oracle")) {
             if (con == null)
                 return "Oracle 10";
             try {
@@ -79,12 +81,11 @@ public class InternalDriverMap {
             } catch (SQLException e) {
                 return "Oracle 10";
             }
-        } else if (driverClassName.equals("org.postgresql.Driver")) {
+        } else if (dbName.equals("postgresql")) {
             return "PostgreSQL";
-        } else if (driverClassName.equals("smallsql.server.SSDriver")
-                || driverClassName.equals("smallsql.database.SSDriver")) {
+        } else if (dbName.equals("smallsql")) {
             return "SmallSQL";
-        } else if (driverClassName.equals("transbase.jdbc.Driver")) {
+        } else if (dbName.equals("transbase")) {
             return "Transbase";
         } else {
             return "Generic";

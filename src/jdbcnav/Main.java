@@ -414,11 +414,13 @@ public class Main extends JFrame {
             Preferences.ConnectionConfig config = entry.getValue();
             if (config.name == null)
                 config.name = (cmdline ? "cmdline." : "file.") + entry.getKey();
-            if (config.driver == null || config.url == null) {
+            if (config.url == null) {
                 iter.remove();
-                errors.add("Config \"" + config.name + "\" is missing the driver or url");
+                errors.add("Config \"" + config.name + "\" is missing the url");
                 continue;
             }
+            if (config.driver == null)
+                config.driver = "";
             if (config.username == null)
                 config.username = "";
             if (config.password == null)
@@ -436,16 +438,17 @@ public class Main extends JFrame {
         System.err.println("  except without any leading dashes.");
         System.err.println("Database connections are specified using these five options:");
         System.err.println("  -url=<url>: the JDBC URL to connect with");
-        System.err.println("  -driver=<driver class>: the driver's main Java class");
+        System.err.println("  -driver=<driver class>: the main Java class (JDBC 3.x and older drivers)");
         System.err.println("  -user=<username>: username for db authentication");
         System.err.println("  -pass=<password>: password for db authentication");
         System.err.println("  -name=<connection name>: name to be used for the connection in the app");
         System.err.println("Multiple connections may be specified, by adding \".<n>\" to each option;");
         System.err.println("so -url.2, -driver.2 etc. specify connection #2. The absence of a \".<n>\"");
         System.err.println("suffix simply indicates connection #1.");
-        System.err.println("The -user, -pass, and -name options are optional. -user and -pass may be");
-        System.err.println("omitted if the connection doesn't require authentication, or if the");
+        System.err.println("The -user, -pass, -driver, and -name options are optional. -user and -pass may");
+        System.err.println("be omitted if the connection doesn't require authentication, or if the");
         System.err.println("credentials are passed as part of the JDBC URL.");
+        System.err.println("The -driver option may be omitted for JDBC 4.0 and later drivers.");
         System.err.println("If -name is omitted, the connection will be named \"cmdline.<n>\" or");
         System.err.println("\"file.<n>\", if it's the nth connection specified on the command line");
         System.err.println("or in a file, respectively.");
