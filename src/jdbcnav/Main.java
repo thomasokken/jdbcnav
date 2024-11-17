@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // JDBC Navigator - A Free Database Browser and Editor
-// Copyright (C) 2001-2023  Thomas Okken
+// Copyright (C) 2001-2024  Thomas Okken
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License, version 2,
@@ -190,7 +190,7 @@ public class Main extends JFrame {
         String year;
         if (version == null) {
             version = "Could not read version information";
-            year = "2017";
+            year = "?";
         } else {
             int sp = version.lastIndexOf(' ');
             year = version.substring(sp + 1);
