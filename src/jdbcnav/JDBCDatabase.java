@@ -2099,9 +2099,9 @@ public class JDBCDatabase extends BasicDatabase {
             gbc.anchor = MyGridBagConstraints.EAST;
             p1.add(new JLabel("Name:"), gbc);
             gbc.gridy++;
-            p1.add(new JLabel("Driver Class:"), gbc);
-            gbc.gridy++;
             p1.add(new JLabel("URL:"), gbc);
+            gbc.gridy++;
+            p1.add(new JLabel("Driver Class:"), gbc);
             gbc.gridy++;
             p1.add(new JLabel("User Name:"), gbc);
             gbc.gridy++;
@@ -2120,12 +2120,12 @@ public class JDBCDatabase extends BasicDatabase {
             gbc.gridwidth = 3;
             gbc.anchor = MyGridBagConstraints.WEST;
             p1.add(configNameCB, gbc);
-            driverTF = new MyTextField(30);
-            gbc.gridy++;
-            p1.add(driverTF, gbc);
             urlTF = new MyTextField(40);
             gbc.gridy++;
             p1.add(urlTF, gbc);
+            driverTF = new MyTextField(30);
+            gbc.gridy++;
+            p1.add(driverTF, gbc);
             usernameTF = new MyTextField(10);
             gbc.gridy++;
             gbc.gridwidth = 1;
