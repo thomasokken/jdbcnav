@@ -428,7 +428,27 @@ public class Main extends JFrame {
     }
 
     private static void printHelp() {
-        System.err.println("I promise this will be more helpful later");
+        System.err.println("Command line options:");
+        System.err.println("  (all options may be written with any number of leading dashes)");
+        System.err.println("  -help or -h: prints this message");
+        System.err.println("  -file=<filename>: read options from a file, one option per line. The");
+        System.err.println("  option syntax is the same as for the command line options shown below,");
+        System.err.println("  except without any leading dashes.");
+        System.err.println("Database connections are specified using these five options:");
+        System.err.println("  -url=<url>: the JDBC URL to connect with");
+        System.err.println("  -driver=<driver class>: the driver's main Java class");
+        System.err.println("  -user=<username>: username for db authentication");
+        System.err.println("  -pass=<password>: password for db authentication");
+        System.err.println("  -name=<connection name>: name to be used for the connection in the app");
+        System.err.println("Multiple connections may be specified, by adding \".<n>\" to each option;");
+        System.err.println("so -url.2, -driver.2 etc. specify connection #2. The absence of a \".<n>\"");
+        System.err.println("suffix simply indicates connection #1.");
+        System.err.println("The -user, -pass, and -name options are optional. -user and -pass may be");
+        System.err.println("omitted if the connection doesn't require authentication, or if the");
+        System.err.println("credentials are passed as part of the JDBC URL.");
+        System.err.println("If -name is omitted, the connection will be named \"cmdline.<n>\" or");
+        System.err.println("\"file.<n>\", if it's the nth connection specified on the command line");
+        System.err.println("or in a file, respectively.");
     }
     
     public static boolean cmdLineConfigs() {
