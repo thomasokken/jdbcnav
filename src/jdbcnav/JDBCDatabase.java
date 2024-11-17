@@ -19,6 +19,7 @@
 package jdbcnav;
 
 import java.awt.Container;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -2123,9 +2124,15 @@ public class JDBCDatabase extends BasicDatabase {
             urlTF = new MyTextField(40);
             gbc.gridy++;
             p1.add(urlTF, gbc);
+            JPanel p3 = new JPanel();
+            p3.setLayout(new BoxLayout(p3, BoxLayout.X_AXIS));
             driverTF = new MyTextField(30);
+            p3.add(driverTF);
+            JLabel lbl = new JLabel(" (for JDBC < 4.0)");
+            lbl.setFont(lbl.getFont().deriveFont(Font.PLAIN));
+            p3.add(lbl);
             gbc.gridy++;
-            p1.add(driverTF, gbc);
+            p1.add(p3, gbc);
             usernameTF = new MyTextField(10);
             gbc.gridy++;
             gbc.gridwidth = 1;
