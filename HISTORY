@@ -1,3 +1,11 @@
+2024-11-18: build 2743
+*) Added capability to specify connections to open on the command line, using
+the options -url, -driver, -user, -pass, and -name. In addition, connections
+may be specified using a file using the option -file. Run with -h or -help for
+details.
+*) The Driver Class is now optional for JDBC 4.0 compatible drivers, i.e.
+drivers that specify the driver class in META-INF/services/java.sql.Driver.
+
 2023-08-23: build 2742
 *) Fixed scroll interval in binary editor.
 
